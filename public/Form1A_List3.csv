@@ -27,7 +27,7 @@
 3,Seat dimensions ,TRUE
 3.1,Driver seat ,
 3.1.1,Width mm (minimum width maximum width at front end & maximum width at rear end),
-3.2.2,Width mm (minimum width maximum width),
+3.1.2,Width mm (minimum width maximum width),
 3.2,Passenger seat,
 3.2.1,Seat type (separate / bench),
 3.2.2,Width mm,
@@ -37,17 +37,17 @@
 6,Headlamp,TRUE
 ,as already mentioned in clause of 7.5 (Table),
 6.1,Filament lamp category for headlamp ,
-7,"Seat base height, mm",TRUE
+7,Seat base height, mm,TRUE
 7.1,Driver seat,
 7.2,Passenger seat,
-8,"Seat back dimensions, mm",TRUE
+8,Seat back dimensions, mm,TRUE
 8.1,Seat back upper edge height from H point:,
 8.1.1,Driver seat,
 8.1.2,Passenger seat,
 8.2,Seat back height:,
 8.2.1,Driver seat,
 8.2.2,Passenger seat,
-9,Free height over seating position (Head Room) from H point mmTRUE
+9,Free height over seating position (Head Room) from H point mm.,TRUE
 9.1,Driver seat,
 9.2,Passenger seat,
 10,Provision for rear entry if provided) : ,TRUE

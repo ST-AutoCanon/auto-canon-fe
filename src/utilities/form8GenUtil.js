@@ -5,6 +5,7 @@ import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, T
 let docSealImage;
 const mainData = function () {
     const suppNameList = [];
+    const suppNameLampList = [];    
     const tacNumberList = [];
     const possibleDateList = [];
     const copCertList = [];
@@ -14,54 +15,93 @@ const mainData = function () {
     const copCertLampList = [];
     const validityLampList = [];
     const MakeList = [];
-    return { suppNameList, tacNumberList, possibleDateList, copCertList, validityList, tacNumberLampList, possibleDateLampList, copCertLampList, MakeList, validityLampList };
+    return { suppNameList,suppNameLampList, tacNumberList, possibleDateList, copCertList, validityList, tacNumberLampList, possibleDateLampList, copCertLampList, MakeList, validityLampList };
 }
 
-
-
- function generateForm8(form8Data, footerData) {
-     
-    const dataOfFooter = footerData.footerData.footer.properties;
+async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
-    let imageUrl;
-
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
-    console.log("Image loaded successfully:", fileName);
-    
-    
-    // Fetch the image as a Blob
-    fetch(imageUrl)
-      .then(response => response.blob())
-      .then(blob => {
-        // Create a FileReader to convert the blob into Base64
-        const reader = new FileReader();
-    
-        // Define the onload event handler for FileReader
-        reader.onloadend = () => {
-          const base64Data = reader.result; // This will be the Base64 encoded string
-    
-          // Log the Base64 encoded data
-          console.log("Base64 Image Data:", base64Data);
-    
-          // Optionally, create an ImageRun object with the Base64 data
-          docSealImage = new ImageRun({
+    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+
+    try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Convert the blob to Base64
+        const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                resolve(reader.result); // Resolve with the Base64 string
+            };
+
+            reader.onerror = reject; // Reject on error
+
+            reader.readAsDataURL(blob);
+        });
+
+        // Create an ImageRun object with the Base64 data
+        const docSealImage = new ImageRun({
             data: base64Data, // Use the Base64 data here
             transformation: {
-              width: 90,
-              height: 50,
-            }
-          });
-    
-          console.log("ImageRun instance created:", docSealImage);
-        };
-    
-        // Read the blob as a data URL (Base64)
-        reader.readAsDataURL(blob);
-      })
-      .catch(error => {
-        console.error("Error loading image:", error);
-      });
+                width: 90,
+                height: 50,
+            },
+        });
+
+        console.log("ImageRun instance created:", docSealImage);
+
+        return docSealImage; // Return the docSealImage after it's ready
+    } catch (error) {
+        console.error("Error loading or converting image:", error);
+        throw error; // If the image fails to load, throw an error
+    }
+}
+
+async function generateForm8(form8Data, footerData) {
+    const docSealImage = await fetchAndProcessImage(footerData);
+    console.log('form8Data:', form8Data);
+    const dataOfFooter = footerData.footerData.footer.properties;
+    const dataOfFooterr = footerData.footerData.SealSign.properties;
+    // let imageUrl;
+
+    // const fileName = dataOfFooterr.Upload_Seal.file_name;
+    // imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    // // console.log("Image loaded successfully:", fileName);
+
+
+    // // Fetch the image as a Blob
+    // fetch(imageUrl)
+    //   .then(response => response.blob())
+    //   .then(blob => {
+    //     // Create a FileReader to convert the blob into Base64
+    //     const reader = new FileReader();
+
+    //     // Define the onload event handler for FileReader
+    //     reader.onloadend = () => {
+    //       const base64Data = reader.result; // This will be the Base64 encoded string
+
+    //       // Log the Base64 encoded data
+    //     //   console.log("Base64 Image Data:", base64Data);
+
+    //       // Optionally, create an ImageRun object with the Base64 data
+    //       docSealImage = new ImageRun({
+    //         data: base64Data, // Use the Base64 data here
+    //         transformation: {
+    //           width: 90,
+    //           height: 50,
+    //         }
+    //       });
+
+    //     //   console.log("ImageRun instance created:", docSealImage);
+    //     };
+
+    //     // Read the blob as a data URL (Base64)
+    //     reader.readAsDataURL(blob);
+    //   })
+    //   .catch(error => {
+    //     console.error("Error loading image:", error);
+    //   });
 
     const reflectorsList = form8Data.Retro_Reflectors.RetroReflectors;
     let reflDataList = {
@@ -72,8 +112,28 @@ const mainData = function () {
     };
     reflectorsList.map(vehRefl => {
         if (vehRefl.supplier.active === true) {
-            reflDataList.suppNameList.push(vehRefl.supplier.nameOfSupplier);
-            reflDataList.frontWhiteList.tacNumberList.push(vehRefl?.Front_White_Reflector?.properties?.TAC_Number?.value);
+
+            let supplierName = vehRefl.supplier.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+
+            }
+
+            // reflDataList.suppNameList.push(supplierName);
+
+            // // reflDataList.suppNameList.push(vehRefl.supplier.nameOfSupplier);
+            // reflDataList.frontWhiteList.tacNumberList.push(vehRefl?.Front_White_Reflector?.properties?.TAC_Number?.value);
+            // Get the TAC Number value for Front White Reflector
+            const frontWhiteTACValue = vehRefl?.Front_White_Reflector?.properties?.TAC_Number?.value;
+
+            // Push the TAC value to reflDataList
+            reflDataList.frontWhiteList.tacNumberList.push(frontWhiteTACValue);
+
+            // Check if TAC value is present
+            reflDataList.suppNameList.push(frontWhiteTACValue ? supplierName : "");
+
             reflDataList.frontWhiteList.possibleDateList.push(vehRefl?.Front_White_Reflector?.properties?.Possible_date_of_submission_of_required_approval?.value);
             reflDataList.frontWhiteList.copCertList.push(vehRefl?.Front_White_Reflector?.properties?.CoP_Cert_No_with_validity_date?.value);
             reflDataList.rearRedList.tacNumberList.push(vehRefl?.Rear_Red_Reflector?.properties?.TAC_Number?.value);
@@ -93,8 +153,26 @@ const mainData = function () {
     let hornDataList = mainData();
     hornList.map(vehHorn => {
         if (vehHorn.supplier.active === true) {
-            hornDataList.suppNameList.push(vehHorn?.supplier?.nameOfSupplier);
-            hornDataList.validityList.push(vehHorn?.Horn?.properties?.TAC_Number_Its_Validity?.value);
+
+            let supplierName = vehHorn?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // hornDataList.suppNameList.push(supplierName);
+            // // hornDataList.suppNameList.push(vehHorn?.supplier?.nameOfSupplier);
+            // hornDataList.validityList.push(vehHorn?.Horn?.properties?.TAC_Number_Its_Validity?.value);
+            // Get the TAC Number validity value for Horn
+            const hornTACValue = vehHorn?.Horn?.properties?.TAC_Number_Its_Validity?.value;
+
+            // Push the TAC value to hornDataList
+            hornDataList.validityList.push(hornTACValue);
+
+            // Check if TAC value is present
+            hornDataList.suppNameList.push(hornTACValue ? supplierName : "");
+
             hornDataList.possibleDateList.push(vehHorn?.Horn?.properties?.Possible_date_of_submission_of_required_approval?.value);
             hornDataList.copCertList.push(vehHorn?.Horn?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -105,13 +183,42 @@ const mainData = function () {
     let hlDipBeamDataList = mainData();
     headLampList.map(vehHeadLamp => {
         if (vehHeadLamp.supplier.active === true) {
-            hlMainBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
-            hlMainBeamDataList.validityList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value)
+
+            let supplierName = vehHeadLamp?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // hlMainBeamDataList.suppNameList.push(supplierName);
+
+            // // hlMainBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
+            // hlMainBeamDataList.validityList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Main Beam Head Lamp
+            const hlMainBeamTACValue = vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value;
+
+            // Push the TAC value to hlMainBeamDataList
+            hlMainBeamDataList.validityList.push(hlMainBeamTACValue);
+
+            // Check if TAC value is present
+            hlMainBeamDataList.suppNameList.push(hlMainBeamTACValue ? supplierName : "");
+
             hlMainBeamDataList.possibleDateList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlMainBeamDataList.copCertList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.CoP_Cert_No_with_validity_date?.value)
             hlMainBeamDataList.tacNumberList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Number?.value)
-            hlDipBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
-            hlDipBeamDataList.validityList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value)
+            // hlDipBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
+            // hlDipBeamDataList.suppNameList.push(supplierName);
+            // hlDipBeamDataList.validityList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Dipped Beam Headlamp
+            const hlDipBeamTACValue = vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the TAC value to hlDipBeamDataList
+            hlDipBeamDataList.validityList.push(hlDipBeamTACValue);
+
+            // Check if TAC value is present
+            hlDipBeamDataList.suppNameList.push(hlDipBeamTACValue ? supplierName : "");
+
             hlDipBeamDataList.possibleDateList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlDipBeamDataList.copCertList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value)
             hlDipBeamDataList.tacNumberList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Number?.value)
@@ -133,8 +240,26 @@ const mainData = function () {
     let dtRunnLampDataList = mainData();
     dtRunnLampList.map(vehRunnLamp => {
         if (vehRunnLamp.supplier.active === true) {
-            dtRunnLampDataList.suppNameList.push(vehRunnLamp?.supplier?.nameOfSupplier);
-            dtRunnLampDataList.validityList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value);
+
+            let supplierName = vehRunnLamp?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // dtRunnLampDataList.suppNameList.push(supplierName);
+            // // dtRunnLampDataList.suppNameList.push(vehRunnLamp?.supplier?.nameOfSupplier);
+            // dtRunnLampDataList.validityList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Daytime Running Lamp
+            const dtRunnLampTACValue = vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value;
+
+            // Push the TAC value to dtRunnLampDataList
+            dtRunnLampDataList.validityList.push(dtRunnLampTACValue);
+
+            // Check if TAC value is present
+            dtRunnLampDataList.suppNameList.push(dtRunnLampTACValue ? supplierName : "");
+
             dtRunnLampDataList.possibleDateList.push(vehRunnLamp?.Daytime_Running_Lamp.properties?.Possible_date_of_submission_of_required_approval?.value);
             dtRunnLampDataList.copCertList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -146,29 +271,95 @@ const mainData = function () {
     let stopLampDataList = mainData();
     posLampsList.map(vehPosLamp => {
         if (vehPosLamp.supplier.active === true) {
-            frontPosLampDataList.suppNameList.push(vehPosLamp?.supplier.nameOfSupplier);
-            frontPosLampDataList.validityList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            let supplierName = vehPosLamp?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // frontPosLampDataList.suppNameList.push(supplierName);
+            // frontPosLampDataList.suppNameList.push(vehPosLamp?.supplier.nameOfSupplier);
+            // frontPosLampDataList.validityList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // Get the validity value (TAC_Validity)
+            const validityValue = vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to validityList
+            frontPosLampDataList.validityList.push(validityValue);
+
+            // Check if validity data is present
+            if (validityValue) {
+                // If data is present, add supplier name
+                frontPosLampDataList.suppNameList.push(supplierName);
+            } else {
+                // If no data is present, add a blank space
+                frontPosLampDataList.suppNameList.push("");
+            }
             frontPosLampDataList.possibleDateList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             frontPosLampDataList.copCertList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
             frontPosLampDataList.tacNumberList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Number?.value);
-            rearPosLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
-            rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
+            // rearPosLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
+
+            // rearPosLampDataList.suppNameList.push(supplierName);
+            // rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
+            // Get the validity value for Parking_Lamp_Bulb_Rear (TAC_Validity)
+            const rearValidityValue = vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to validityList for rearPosLampDataList
+            rearPosLampDataList.validityList.push(rearValidityValue);
+
+            // Check if validity data is present
+            if (rearValidityValue) {
+                // If data is present, add supplier name
+                rearPosLampDataList.suppNameList.push(supplierName);
+            } else {
+                // If no data is present, add a blank space
+                rearPosLampDataList.suppNameList.push("");
+            }
             rearPosLampDataList.possibleDateList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rearPosLampDataList.copCertList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.CoP_Cert_No_with_validity_date?.value);
             rearPosLampDataList.tacNumberList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value);
 
-            stopLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
-            stopLampDataList.validityList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // stopLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
+
+            // stopLampDataList.suppNameList.push(supplierName);
+            // stopLampDataList.validityList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+
+            // Get the validity value for Stop Lamp
+            const stopValidityValue = vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to stopLampDataList and add the supplier name (or blank space)
+            stopLampDataList.validityList.push(stopValidityValue);
+            stopLampDataList.suppNameList.push(stopValidityValue ? supplierName : "");
+
             stopLampDataList.possibleDateList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             stopLampDataList.copCertList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
             stopLampDataList.tacNumberList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Number?.value);
+            // stopLampDataList.suppNameLampList.push(supplierName);
+            // stopLampDataList.validityLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Stop Lamp
+const stopLampTACValue = vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value;
 
-            stopLampDataList.validityLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value);
+// Push the TAC value to stopLampDataList
+stopLampDataList.validityLampList.push(stopLampTACValue);
+
+// Check if TAC value is present
+stopLampDataList.suppNameLampList.push(stopLampTACValue ? supplierName : "");
+
             stopLampDataList.possibleDateLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             stopLampDataList.copCertLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
             stopLampDataList.tacNumberLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Number?.value);
 
-            frontPosLampDataList.validityLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // frontPosLampDataList.validityLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Front Position Lamp
+const frontPosLampTACValue = vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value;
+
+// Push the TAC value to frontPosLampDataList
+frontPosLampDataList.validityLampList.push(frontPosLampTACValue);
+
+// Check if TAC value is present
+frontPosLampDataList.suppNameLampList.push(frontPosLampTACValue ? supplierName : "");
+
             frontPosLampDataList.possibleDateLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             frontPosLampDataList.copCertLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
             frontPosLampDataList.tacNumberLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
@@ -183,29 +374,84 @@ const mainData = function () {
     let rdIndLampDataList = mainData();
     dirIndLampList.map(vehDirInd => {
         if (vehDirInd.supplier.active === true) {
-            fdIndLampDataList.suppNameList.push(vehDirInd?.supplier?.nameOfSupplier);
-            fdIndLampDataList.validityList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+            let supplierName = vehDirInd?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // fdIndLampDataList.suppNameList.push(supplierName);
+
+            // fdIndLampDataList.validityList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+            // Get the validity value for Front Direction Indicator Lamp
+            const fdIndValidityValue = vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to fdIndLampDataList
+            fdIndLampDataList.validityList.push(fdIndValidityValue);
+
+            // Check if validity data is present
+            fdIndLampDataList.suppNameList.push(fdIndValidityValue ? supplierName : "");
+
             fdIndLampDataList.tacNumberList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
             fdIndLampDataList.possibleDateList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             fdIndLampDataList.copCertList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            sdIndLampDataList.suppNameList.push(vehDirInd?.supplier?.nameOfSupplier);
-            sdIndLampDataList.validityList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Validity?.value);
+
+            // sdIndLampDataList.suppNameList.push(supplierName);
+            // sdIndLampDataList.validityList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Validity?.value);
+            // Get the validity value for Side Direction Indicator Lamp
+            const sdIndValidityValue = vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to sdIndLampDataList
+            sdIndLampDataList.validityList.push(sdIndValidityValue);
+
+            // Check if validity data is present
+            sdIndLampDataList.suppNameList.push(sdIndValidityValue ? supplierName : "");
+
             sdIndLampDataList.tacNumberList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Number?.value);
             sdIndLampDataList.possibleDateList.push(vehDirInd?.Side_Direction_Indicator?.properties?.Possible_date_of_submission_of_required_approval?.value);
             sdIndLampDataList.copCertList.push(vehDirInd?.Side_Direction_Indicator?.properties?.CoP_Cert_No_with_validity_date?.value);
-            rdIndLampDataList.suppNameList.push(vehDirInd?.supplier?.nameOfSupplier);
-            rdIndLampDataList.validityList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+
+            // rdIndLampDataList.suppNameList.push(supplierName);
+            // rdIndLampDataList.validityList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+            // Get the validity value for Rear Direction Indicator Lamp
+            const rdIndValidityValue = vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to rdIndLampDataList
+            rdIndLampDataList.validityList.push(rdIndValidityValue);
+
+            // Check if validity data is present
+            rdIndLampDataList.suppNameList.push(rdIndValidityValue ? supplierName : "");
+
             rdIndLampDataList.tacNumberList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
             rdIndLampDataList.possibleDateList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rdIndLampDataList.copCertList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
 
-            fdIndLampDataList.validityLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // fdIndLampDataList.validityLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Front Direction Indicator Lamp
+const fdIndLampTACValue = vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value;
+
+// Push the TAC value to fdIndLampDataList
+fdIndLampDataList.validityLampList.push(fdIndLampTACValue);
+
+// Check if TAC value is present
+fdIndLampDataList.suppNameLampList.push(fdIndLampTACValue ? supplierName : "");
+
             fdIndLampDataList.tacNumberLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Number?.value);
             fdIndLampDataList.possibleDateLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             fdIndLampDataList.copCertLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
-            rdIndLampDataList.validityLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // rdIndLampDataList.validityLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Rear Direction Indicator Lamp
+const rdIndLampTACValue = vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value;
+
+// Push the TAC value to rdIndLampDataList
+rdIndLampDataList.validityLampList.push(rdIndLampTACValue);
+
+// Check if TAC value is present
+rdIndLampDataList.suppNameLampList.push(rdIndLampTACValue ? supplierName : "");
+
             rdIndLampDataList.tacNumberLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Number?.value);
             rdIndLampDataList.possibleDateLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rdIndLampDataList.copCertLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -218,13 +464,39 @@ const mainData = function () {
     let revLampDataList = mainData();
     revLampList.map(vehRevLamp => {
         if (vehRevLamp.supplier.active === true) {
-            revLampDataList.suppNameList.push(vehRevLamp?.supplier?.nameOfSupplier);
-            revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
+            let supplierName = vehRevLamp?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // revLampDataList.suppNameList.push(supplierName);
+            // // revLampDataList.suppNameList.push(vehRevLamp?.supplier?.nameOfSupplier);
+            // revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
+            // Get the validity value for Reversing Lamp
+            const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to revLampDataList
+            revLampDataList.validityList.push(revLampValidityValue);
+
+            // Check if validity data is present
+            revLampDataList.suppNameList.push(revLampValidityValue ? supplierName : "");
+
             revLampDataList.possibleDateList.push(vehRevLamp?.Reversing_Lamp?.properties?.Possible_date_of_submission_of_required_approval?.value);
             revLampDataList.copCertList.push(vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
             revLampDataList.tacNumberList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Number?.value);
 
-            revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Reverse Lamp
+const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value;
+
+// Push the TAC value to revLampDataList
+revLampDataList.validityLampList.push(revLampTACValue);
+
+// Check if TAC value is present
+revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
+
             revLampDataList.possibleDateLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             revLampDataList.copCertLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
             revLampDataList.tacNumberLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
@@ -235,13 +507,39 @@ const mainData = function () {
     let rrpLampDataList = mainData();
     rrpLampList.map(vehRRPLamp => {
         if (vehRRPLamp.supplier.active === true) {
-            rrpLampDataList.suppNameList.push(vehRRPLamp?.supplier?.nameOfSupplier);
-            rrpLampDataList.validityList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            let supplierName = vehRRPLamp?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // rrpLampDataList.suppNameList.push(supplierName);
+            // // rrpLampDataList.suppNameList.push(vehRRPLamp?.supplier?.nameOfSupplier);
+            // rrpLampDataList.validityList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // Get the validity value for Registration Plate Lamp
+            const rrpLampValidityValue = vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+
+            // Push the validity value to rrpLampDataList
+            rrpLampDataList.validityList.push(rrpLampValidityValue);
+
+            // Check if validity data is present
+            rrpLampDataList.suppNameList.push(rrpLampValidityValue ? supplierName : "");
+
             rrpLampDataList.tacNumberList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Number?.value);
             rrpLampDataList.possibleDateList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rrpLampDataList.copCertList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
-            rrpLampDataList.validityLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value);
+            // rrpLampDataList.validityLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value);
+            // Get the TAC Validity value for Registration Plate Lamp
+const rrpLampTACValue = vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value;
+
+// Push the TAC value to rrpLampDataList
+rrpLampDataList.validityLampList.push(rrpLampTACValue);
+
+// Check if TAC value is present
+rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
+
             rrpLampDataList.tacNumberLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Number?.value);
             rrpLampDataList.possibleDateLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rrpLampDataList.copCertLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -253,8 +551,25 @@ const mainData = function () {
     let hydrBrkHoseDataList = mainData();
     hydrBrakeHoseList.map(vehHydr => {
         if (vehHydr.supplier.active === true) {
-            hydrBrkHoseDataList.suppNameList.push(vehHydr?.supplier?.nameOfSupplier);
-            hydrBrkHoseDataList.validityList.push(vehHydr?.Hydraulic_Brake_Hose?.properties?.TAC_Number?.value);
+            let supplierName = vehHydr?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // hydrBrkHoseDataList.suppNameList.push(supplierName);
+            // // hydrBrkHoseDataList.suppNameList.push(vehHydr?.supplier?.nameOfSupplier);
+            // hydrBrkHoseDataList.validityList.push(vehHydr?.Hydraulic_Brake_Hose?.properties?.TAC_Number?.value);
+            // Get the validity value for Hydraulic Brake Hose (using TAC_Number)
+            const hydrBrkHoseTACValue = vehHydr?.Hydraulic_Brake_Hose?.properties?.TAC_Number?.value;
+
+            // Push the validity value to hydrBrkHoseDataList
+            hydrBrkHoseDataList.validityList.push(hydrBrkHoseTACValue);
+
+            // Check if validity data is present
+            hydrBrkHoseDataList.suppNameList.push(hydrBrkHoseTACValue ? supplierName : "");
+
             hydrBrkHoseDataList.possibleDateList.push(vehHydr?.Hydraulic_Brake_Hose?.properties?.Possible_date_of_submission_of_required_approval?.value);
             hydrBrkHoseDataList.copCertList.push(vehHydr?.Hydraulic_Brake_Hose?.properties.CoP_Cert_No_with_validity_date?.value);
         }
@@ -275,8 +590,25 @@ const mainData = function () {
     let rearViewMirrorsDataList = mainData();
     mirrorsList.map(vehMirror => {
         if (vehMirror.supplier.active === true) {
-            rearViewMirrorsDataList.suppNameList.push(vehMirror?.supplier?.nameOfSupplier);
-            rearViewMirrorsDataList.tacNumberList.push(vehMirror?.Rear_View_Mirror?.properties?.TAC_Number_Its_Validity?.value);
+            let supplierName = vehMirror?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // rearViewMirrorsDataList.suppNameList.push(supplierName);
+            // // rearViewMirrorsDataList.suppNameList.push(vehMirror?.supplier?.nameOfSupplier);
+            // rearViewMirrorsDataList.tacNumberList.push(vehMirror?.Rear_View_Mirror?.properties?.TAC_Number_Its_Validity?.value);
+            // Get the TAC Number value for Rear View Mirror
+            const rearViewMirrorTACValue = vehMirror?.Rear_View_Mirror?.properties?.TAC_Number_Its_Validity?.value;
+
+            // Push the TAC value to rearViewMirrorsDataList
+            rearViewMirrorsDataList.tacNumberList.push(rearViewMirrorTACValue);
+
+            // Check if TAC value is present
+            rearViewMirrorsDataList.suppNameList.push(rearViewMirrorTACValue ? supplierName : "");
+
             rearViewMirrorsDataList.possibleDateList.push(vehMirror?.Rear_View_Mirror?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rearViewMirrorsDataList.copCertList.push(vehMirror?.Rear_View_Mirror?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -285,8 +617,25 @@ const mainData = function () {
     let TractionBatterypackDataList = mainData();
     TractionBatterypackList.map(vehTractionBatterypack => {
         if (vehTractionBatterypack.supplier.active === true) {
-            TractionBatterypackDataList.suppNameList.push(vehTractionBatterypack?.supplier?.nameOfSupplier);
-            TractionBatterypackDataList.tacNumberList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.Type_approval_Certififcate_number?.value);
+            let supplierName = vehTractionBatterypack?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // TractionBatterypackDataList.suppNameList.push(supplierName);
+            // // TractionBatterypackDataList.suppNameList.push(vehTractionBatterypack?.supplier?.nameOfSupplier);
+            // TractionBatterypackDataList.tacNumberList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.Type_approval_Certififcate_number?.value);
+            // Get the TAC Number value for Traction Battery Pack
+            const tractionBatteryTACValue = vehTractionBatterypack?.Traction_Battery_Pack?.properties?.Type_approval_Certififcate_number?.value;
+
+            // Push the TAC value to TractionBatterypackDataList
+            TractionBatterypackDataList.tacNumberList.push(tractionBatteryTACValue);
+
+            // Check if TAC value is present
+            TractionBatterypackDataList.suppNameList.push(tractionBatteryTACValue ? supplierName : "");
+
             TractionBatterypackDataList.possibleDateList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.Possible_date_of_submission_of_required_approval?.value);
             TractionBatterypackDataList.copCertList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -299,11 +648,29 @@ const mainData = function () {
 
     WheelRimList.map(vehWheelRim => {
         if (vehWheelRim.supplier.active === true) {
-            FWheelRimDataList.suppNameList.push(vehWheelRim?.supplier?.nameOfSupplier);
-            FWheelRimDataList.tacNumberList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.BIS_License_TAC_Number_with_its_Validity?.value);
+            let supplierName = vehWheelRim?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // FWheelRimDataList.suppNameList.push(supplierName);
+            // // FWheelRimDataList.suppNameList.push(vehWheelRim?.supplier?.nameOfSupplier);
+            // FWheelRimDataList.tacNumberList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.BIS_License_TAC_Number_with_its_Validity?.value);
+            // Get the TAC Number value for Front Wheel Rim
+            const fWheelRimTACValue = vehWheelRim?.Front_Wheel_Rim?.properties?.BIS_License_TAC_Number_with_its_Validity?.value;
+
+            // Push the TAC value to FWheelRimDataList
+            FWheelRimDataList.tacNumberList.push(fWheelRimTACValue);
+
+            // Check if TAC value is present
+            FWheelRimDataList.suppNameList.push(fWheelRimTACValue ? supplierName : "");
+
             FWheelRimDataList.possibleDateList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.Possible_date_of_submission_of_required_approval?.value);
             FWheelRimDataList.copCertList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.CoP_Cert_No_with_validity_date?.value);
-            RWheelRimDataList.suppNameList.push(vehWheelRim?.supplier?.nameOfSupplier);
+            // RWheelRimDataList.suppNameList.push(vehWheelRim?.supplier?.nameOfSupplier);
+            RWheelRimDataList.suppNameList.push(supplierName);
             RWheelRimDataList.tacNumberList.push(vehWheelRim?.Rear_Wheel_Rim?.properties?.BIS_License_TAC_Number_its_Validity?.value);
             RWheelRimDataList.possibleDateList.push(vehWheelRim?.Rear_Wheel_Rim?.properties?.Possible_date_of_submission_of_required_approval?.value);
             RWheelRimDataList.copCertList.push(vehWheelRim?.Rear_Wheel_Rim?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -314,8 +681,25 @@ const mainData = function () {
     let WindscreenDataList = mainData();
     WindscreenList.map(vehWindscreen => {
         if (vehWindscreen.supplier.active === true) {
-            WindscreenDataList.suppNameList.push(vehWindscreen?.supplier?.nameOfSupplier);
-            WindscreenDataList.tacNumberList.push(vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value);
+            let supplierName = vehWindscreen?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // WindscreenDataList.suppNameList.push(supplierName);
+            // // WindscreenDataList.suppNameList.push(vehWindscreen?.supplier?.nameOfSupplier);
+            // WindscreenDataList.tacNumberList.push(vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value);
+            // Get the TAC Number value for Windscreen
+            const windscreenTACValue = vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value;
+
+            // Push the TAC value to WindscreenDataList
+            WindscreenDataList.tacNumberList.push(windscreenTACValue);
+
+            // Check if TAC value is present
+            WindscreenDataList.suppNameList.push(windscreenTACValue ? supplierName : "");
+
             WindscreenDataList.possibleDateList.push(vehWindscreen?.Windscreen?.properties?.Possible_date_of_submission_of_required_approval?.value);
             WindscreenDataList.copCertList.push(vehWindscreen?.Windscreen?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -324,8 +708,25 @@ const mainData = function () {
     let SideglassDataList = mainData();
     SideglassList.map(vehSideglass => {
         if (vehSideglass.supplier.active === true) {
-            SideglassDataList.suppNameList.push(vehSideglass?.supplier?.nameOfSupplier);
-            SideglassDataList.tacNumberList.push(vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value);
+            let supplierName = vehSideglass?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // SideglassDataList.suppNameList.push(supplierName);
+            // // SideglassDataList.suppNameList.push(vehSideglass?.supplier?.nameOfSupplier);
+            // SideglassDataList.tacNumberList.push(vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value);
+            // Get the TAC Number value for Side Glass
+            const sideglassTACValue = vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value;
+
+            // Push the TAC value to SideglassDataList
+            SideglassDataList.tacNumberList.push(sideglassTACValue);
+
+            // Check if TAC value is present
+            SideglassDataList.suppNameList.push(sideglassTACValue ? supplierName : "");
+
             SideglassDataList.possibleDateList.push(vehSideglass?.Side_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
             SideglassDataList.copCertList.push(vehSideglass?.Side_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -334,8 +735,25 @@ const mainData = function () {
     let RearglassDataList = mainData();
     RearglassList.map(vehRearglass => {
         if (vehRearglass.supplier.active === true) {
-            RearglassDataList.suppNameList.push(vehRearglass?.supplier?.nameOfSupplier);
-            RearglassDataList.tacNumberList.push(vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value);
+            let supplierName = vehRearglass?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // RearglassDataList.suppNameList.push(supplierName);
+            // // RearglassDataList.suppNameList.push(vehRearglass?.supplier?.nameOfSupplier);
+            // RearglassDataList.tacNumberList.push(vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value);
+            // Get the TAC Number value for Rear Glass
+            const rearglassTACValue = vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value;
+
+            // Push the TAC value to RearglassDataList
+            RearglassDataList.tacNumberList.push(rearglassTACValue);
+
+            // Check if TAC value is present
+            RearglassDataList.suppNameList.push(rearglassTACValue ? supplierName : "");
+
             RearglassDataList.possibleDateList.push(vehRearglass?.Rear_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
             RearglassDataList.copCertList.push(vehRearglass?.Rear_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -344,13 +762,44 @@ const mainData = function () {
     let WindscreenwipingDataList = mainData();
     WindscreenwipingList.map(vehWindscreenwiping => {
         if (vehWindscreenwiping.supplier.active === true) {
-            WindscreenwipingDataList.suppNameList.push(vehWindscreenwiping?.supplier?.nameOfSupplier);
-            WindscreenwipingDataList.tacNumberList.push(vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value);
+            let supplierName = vehWindscreenwiping?.supplier?.nameOfSupplier;
+
+            // Modify supplierName directly
+            if (!supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // WindscreenwipingDataList.suppNameList.push(supplierName);
+            // // WindscreenwipingDataList.suppNameList.push(vehWindscreenwiping?.supplier?.nameOfSupplier);
+            // WindscreenwipingDataList.tacNumberList.push(vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value);
+            // Get the TAC Number value for Wiping System
+            const windscreenwipingTACValue = vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value;
+
+            // Push the TAC value to WindscreenwipingDataList
+            WindscreenwipingDataList.tacNumberList.push(windscreenwipingTACValue);
+
+            // Check if TAC value is present
+            WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue ? supplierName : "");
+
             WindscreenwipingDataList.possibleDateList.push(vehWindscreenwiping?.Wiping_System?.properties?.Possible_date_of_submission_of_required_approval?.value);
             WindscreenwipingDataList.copCertList.push(vehWindscreenwiping?.Wiping_System?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
     });
 
+    // const SpraySuppressionList = form8Data?.Spray_Suppression?.SpraySuppression || [];
+    // let SpraySuppressionDataList = mainData();
+
+    // // Ensure suppNameList and MakeList are initialized as arrays
+    // SpraySuppressionDataList.suppNameList = Array.isArray(SpraySuppressionDataList.suppNameList) ? SpraySuppressionDataList.suppNameList : [];
+    // SpraySuppressionDataList.MakeList = Array.isArray(SpraySuppressionDataList.MakeList) ? SpraySuppressionDataList.MakeList : [];
+
+    // SpraySuppressionList.map(vehSpraySuppression => {
+    //     if (vehSpraySuppression?.supplier?.active === true) {
+    //         // Push the supplier name and Make value to the respective lists
+    //         SpraySuppressionDataList.suppNameList.push(vehSpraySuppression?.supplier?.nameOfSupplier || "NA");
+    //         SpraySuppressionDataList.MakeList.push(vehSpraySuppression?.Spray_Suppression_System?.properties?.Make?.value || "NA");
+    //     }
+    // });
     const SpraySuppressionList = form8Data?.Spray_Suppression?.SpraySuppression || [];
     let SpraySuppressionDataList = mainData();
 
@@ -360,36 +809,99 @@ const mainData = function () {
 
     SpraySuppressionList.map(vehSpraySuppression => {
         if (vehSpraySuppression?.supplier?.active === true) {
-            // Push the supplier name and Make value to the respective lists
-            SpraySuppressionDataList.suppNameList.push(vehSpraySuppression?.supplier?.nameOfSupplier || "NA");
-            SpraySuppressionDataList.MakeList.push(vehSpraySuppression?.Spray_Suppression_System?.properties?.Make?.value || "NA");
+            let supplierName = vehSpraySuppression?.supplier?.nameOfSupplier || "NA";
+            let makeValue = vehSpraySuppression?.Spray_Suppression_System?.properties?.Make?.value || "NA";
+
+            // Modify supplierName if it does not start with "M/s."
+            if (supplierName !== "NA" && !supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // Modify makeValue if it does not start with "M/s."
+            if (makeValue !== "NA" && !makeValue.startsWith("M/")) {
+                makeValue = `M/s. ${makeValue}`;
+            }
+
+            SpraySuppressionDataList.suppNameList.push(supplierName);
+            SpraySuppressionDataList.MakeList.push(makeValue);
         }
     });
 
+
+
+    // const HandleLockList = form8Data?.Handle_Lock?.HandleLock || [];
+    // // console.log("SpraySuppressionList:", SpraySuppressionList);
+    // let HandleLockDataList = mainData();
+    // // Ensure suppNameList and MakeList are initialized
+    // HandleLockDataList.suppNameList = HandleLockDataList.suppNameList || [];
+    // HandleLockDataList.MakeList = HandleLockDataList.MakeList || [];
+    // HandleLockList.map(vehHandleLock => {
+    //     if (vehHandleLock?.supplier?.active === true) {
+    //         HandleLockDataList.suppNameList.push(vehHandleLock?.supplier?.nameOfSupplier);
+    //         HandleLockDataList.MakeList.push(vehHandleLock?.Protective_Device_Handle_Lock?.properties?.Make?.value);
+    //     }
+    // });
 
 
     const HandleLockList = form8Data?.Handle_Lock?.HandleLock || [];
-    console.log("SpraySuppressionList:", SpraySuppressionList);
     let HandleLockDataList = mainData();
+
     // Ensure suppNameList and MakeList are initialized
     HandleLockDataList.suppNameList = HandleLockDataList.suppNameList || [];
     HandleLockDataList.MakeList = HandleLockDataList.MakeList || [];
+
     HandleLockList.map(vehHandleLock => {
         if (vehHandleLock?.supplier?.active === true) {
-            HandleLockDataList.suppNameList.push(vehHandleLock?.supplier?.nameOfSupplier);
-            HandleLockDataList.MakeList.push(vehHandleLock?.Protective_Device_Handle_Lock?.properties?.Make?.value);
+            let supplierName = vehHandleLock?.supplier?.nameOfSupplier || "NA";
+            let makeValue = vehHandleLock?.Protective_Device_Handle_Lock?.properties?.Make?.value || "NA";
+
+            // Modify supplierName if it does not start with "M/s."
+            if (supplierName !== "NA" && !supplierName.startsWith("M/")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            // Modify makeValue if it does not start with "M/s."
+            if (makeValue !== "NA" && !makeValue.startsWith("M/")) {
+                makeValue = `M/s. ${makeValue}`;
+            }
+
+            HandleLockDataList.suppNameList.push(supplierName);
+            HandleLockDataList.MakeList.push(makeValue);
         }
     });
 
+
+    // const BrakeFluidList = form8Data?.Brake_Fluid?.BrakeFluid || [];
+    // let BrakeFluidDataList = mainData();
+    // // Ensure suppNameList and MakeList are initialized
+    // BrakeFluidDataList.suppNameList = BrakeFluidDataList.suppNameList || [];
+    // BrakeFluidDataList.MakeList = BrakeFluidDataList.Brake_fluid_Test_Report_No || [];
+    // BrakeFluidList.map(vehBrakeFluid => {
+    //     if (vehBrakeFluid?.supplier?.active === true) {
+    //         BrakeFluidDataList.suppNameList.push(vehBrakeFluid?.supplier?.nameOfSupplier);
+    //         BrakeFluidDataList.tacNumberList.push(vehBrakeFluid?.Hydraulic_Brake_Fluid?.properties?.Brake_fluid_Test_Report_No?.value);
+    //     }
+    // });
     const BrakeFluidList = form8Data?.Brake_Fluid?.BrakeFluid || [];
     let BrakeFluidDataList = mainData();
-    // Ensure suppNameList and MakeList are initialized
+
+    // Ensure suppNameList is initialized
     BrakeFluidDataList.suppNameList = BrakeFluidDataList.suppNameList || [];
-    BrakeFluidDataList.MakeList = BrakeFluidDataList.Brake_fluid_Test_Report_No || [];
+    BrakeFluidDataList.tacNumberList = BrakeFluidDataList.tacNumberList || [];
+
     BrakeFluidList.map(vehBrakeFluid => {
         if (vehBrakeFluid?.supplier?.active === true) {
-            BrakeFluidDataList.suppNameList.push(vehBrakeFluid?.supplier?.nameOfSupplier);
-            BrakeFluidDataList.tacNumberList.push(vehBrakeFluid?.Hydraulic_Brake_Fluid?.properties?.Brake_fluid_Test_Report_No?.value);
+            let supplierName = vehBrakeFluid?.supplier?.nameOfSupplier || "NA";
+
+            // Modify supplierName if it does not start with "M/s."
+            if (supplierName !== "NA" && !supplierName.startsWith("M/s")) {
+                supplierName = `M/s. ${supplierName}`;
+            }
+
+            BrakeFluidDataList.suppNameList.push(supplierName);
+            BrakeFluidDataList.tacNumberList.push(
+                vehBrakeFluid?.Hydraulic_Brake_Fluid?.properties?.Brake_fluid_Test_Report_No?.value
+            );
         }
     });
 
@@ -4784,7 +5296,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: frontPosLampDataList.suppNameList.join("\n\r"),
+                                                                    text: frontPosLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5025,7 +5537,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: fdIndLampDataList.suppNameList.join("\n\r"),
+                                                                    text: fdIndLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5537,7 +6049,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: stopLampDataList.suppNameList.join("\n\r"),
+                                                                    text: stopLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5669,7 +6181,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: rdIndLampDataList.suppNameList.join("\n\r"),
+                                                                    text: rdIndLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5933,7 +6445,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: revLampDataList.suppNameList.join("\n\r"),
+                                                                    text: revLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -6189,7 +6701,7 @@ const mainData = function () {
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: rrpLampDataList.suppNameList.join("\n\r"),
+                                                                    text: rrpLampDataList.suppNameLampList.join("\n\r"),
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -13328,26 +13840,6 @@ const mainData = function () {
                                                 ]
                                             }
                                         ),
-
-                                        new TableCell({
-                                            width: {
-                                                size: 3000,
-                                                type: WidthType.DXA
-                                            },
-                                            children: [
-                                                new Paragraph({
-                                                    children: [
-                                                        new TextRun({
-                                                            text: HandleLockDataList.suppNameList.length > 0
-                                                                ? "NA"
-                                                                : " ",
-                                                            size: "12pt"
-                                                        })
-                                                    ]
-                                                })
-                                            ]
-                                        }),
-
                                         new TableCell(
                                             {
                                                 width: {
@@ -13368,6 +13860,26 @@ const mainData = function () {
                                                 ]
                                             }
                                         ),
+                                        new TableCell({
+                                            width: {
+                                                size: 3000,
+                                                type: WidthType.DXA
+                                            },
+                                            children: [
+                                                new Paragraph({
+                                                    children: [
+                                                        new TextRun({
+                                                            text: HandleLockDataList.suppNameList.length > 0
+                                                                ? "NA"
+                                                                : " ",
+                                                            size: "12pt"
+                                                        })
+                                                    ]
+                                                })
+                                            ]
+                                        }),
+
+
                                         new TableCell(
                                             {
                                                 width: {
@@ -13595,13 +14107,11 @@ const mainData = function () {
                                                 children: [
                                                     new Paragraph(
                                                         {
-                                                            style: "paragrapgBold",
                                                             children: [
                                                                 new TextRun({
-                                                                    size: "12pt",
-                                                                    bold: true,
-                                                                    text: ""
-                                                                }),
+                                                                    text: SpraySuppressionDataList.MakeList.join("\n\r"),
+                                                                    size: "12pt"
+                                                                })
                                                             ]
                                                         }
                                                     )
@@ -15633,7 +16143,7 @@ const mainData = function () {
                                         ]
                                     }),
                                     new TableRow({
-                                        children: [                                           
+                                        children: [
                                             new TableCell({
 
                                                 width: {

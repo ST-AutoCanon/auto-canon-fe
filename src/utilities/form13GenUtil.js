@@ -64,7 +64,49 @@ function generateTableData(dataList) {
 //         return ""; // Return an empty string if no data is available
 //     }
 // }
-function generateForm13(form13Data, footerData) {
+async function fetchAndProcessImage(footerData) {
+    const dataOfFooterr = footerData.footerData.SealSign.properties;
+    const fileName = dataOfFooterr.Upload_Seal.file_name;
+    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+  
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+  
+      // Convert the blob to Base64
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+  
+        reader.onloadend = () => {
+          resolve(reader.result); // Resolve with the Base64 string
+        };
+  
+        reader.onerror = reject; // Reject on error
+  
+        reader.readAsDataURL(blob);
+      });
+  
+      // Create an ImageRun object with the Base64 data
+      const docSealImage = new ImageRun({
+        data: base64Data, // Use the Base64 data here
+        transformation: {
+          width: 90,
+          height: 50,
+        },
+      });
+  
+      console.log("ImageRun instance created:", docSealImage);
+  
+      return docSealImage; // Return the docSealImage after it's ready
+    } catch (error) {
+      console.error("Error loading or converting image:", error);
+      throw error; // If the image fails to load, throw an error
+    }
+  }
+  async function generateForm13(form13Data, footerData) {
+    const docSealImage = await fetchAndProcessImage(footerData);
+
+    console.log('form13Data:',form13Data);
    // General Description of Vehicle
 const generalDescriptionFile = footerData.form13Data.General_description_of_vehicle.properties.upload_drawing_showing_Different_views_of_the_vehicle.file_name;
 
@@ -172,45 +214,45 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     const dataOfFooter = footerData.footerData.footer.properties;
     const dataOfFooterr = footerData.footerData.SealSign.properties;
    
-    let imageUrl;
+    // let imageUrl;
 
-    const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
-    console.log("Image loaded successfully:", fileName);
+    // const fileName = dataOfFooterr.Upload_Seal.file_name;
+    // imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    // // console.log("Image loaded successfully:", fileName);
     
     
-    // Fetch the image as a Blob
-    fetch(imageUrl)
-      .then(response => response.blob())
-      .then(blob => {
-        // Create a FileReader to convert the blob into Base64
-        const reader = new FileReader();
+    // // Fetch the image as a Blob
+    // fetch(imageUrl)
+    //   .then(response => response.blob())
+    //   .then(blob => {
+    //     // Create a FileReader to convert the blob into Base64
+    //     const reader = new FileReader();
     
-        // Define the onload event handler for FileReader
-        reader.onloadend = () => {
-          const base64Data = reader.result; // This will be the Base64 encoded string
+    //     // Define the onload event handler for FileReader
+    //     reader.onloadend = () => {
+    //       const base64Data = reader.result; // This will be the Base64 encoded string
     
-          // Log the Base64 encoded data
-          console.log("Base64 Image Data:", base64Data);
+    //       // Log the Base64 encoded data
+    //     //   console.log("Base64 Image Data:", base64Data);
     
-          // Optionally, create an ImageRun object with the Base64 data
-          docSealImage = new ImageRun({
-            data: base64Data, // Use the Base64 data here
-            transformation: {
-              width: 90,
-              height: 50,
-            }
-          });
+    //       // Optionally, create an ImageRun object with the Base64 data
+    //       docSealImage = new ImageRun({
+    //         data: base64Data, // Use the Base64 data here
+    //         transformation: {
+    //           width: 90,
+    //           height: 50,
+    //         }
+    //       });
     
-          console.log("ImageRun instance created:", docSealImage);
-        };
+    //     //   console.log("ImageRun instance created:", docSealImage);
+    //     };
     
-        // Read the blob as a data URL (Base64)
-        reader.readAsDataURL(blob);
-      })
-      .catch(error => {
-        console.error("Error loading image:", error);
-      });
+    //     // Read the blob as a data URL (Base64)
+    //     reader.readAsDataURL(blob);
+    //   })
+    //   .catch(error => {
+    //     console.error("Error loading image:", error);
+    //   });
 
     const generalDescOfVehicleList = form13Data?.General_arrangement_of_the_vehicle?.generalArrangementOfTheVehicle;
     const tractionBatteryPackList = form13Data?.Traction_Battery_Pack?.TractionBatterypack;
@@ -263,6 +305,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let batteryCapacityList = [];
     let endOfDischargeList = [];
     let provOfVentList = [];
+    let BatteryTypeApprovalList = [];
     let briefDescList = [];
     let batteryMassList = [];
     let briefDescOfMaintList = [];
@@ -306,6 +349,10 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 supplier: supplierName,
                 value: batteryPack?.Traction_Battery_Pack?.properties?.Provision_of_ventilation_for_battery?.value
             });
+            BatteryTypeApprovalList.push({
+                supplier: supplierName,
+                value: batteryPack?.Traction_Battery_Pack?.properties?.Type_approval_Certififcate_number?.value
+            });            
             briefDescList.push({
                 supplier: supplierName,
                 value: batteryPack?.Traction_Battery_Pack?.properties?.Brief_description_of_the_battery_pack_ventilation?.value
@@ -330,6 +377,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     const batteryCapacityRows = generateTableData(batteryCapacityList);
     const endOfDischargeRows = generateTableData(endOfDischargeList);
     const provOfVentRows = generateTableData(provOfVentList);
+    const BatteryTypeApprovalRows = generateTableData(BatteryTypeApprovalList);
+    
     // const briefDescRows = generateTableData(briefDescList);
     const batteryMassRows = generateTableData(batteryMassList);
     const briefDescOfMaintRows = generateTableData(briefDescOfMaintList);
@@ -769,15 +818,15 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
             const supplierName = electricalSafetyDevice?.supplier?.nameOfSupplier;
             esdISIECSpecList.push({
                 supplier: supplierName,
-                value: electricalSafetyDevice?.Specifications_of_circuit_breakers?.properties?.IS_IEC_specifications?.value
+                value: electricalSafetyDevice?.Specifications_of_circuit_breakers_or_fuses_used_for_protection_of_batteries_or_power_train?.properties?.IS_IEC_specifications?.value
             });
             esdRatingList.push({
                 supplier: supplierName,
-                value: electricalSafetyDevice?.Specifications_of_circuit_breakers?.properties?.Rating?.value
+                value: electricalSafetyDevice?.Specifications_of_circuit_breakers_or_fuses_used_for_protection_of_batteries_or_power_train?.properties?.Rating?.value
             });
             esdOpeningTimeList.push({
                 supplier: supplierName,
-                value: electricalSafetyDevice?.Specifications_of_circuit_breakers?.properties?.Opening_time?.value
+                value: electricalSafetyDevice?.Specifications_of_circuit_breakers_or_fuses_used_for_protection_of_batteries_or_power_train?.properties?.Opening_time?.value
             });
         }
     });
@@ -874,6 +923,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let insDisplayList = [];
     let insRecommendedList = [];
     let insIndicationFormatList = [];
+    let insIndicationFormatBatteryList = [];
     let insIndicatorList = [];
     let insIndicationBatteryList = [];
     let insIndicationBatteryCompleteList = [];
@@ -900,6 +950,10 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 supplier: supplierName,
                 value: InstrumentCluster?.Instrument_Cluster?.properties?.State_of_Charge_indication_format?.value
             });
+            insIndicationFormatBatteryList.push({
+                supplier: supplierName,
+                value: InstrumentCluster?.Instrument_Cluster?.properties?.State_of_Charge_indication_format_battry?.value
+            });            
             insIndicatorList.push({
                 supplier: supplierName,
                 value: InstrumentCluster?.Instrument_Cluster?.properties?.Relationship_of_state_of_charge_indicator?.value
@@ -920,6 +974,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let insDisplayRows = generateTableData(insDisplayList);
     let insRecommendedRows = generateTableData(insRecommendedList);
     let insIndicationFormatRows = generateTableData(insIndicationFormatList);
+    let insIndicationFormatBatteryRows = generateTableData(insIndicationFormatBatteryList);
     let insIndicatorRows = generateTableData(insIndicatorList);
     let insIndicationBatteryRows = generateTableData(insIndicationBatteryList);
     let insIndicationBatteryCompleteRows = generateTableData(insIndicationBatteryCompleteList);
@@ -1023,6 +1078,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 supplier: supplierName,
                 value: TractionMotor?.Traction_Motor?.properties?.Motor_power_curve?.value
             });
+            
         }
     });
 
@@ -1044,7 +1100,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let tractionSynchronRows = generateTableData(tractionSynchronList);
     let tractionRotorRows = generateTableData(tractionRotorList);
     let tractionPolesRows = generateTableData(tractionPolesList);
-    // let tractioncurveRows = generateTableData(tractioncurveList);
+    // let tractioncurveRows = generateTableData(tractioncurveList);//
     ///
     let luTypeList = [];
 
@@ -1502,7 +1558,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make and Trade name (If any) and Manufacturer's adress"
+                                                        text: "Make and Trade name (If any) "
                                                     })
                                                 ]
                                             })
@@ -2040,21 +2096,22 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                         ]
                                     }),
                                     new TableCell({
+                                        // // columnSpan: 5,
                                         width: {
                                             size: 5000,
-                                            WidthType: WidthType.DXA
+                                            type: WidthType.DXA
                                         },
                                         children: [
                                             new Paragraph({
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: BatteryTypeApprovalRows
                                                     })
                                                 ]
                                             })
                                         ]
-                                    })
+                                    }),
                                 ]
                             }),
                             new TableRow({
@@ -2356,21 +2413,22 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                         ]
                                     }),
                                     new TableCell({
+                                        // // columnSpan: 5,
                                         width: {
                                             size: 5000,
-                                            WidthType: WidthType.DXA
+                                            type: WidthType.DXA
                                         },
                                         children: [
                                             new Paragraph({
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: insMakeRows
                                                     })
                                                 ]
                                             })
                                         ]
-                                    })
+                                    }),
                                 ]
                             }),
                             new TableRow({
@@ -2524,7 +2582,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: insIndicationFormatRows
+                                                        text: insIndicationFormatBatteryRows
                                                     })
                                                 ]
                                             })
@@ -4597,7 +4655,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: tractionExcitationRows
+                                                        text: tractionExcitationRows  
                                                     })
                                                 ]
                                             })
@@ -4636,6 +4694,23 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 children: [
                                                     new TextRun({
                                                         text: "Synchron / asynchron"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: tractionSynchronRows  
                                                     })
                                                 ]
                                             })
@@ -5390,7 +5465,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: csCoolingSystemRows
+                                                        text: csLiquidCoolingRows
                                                     })
                                                 ]
                                             })
@@ -8669,17 +8744,34 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                         ]
                                     }),
                                     new TableCell({
-                                        columnSpan: 2,
+                                        // columnSpan: 2,
                                         width: {
-                                            size: 10000,
+                                            size: 5000,
                                             WidthType: WidthType.DXA
                                         },
+
                                         children: [
                                             new Paragraph({
                                                 style: "TableBoldTitle",
                                                 children: [
                                                     new TextRun({
                                                         text: "Electrical energy consumption of Vehicle in W-h/km, as per AIS-039"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: ""
                                                     })
                                                 ]
                                             })

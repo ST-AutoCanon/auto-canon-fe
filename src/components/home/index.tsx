@@ -11,7 +11,7 @@ import bike from '../../assets/images/bike.png';
 import car from '../../assets/images/car.png';
 
 
-import cycle from '../../assets/images/cycle.jpg';
+import cycle from '../../assets/images/cycle.png';
 import banner_aboutabout_baner from '../../assets/images/banner_aboutabout_baner.png';
 
 import { useEffect, useState } from "react";
@@ -53,7 +53,8 @@ const Home: FC = () => {
         slidesToScroll: 1,
         arrows: false,
         autoplay: true,
-        autoplaySpeed: 2000
+        autoplaySpeed: 2000,
+        rtl: true
 
     };
 

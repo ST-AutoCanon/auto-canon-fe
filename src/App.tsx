@@ -14,7 +14,7 @@ import Home from "./components/home";
 import About from "./components/about";
 import Dashboard from "./components/homologation";
 import Homologation from "./components/supplier";
-import WMI from "./components/WMI/BarrelDataForm";
+import WMI from "./components/WMI/barrelDataForm";
 import theme from "./theme";
 import AuthGaurd from "./components/Auth/authgaurd";
 import { Routes, Route, Navigate } from 'react-router-dom';

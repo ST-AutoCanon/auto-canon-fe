@@ -12,38 +12,51 @@ export const NumberOfSeatingPositions = [
   { name: "D+1 seater", value: "D+1 seater", disabled: false },
   { name: "D+ 3 seater", value: "D+ 3 seater", disabled: false },
   { name: "only D seater", value: "only D seater", disabled: false }, 
+  { name: "R+1 seater", value: "R+1 seater", disabled: false },
 ];
 
 export const BrakeSystemTypes = [
-  { name: "Front Independent & Rear Independent", value: "front_independent_rear_independent", disabled: false },
-  { name: "Front Independent & Rear CBS", value: "front_independent_rear_cbs", disabled: false },
-  { name: "Front Independent & Rear ABS", value: "front_independent_rear_abs", disabled: false },
-  { name: "SSBS", value: "ssbs", disabled: false },
-  { name: "Any other type (please specify)", value: "any_other", disabled: false }
+  { name: "Front Independent & Rear Independent", value: "Front Independent & Rear Independent", disabled: false },
+  { name: "Front Independent & Rear CBS", value: "Front Independent & Rear CBS", disabled: false },
+  { name: "Front Independent & Rear ABS", value: "Front Independent & Rear ABS", disabled: false },
+  { name: "SSBS", value: "SSBS", disabled: false },
+  { name: "Any other type (please specify)", value: "Any other type (please specify)", disabled: false },
 ];
 
+
 export const BrkTypes = [
-  { name: "Disc/ Drum", value: "Disc/ Drum", disabled: false },
-  { name: "Disc/ Drum", value: "Disc/ Drum", disabled: false },
-  { name: "1/ 2/3/4", value: "1/ 2/3/4", disabled: false },
+  { name: "Front: Disc", value: "Front: Disc", disabled: false },
+  { name: "Rear: Drum", value: "Rear: Drum", disabled: false }, 
+  { name: "Front: Drum", value: "Front: Drum", disabled: false },
+  { name: "Rear: Disc", value: "Rear: Disc", disabled: false },
+  { name: "Number:1", value: "Number:1", disabled: false },
+  { name: "Number:2", value: "Number:2", disabled: false },
+  { name: "Number:3", value: "Number:3", disabled: false },
+  { name: "Number:4", value: "Number:4", disabled: false }, 
+
 ];
 
 export const BrakingMediumOrLinkageTypes = [
   { name: "Hydraulic", value: "hydraulic", disabled: false },
   { name: "Mechanical", value: "mechanical", disabled: false },
-  { name: "Other", value: "other", disabled: false }
+  { name: "Other", value: "other", disabled: false },
 ];
 export const BrakeShoePadOptions = [
-  { name: "Shoe", value: "shoe", disabled: false },
-  { name: "Pad", value: "pad", disabled: false }
+  { name: "Front:Shoe", value: "Front:Shoe", disabled: false },
+  { name: "Rear:Shoe", value: "Rear:Shoe", disabled: false },
+  { name: "Front: Pad", value: "Front: Pad", disabled: false },
+  { name: "Rear: Pad", value: "Rear: Pad", disabled: false },
+
 ];
 export const BrakeActuationMethodOptions = [
-  { name: "Lever", value: "lever", disabled: false },
-  { name: "Pedals", value: "pedals", disabled: false }
+  { name: "Front:Lever", value: "Front:Lever", disabled: false },
+  { name: "Rear:Lever", value: "Rear:Lever", disabled: false },
+  { name: "Front: Pedals", value: "Front: Pedals", disabled: false },
+  { name: "Rear: Pedals", value: "Rear: Pedals", disabled: false },
 ];
 export const HydraulicReservoirApplicability = [
   { name: "Provided", value: "provided", disabled: false },
-  { name: "Not Applicable", value: "not_applicable", disabled: false }
+  { name: "Not Applicable", value: "not Applicable", disabled: false }
 ];
 export const ABSProvidedOptions = [
   { name: "Yes", value: "yes", disabled: false },
@@ -52,7 +65,7 @@ export const ABSProvidedOptions = [
 export const ABSWheelSelectionOptions = [
   { name: "Front", value: "front", disabled: false },
   { name: "Rear", value: "rear", disabled: false },
-  { name: "Front and Rear", value: "front_and_rear", disabled: false }
+  { name: "Front and Rear", value: "front and rear", disabled: false }
 ];
 export const FrontWheelBrakeFrictionMemberTypes = [
   { name: "Drum", value: "drum", disabled: false },
@@ -63,16 +76,16 @@ export const RearWheelBrakeFrictionMemberTypes = [
   { name: "Disc", value: "disc", disabled: false }
 ];
 export const ServiceBrakeControlOptions = [
-  { name: "Operated by Hand", value: "operated_by_hand", disabled: false }
+  { name: "Operated by Hand", value: "operated by hand", disabled: false }
 ];
 
 export const RearServiceBrakeControlTypes = [
-  { name: "Operated by Hand", value: "operated_by_hand", disabled: false },
-  { name: "Operated by Foot", value: "operated_by_foot", disabled: false }
+  { name: "Operated by Hand", value: "operated by hand", disabled: false },
+  { name: "Operated by Foot", value: "operated by foot", disabled: false }
 ];
 export const RearServiceBrakeControlOptions = [
-  { name: "Operated by Hand", value: "operated_by_hand", disabled: false },
-  { name: "Operated by Foot", value: "operated_by_foot", disabled: false }
+  { name: "Operated by Hand", value: "operated by hand", disabled: false },
+  { name: "Operated by Foot", value: "operated by foot", disabled: false }
 ];
 export const AutoSlackAdjusterFittedOptions = [
   { name: "Yes", value: "yes", disabled: false },
@@ -85,6 +98,484 @@ export const ParkingBrakeWheelOptions = [
 export const ParkingBrakeFrictionMemberTypes = [
   { name: "Disc", value: "disc", disabled: false },
   { name: "Drum", value: "drum", disabled: false }
+];
+////
+export const ParkingBrakeActuatedBy = [
+  { name: "Hand", value: "Hand", disabled: false },
+  { name: "Foot", value: "Foot", disabled: false }
+];
+
+export const RegenerativeBrakeType = [
+  { name: "Type A", value: "Type A", disabled: false },
+  { name: "Type B", value: "Type B", disabled: false }
+];
+
+export const SteeringControlType = [
+  { name: "Handlebar", value: "Handlebar", disabled: false },
+  { name: "Wheel", value: "Wheel", disabled: false }
+];
+
+export const SteeringWheelLocation = [
+  { name: "Centre", value: "Centre", disabled: false },
+  { name: "Offset", value: "Offset", disabled: false }
+];
+
+export const SteeringWorkingMechanism = [
+  { name: "Recirculating Ball", value: "Recirculating Ball", disabled: false },
+  { name: "Worm & Roller", value: "Worm & Roller", disabled: false },
+  { name: "Rack & Pinion", value: "Rack & Pinion", disabled: false },
+  { name: "Others", value: "Others", disabled: false }
+];
+
+export const HornControlLocation = [
+  { name: "Provided (Left Hand/Push Type)", value: "Provided (Left Hand/Push Type)", disabled: false },
+  { name: "Provided (Right Hand/Push Type)", value: "Provided (Right Hand/Push Type)", disabled: false }
+];
+
+export const HeadLampBeamSelectorSwitchLocation = [
+  
+  { name: "Provided (Left hand/Push Type)", value: "Provided (Left hand/Push Type)", disabled: false },
+  { name: "Provided (Left hand/Slide Type)", value: "Provided (Left hand/Slide Type)", disabled: false },
+  { name: "Provided (Right Hand/Push Type)", value: "Provided (Right Hand/Push Type)", disabled: false },
+  { name: "Provided (Right Hand/Slide Type)", value: "Provided (Right Hand/Slide Type)", disabled: false },
+  { name: "Provided (Left Hand/Piano Type)", value: "Provided (Left Hand/Piano Type)", disabled: false },
+  { name: "Provided (Right Hand/Piano Type)", value: "Provided (Right Hand/Piano Type)", disabled: false }
+];
+export const RearFogLampControl = [
+  { name: "Not Applicable", value: "Not Applicable", disabled: false },
+  { name: "Provided (Left hand/Push Type)", value: "Provided (Left hand/Push Type)", disabled: false },
+  { name: "Provided (Left hand/Slide Type)", value: "Provided (Left hand/Slide Type)", disabled: false },
+  { name: " Provided (Right Hand/ Push Type)", value: "Provided (Right Hand/ Push Type)", disabled: false },
+  { name: "Provided (Right Hand/ Slide Type) ", value: "Provided (Right Hand/ Slide Type) ", disabled: false },
+  { name: "Provided (Left Hand / Piano Type) ", value: "Provided (Left Hand / Piano Type) ", disabled: false },
+   { name: "Provided (Right Hand / Piono Type) ", value: "Provided (Right Hand / Piono Type) ", disabled: false }
+];
+
+export const RearFogLampControlLocation = [
+  { name: "Not Applicable", value: "Not Applicable", disabled: false },
+  { name: "Provided (Left hand/Push Type)", value: "Provided (Left hand/Push Type)", disabled: false },
+  { name: "Provided (Left hand/Slide Type)", value: "Provided (Left hand/Slide Type)", disabled: false },
+  { name: "Provided (Right Hand/Push Type)", value: "Provided (Right Hand/Push Type)", disabled: false },
+  { name: "Provided (Right Hand/Slide Type)", value: "Provided (Right Hand/Slide Type)", disabled: false },
+  { name: "Provided (Left Hand/Piano Type)", value: "Provided (Left Hand/Piano Type)", disabled: false },
+  { name: "Provided (Right Hand/Piano Type)", value: "Provided (Right Hand/Piano Type)", disabled: false }
+];
+
+export const DirectionIndicatorControlLocation = [
+  { name: "Provided (Left hand/Push Type)", value: "Provided (Left hand/Push Type)", disabled: false },
+  { name: "Provided (Left hand/Slide Type)", value: "Provided (Left hand/Slide Type)", disabled: false },
+  { name: "Provided (Right Hand/Push Type)", value: "Provided (Right Hand/Push Type)", disabled: false },
+  { name: "Provided (Right Hand/Slide Type)", value: "Provided (Right Hand/Slide Type)", disabled: false },
+  { name: "Provided (Left Hand/Piano Type)", value: "Provided (Left Hand/Piano Type)", disabled: false },
+  { name: "Provided (Right Hand/Piano Type)", value: "Provided (Right Hand/Piano Type)", disabled: false }
+];
+
+export const HazardWarningSignalControlLocation = [
+  { name: "Not Applicable", value: "Not Applicable", disabled: false },
+  { name: "Provided (Left hand/Push Type)", value: "Provided (Left hand/Push Type)", disabled: false },
+  { name: "Provided (Left hand/Slide Type)", value: "Provided (Left hand/Slide Type)", disabled: false },
+  { name: "Provided (Right Hand/Push Type)", value: "Provided (Right Hand/Push Type)", disabled: false },
+  { name: "Provided (Right Hand/Slide Type)", value: "Provided (Right Hand/Slide Type)", disabled: false },
+  { name: "Provided (Left Hand/Piano Type)", value: "Provided (Left Hand/Piano Type)", disabled: false },
+  { name: "Provided (Right Hand/Piano Type)", value: "Provided (Right Hand/Piano Type)", disabled: false }
+];
+
+// Dropdown options for different fields
+export const PositionLampsControlLocation = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided (Left hand/Push Type)", name: "Provided (Left hand/Push Type)", disabled: false },
+  { value: "Provided (Left hand/Slide Type)", name: "Provided (Left hand/Slide Type)", disabled: false },
+  { value: "Provided (Right Hand/Push Type)", name: "Provided (Right Hand/Push Type)", disabled: false },
+  { value: "Provided (Right Hand/Slide Type)", name: "Provided (Right Hand/Slide Type)", disabled: false },
+  { value: "Provided (Left Hand / Piano Type)", name: "Provided (Left Hand / Piano Type)", disabled: false },
+  { value: "Provided (Right Hand / Piano Type)", name: "Provided (Right Hand / Piano Type)", disabled: false },
+];
+
+
+export const ParkingLampsControlLocation = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided (Left hand/Push Type)", name: "Provided (Left hand/Push Type)", disabled: false },
+  { value: "Provided (Left hand/Slide Type)", name: "Provided (Left hand/Slide Type)", disabled: false },
+  { value: "Provided (Right Hand/Push Type)", name: "Provided (Right Hand/Push Type)", disabled: false },
+  { value: "Provided (Right Hand/Slide Type)", name: "Provided (Right Hand/Slide Type)", disabled: false },
+  { value: "Provided (Left Hand / Piano Type)", name: "Provided (Left Hand / Piano Type)", disabled: false },
+  { value: "Provided (Right Hand / Piano Type)", name: "Provided (Right Hand / Piano Type)", disabled: false },
+];
+
+export const FrontBrakeControlLocation = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Control Provided (right hand/lever)", name: "Control Provided (right hand/lever)", disabled: false },
+  { value: "Not Applicable-SSBS", name: "Not Applicable-SSBS", disabled: false },
+];
+
+export const FootRearBrakeControlLocation = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Control Provided Right Leg", name: "Control Provided on Right leg", disabled: false },
+  { value: "Control Provided Right Leg SSBS", name: "Control Provided- Right leg-SSBS", disabled: false },
+];
+
+export const HandRearWheelBrakeControlLocation = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Control Provided Left Hand Lever", name: "Control Provided-Left Hand Lever", disabled: false },
+];
+
+export const HeadLampDrivingBeamOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const HeadLampPassingBeamOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const FogLampsFrontOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const FogLampsRearOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const DirectionIndicatorsOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const HazardWarningSignalOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const PositionLampOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const MasterLampOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const ParkingLampOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const AnyOtherTellTaleOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const SpeedometerOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false },
+  { value: "Provided", name: "Provided", disabled: false },
+];
+
+export const AnyOtherIndicatorOptions = [
+  { value: "Not Applicable", name: "Not Applicable", disabled: false }, 
+  { value: "Specify", name: "Specify", disabled: false },
+];
+
+export const HandleLockAntiTheftOptions = [
+  { value: "Type-1", name: "Type - 1", disabled: false },
+  { value: "Type-2", name: "Type - 2", disabled: false },
+  { value: "Type-3", name: "Type - 3", disabled: false },
+  { value: "Type-4", name: "Type - 4", disabled: false },
+];
+export const NosOfHandholdsForPillionRiderOptions = [
+  { value: "one", name: "One", disabled: false },
+  { value: "Two", name: "Two", disabled: false },
+];
+
+export const SelectTypeOfHandholdProvidedForPillionRiderOptions = [
+  { value: "Strap", name: "Strap", disabled: false },
+  { value: "Handle", name: "Handle", disabled: false },
+];
+
+export const NosOfHandholdsProvidedForPassengerOn3WheelerOptions = [
+  { value: "1", name: "1", disabled: false },
+  { value: "2", name: "2", disabled: false },
+  { value: "3", name: "3", disabled: false },
+  { value: "4", name: "4", disabled: false },
+];
+
+export const SelectNoOfFootRestsOrFloorBoardsProvidedOptions = [
+  { value: " 2 Foot Rests & 1 Floor Board", name: "2 Foot Rests & 1 Floor Board", disabled: false },
+  { value: "4 Foot Rests", name: "4 Foot Rests", disabled: false },
+  { value: "3 Floor Boards", name: "3 Floor Boards", disabled: false },
+];
+export const NumberOfStandsOptions = [
+  { name: "0", value: "0", disabled: false },
+  { name: "1", value: "1", disabled: false },
+  { name: "2", value: "2", disabled: false }
+];
+
+export const RetentionSystemOptions = [
+  { name: "One Spring", value: "One Spring", disabled: false },
+  { name: "Two Springs", value: "Two Springs", disabled: false },
+  { name: "One Spring with Separate Retention System", value: "One Spring with Separate Retention System", disabled: false }
+];
+
+export const SelectTypeOfStandProvidedInTheVehicleOptions = [
+  { value: "Prop", name: "Prop", disabled: false },
+  { value: "Center", name: "Center", disabled: false },
+  { value: "Both", name: "Both", disabled: false },
+];
+
+export const SelectNoOfStandsProvidedInTheVehicleOptions = [
+  { value: "0", name: "0", disabled: false },
+  { value: "1", name: "1", disabled: false },
+  { value: "2", name: "2", disabled: false },
+];
+
+export const SelectRetentionSystemInTheVehicleOptions = [
+  { value: "one spring", name: "One Spring", disabled: false },
+  { value: "two spring", name: "Two Spring", disabled: false },
+  { value: "one spring with separate retention system", name: "One Spring with Separate Retention System", disabled: false },
+];
+
+export const SelectTypeOfTransmissionArrangementOptions = [
+  { value: "mechanical", name: "Mechanical", disabled: false },
+  { value: "hydraulic", name: "Hydraulic", disabled: false },
+  { value: "electrical", name: "Electrical", disabled: false },
+  { value: "other", name: "Other", disabled: false },
+];
+
+export const SelectTypeOfGearBoxUsedOptions = [
+  { value: "automatic", name: "Automatic", disabled: false },
+  { value: "manual", name: "Manual", disabled: false },
+];
+
+export const SelectTypeOfMotorOptions = [
+  { value: "mono motor", name: "Mono Motor", disabled: false },
+  { value: "multi motors (number)", name: "Multi Motors (number)", disabled: false },
+];
+
+export const SelectTransmissionArrangementOptions = [
+  { value: "parallel", name: "Parallel", disabled: false },
+  { value: "transaxial", name: "Transaxial", disabled: false },
+  { value: "others to precise", name: "Others to precise", disabled: false },
+];
+
+export const SelectMotorTypeOptions = [
+  { value: "BLDC", name: "BLDC", disabled: false },
+  { value: "DC", name: "DC", disabled: false },
+  { value: "AC", name: "AC", disabled: false },
+  { value: "other", name: "Other", disabled: false },
+];
+
+export const SelectCurrentTypeAndNoOfPhasesOptions = [
+  { value: "direct current", name: "Direct Current", disabled: false },
+  { value: "alternating current", name: "Alternating Current", disabled: false },
+  { value: "single phase", name: "Single Phase", disabled: false },
+  { value: "three phase", name: "Three Phase", disabled: false },
+];
+
+export const SelectExcitationTypeOptions = [
+  { value: "separate excitation", name: "Separate Excitation", disabled: false },
+  { value: "series", name: "Series", disabled: false },
+  { value: "compound", name: "Compound", disabled: false },
+];
+
+export const SelectSynchronTypeOptions = [
+  { value: "synchron", name: "Synchron", disabled: false },
+  { value: "asynchron", name: "Asynchron", disabled: false },
+];
+
+export const SelectRotorTypeOptions = [
+  { value: "coiled rotor", name: "Coiled Rotor", disabled: false },
+  { value: "with permanent magnets", name: "With Permanent Magnets", disabled: false },
+  { value: "with housing", name: "With Housing", disabled: false },
+];
+
+export const SelectCoolingSystemOptions = [
+  { value: "Motor: Liquid", name: "Motor: Liquid", disabled: false },
+  { value: "Motor: Air", name: "Motor: Air", disabled: false },
+  { value: "Controller: Liquid", name: "Controller: Liquid", disabled: false },
+  { value: "Controller: Air", name: "Controller: Air", disabled: false },
+  { value: "Battery: Liquid", name: "Battery: Liquid", disabled: false },
+  { value: "Battery: Air", name: "Battery: Air", disabled: false },
+];
+
+export const WhetherCirculatingPumpProvidedOptions = [
+  { value: "yes", name: "Yes", disabled: false },
+  { value: "no", name: "No", disabled: false },
+];
+
+export const TemperatureRegulatingSystemOptions = [
+  { value: "yes", name: "Yes", disabled: false },
+  { value: "no", name: "No", disabled: false },
+];
+
+export const MakeOptions = [
+  { value: "yes", name: "If Yes Activate these clauses", disabled: false },
+  { value: "no", name: "If No Shall be filled as Not Applicable", disabled: false },
+];
+
+export const WeightOptions = [
+  { value: "yes", name: "If Yes Activate these clauses", disabled: false },
+  { value: "no", name: "If No Shall be filled as Not Applicable", disabled: false },
+];
+
+export const SchematicRepresentationOptions = [
+  { value: "yes", name: "If Yes Activate these clauses", disabled: false },
+  { value: "no", name: "If No Shall be filled as Not Applicable", disabled: false },
+];
+
+export const AlterationDetailsOptions = [
+  { value: "yes", name: "If Yes Activate these clauses", disabled: false },
+  { value: "no", name: "If No Shall be filled as Not Applicable", disabled: false },
+];
+export const BMSBalancingTypeOptions = [
+  { value: "active", name: "Active", disabled: false },
+  { value: "passive", name: "Passive", disabled: false },
+];
+
+export const HeadlampLensTypeOptions = [
+  { value: "glass", name: "Glass", disabled: false },
+  { value: "plastic", name: "Plastic", disabled: false },
+];
+
+export const MainBeamLightNumberOptions = [
+  { value: "1", name: "1", disabled: false },
+  { value: "2", name: "2", disabled: false },
+];
+
+export const DippedBeamLensTypeOptions = [
+  { value: "glass", name: "Glass", disabled: false },
+  { value: "plastic", name: "Plastic", disabled: false },
+];
+
+export const InstrumentClusterTypeOptions = [
+  { value: "digital", name: "Digital", disabled: false },
+  { value: "analog", name: "Analog", disabled: false },
+];
+
+export const ChargerTypeOptions = [
+  { value: "on board", name: "On Board", disabled: false },
+  { value: "external", name: "External", disabled: false },
+  { value: "both", name: "Both", disabled: false },
+];
+
+export const ChargerCategoryOptions = [
+  { value: "AC Fast", name: "AC Fast", disabled: false },
+  { value: "AC Slow", name: "AC Slow", disabled: false },
+  { value: "DC Fast", name: "DC Fast", disabled: false },
+  { value: "DC Slow", name: "DC Slow", disabled: false },
+];
+
+export const ChargerPhasesOptions = [
+  { value: "Single Phase", name: "Single Phase", disabled: false },
+  { value: "Three Phase", name: "Three Phase", disabled: false },
+];
+
+
+export const SoftStartFacilityOptions = [
+  { value: "yes", name: "Yes", disabled: false },
+  { value: "no", name: "No", disabled: false },
+];
+
+export const IECProtectionClassOptions = [
+  { value: "Class-I", name: "Class-I", disabled: false },
+  { value: "Class-II", name: "Class-II", disabled: false },
+  { value: "Class-III", name: "Class-III", disabled: false },
+];
+
+
+export const ConduitsProvidedOptions = [
+  { value: "yes", name: "Yes", disabled: false },
+  { value: "no", name: "No", disabled: false },
+];
+
+export const PotentialEqualizationResistanceOptions = [
+  { value: "yes", name: "Yes", disabled: false },
+  { value: "no", name: "No", disabled: false },
+];
+
+export const ControlPrincipleOptions = [
+  { value: "vectorial", name: "Vectorial", disabled: false },
+  { value: "open loop", name: "Open Loop", disabled: false },
+  { value: "closed", name: "Closed", disabled: false },
+  { value: "other (to be specified)", name: "Other (to be specified)", disabled: false },
+];
+
+export const NumberOfSeatsOptions = [
+  { value: "D+1", name: "D+1", disabled: false },
+  { value: "D+3", name: "D+3", disabled: false },
+];
+
+export const PassengerSeatTypeOptions = [
+  { value: "separate", name: "Separate", disabled: false },
+  { value: "bench", name: "Bench", disabled: false },
+];
+
+
+export const LubricationMethodOptions = [
+  { name: "Bearings (Friction / Ball)", value: "Bearings (Friction / Ball)", disabled: false },
+  { name: "Lubricant (Grease / Oil)", value: "Lubricant (Grease / Oil)", disabled: false },
+  { name: "Seal (Yes / No)", value: "Seal (Yes / No)", disabled: false },
+  { name: "Circulation (With / Without)", value: "Circulation (With / Without)", disabled: false },
+];
+export const TyreTypeOptions = [
+  { name: "Radial", value: "Radial", disabled: false },
+  { name: "Cross", value: "Cross", disabled: false },
+  { name: "Tube", value: "Tube", disabled: false },
+  { name: "Tubeless", value: "Tubeless", disabled: false },
+];
+
+export const BISLicenseOptions = [
+  { name: "BIS Certification", value: "BIS Certification", disabled: false },
+  { name: "AIS Certification", value: "AIS Certification", disabled: false },
+];
+
+export const RimTypeOptions = [
+  { name: "Alloy", value: "Alloy", disabled: false },
+  { name: "Sheet Metal", value: "Sheet Metal", disabled: false },
+  { name: "Spoke", value: "Spoke", disabled: false },
+];
+export const RimTypeOptionsrear = [
+  { name: "Alloy ", value: "Alloy ", disabled: false },
+  { name: "Sheet Metal ", value: "Sheet Metal ", disabled: false },
+  { name: "Spoke ", value: "Spoke ", disabled: false },
+];
+
+export const HornTypeOptions = [
+  { name: "Type -1", value: "Type -1", disabled: false },
+  { name: "Type -2A", value: "Type -2A", disabled: false },
+  { name: "Type -2B", value: "Type -2B", disabled: false },
+  { name: "Type -3", value: "Type -3", disabled: false },
+];
+
+export const HornCountOptions = [
+  { name: "1", value: "1", disabled: false },
+  { name: "2", value: "2", disabled: false },
+  { name: "3", value: "3", disabled: false },
+];
+
+export const MirrorClassOptions = [
+  { name: "Class I", value: "Class I", disabled: false },
+  { name: "Class III", value: "Class III", disabled: false },
+  { name: "Class VII", value: "Class VII", disabled: false },
+  { name: "Class IV", value: "Class IV", disabled: false },
+  { name: "Class L", value: "Class L", disabled: false },
+];
+
+export const VentilationOptions = [
+  { name: "Yes", value: "Yes", disabled: false },
+  { name: "No", value: "No", disabled: false },
+];
+
+export const ProductionVehicleSerialNumbers = [
+  { name: "11", value: "11", disabled: false },
+  { name: "12", value: "12", disabled: false },
+  { name: "13", value: "13", disabled: false },
+  { name: "14", value: "14", disabled: false },
+  { name: "15", value: "15", disabled: false },
+  { name: "16", value: "16", disabled: false },
+  { name: "17", value: "17", disabled: false }
 ];
 
 export const VdsOptions = [
@@ -387,4 +878,3 @@ export const CodeValuesNinth = [
   { name: "8", value: "8", disabled: false },
   { name: "9", value: "9", disabled: false },
 ];
-

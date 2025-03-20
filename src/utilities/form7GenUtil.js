@@ -16,7 +16,46 @@ import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, T
 //     }
 // }
 /////
-let docSealImage; 
+// let docSealImage; 
+async function fetchAndProcessImage(footerData) {
+    const dataOfFooterr = footerData.footerData.SealSign.properties;
+    const fileName = dataOfFooterr.Upload_Seal.file_name;
+    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+  
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+  
+      // Convert the blob to Base64
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+  
+        reader.onloadend = () => {
+          resolve(reader.result); // Resolve with the Base64 string
+        };
+  
+        reader.onerror = reject; // Reject on error
+  
+        reader.readAsDataURL(blob);
+      });
+  
+      // Create an ImageRun object with the Base64 data
+      const docSealImage = new ImageRun({
+        data: base64Data, // Use the Base64 data here
+        transformation: {
+          width: 90,
+          height: 50,
+        },
+      });
+  
+      console.log("ImageRun instance created:", docSealImage);
+  
+      return docSealImage; // Return the docSealImage after it's ready
+    } catch (error) {
+      console.error("Error loading or converting image:", error);
+      throw error; // If the image fails to load, throw an error
+    }
+  }
 function getWheelRimsTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim and join them into a single string
@@ -103,19 +142,22 @@ imageUrl: URL where the image is hosted online.
 // let docSeal; // Declare it globally or at the required scope
 // Declare docSealImage
 
-function generateForm7(form7Data, footerData) {
+async function generateForm7(form7Data, footerData) {
+    const docSealImage = await fetchAndProcessImage(footerData);
+
     const dataOfFooter = footerData.footerData.footer.properties;
     const dataOfFooterr = footerData.footerData.SealSign.properties;
-    // const drawing=footerData.form7Data.Body_Overhang.properties.Upload_drawing_showing_the_seating_layout_of_the_vehicle.file_name;
-    // let drawing1=[];
+    console.log('data of form7:',form7Data)
+//     // const drawing=footerData.form7Data.Body_Overhang.properties.Upload_drawing_showing_the_seating_layout_of_the_vehicle.file_name;
+//     // let drawing1=[];
 
-    // const extractFileName = (fileName) => {
-    //     const parts = fileName.split('-');
-    //     return parts.slice(1).join('-');
-    // };
+//     // const extractFileName = (fileName) => {
+//     //     const parts = fileName.split('-');
+//     //     return parts.slice(1).join('-');
+//     // };
     
-    // const vehModel = [{ value: extractFileName(drawing) }];
-    // drawing1.push(vehModel);
+//     // const vehModel = [{ value: extractFileName(drawing) }];
+//     // drawing1.push(vehModel);
 
     const drawing=footerData.form7Data.Body_Overhang.properties.Upload_drawing_showing_the_seating_layout_of_the_vehicle.file_name;
    const extractFileName = (fileName) => {
@@ -128,46 +170,46 @@ drawing1 = [{ value: extractFileName(drawing) }];
     const drawing_Rows=getWheelRimsTableData(drawing1);
 
 
-let imageUrl;
-const fileName = dataOfFooterr.Upload_Seal.file_name;
-imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+// let imageUrl;
+// const fileName = dataOfFooterr.Upload_Seal.file_name;
+// imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
 
 
 
 
-// Fetch the image as a Blob
-fetch(imageUrl)
-  .then(response => response.blob())
-  .then(blob => {
-    // Create a FileReader to convert the blob into Base64
-    const reader = new FileReader();
+// // Fetch the image as a Blob
+// fetch(imageUrl)
+//   .then(response => response.blob())
+//   .then(blob => {
+//     // Create a FileReader to convert the blob into Base64
+//     const reader = new FileReader();
 
-    // Define the onload event handler for FileReader
-    reader.onloadend = () => {
-      const base64Data = reader.result; // This will be the Base64 encoded string
+//     // Define the onload event handler for FileReader
+//     reader.onloadend = () => {
+//       const base64Data = reader.result; // This will be the Base64 encoded string
 
-      // Log the Base64 encoded data
-      console.log("Base64 Image Data:", base64Data);
+//       // Log the Base64 encoded data
+//       console.log("Base64 Image Data:", base64Data);
 
-      // Optionally, create an ImageRun object with the Base64 data
-      docSealImage = new ImageRun({
-        data: base64Data, // Use the Base64 data here
-        transformation: {
-          width: 90,
-          height: 50,
-        }
-      });
+//       // Optionally, create an ImageRun object with the Base64 data
+//       docSealImage = new ImageRun({
+//         data: base64Data, // Use the Base64 data here
+//         transformation: {
+//           width: 90,
+//           height: 50,
+//         }
+//       });
 
-      console.log("ImageRun instance created:", docSealImage);
-    };
+//       console.log("ImageRun instance created:", docSealImage);
+//     };
 
-    // Read the blob as a data URL (Base64)
-    reader.readAsDataURL(blob);
-  })
-  .catch(error => {
-    console.error("Error loading image:", error);
-  });
-
+//     // Read the blob as a data URL (Base64)
+//     reader.readAsDataURL(blob);
+//   })
+//   .catch(error => {
+//     console.error("Error loading image:", error);
+//   });
+// console.log('docSealImage:',docSealImage);
     const vehicleGeneralInformationList = form7Data.Vehicle_General_Information.VehicleGeneralInformation;
     const vehicleDimensionsList = form7Data.Vehicle_Dimensions.VehicleDimensions;
     const VehicleElectricalSpecificationList = form7Data.Vehicle_Electrical_Specification.VehicleElectricalSpecification;
@@ -242,6 +284,7 @@ fetch(imageUrl)
     let Frames_Long_member_size_list = [];
     let Number_of_cross_members_if_any_list = [];
     let Wheel_base_list = [];
+   
     let Overall_width_list = [];
     let Overall_length_list = [];
     let Overall_height_list = []
@@ -345,6 +388,7 @@ fetch(imageUrl)
     const Frames_Long_member_size_Rows = getWheelRimsTableData(Frames_Long_member_size_list);
     const Number_of_cross_members_if_any_Rows = getWheelRimsTableData(Number_of_cross_members_if_any_list);
     const Wheel_base_Rows = getWheelRimsTableData(Wheel_base_list);
+    console.log('Wheel_base:',Wheel_base_list);
     const Overall_width_Rows = getWheelRimsTableData(Overall_width_list);
     const Overall_length_Rows = getWheelRimsTableData(Overall_length_list);
     const Overall_height_Rows = getWheelRimsTableData(Overall_height_list);
@@ -1157,7 +1201,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1195,7 +1239,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1233,7 +1277,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1271,7 +1315,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1309,7 +1353,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1347,7 +1391,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1385,7 +1429,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1423,7 +1467,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1461,7 +1505,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1499,7 +1543,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1537,7 +1581,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1575,7 +1619,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1613,7 +1657,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1651,7 +1695,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1689,7 +1733,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1727,7 +1771,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1765,7 +1809,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1831,7 +1875,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -3620,7 +3664,7 @@ fetch(imageUrl)
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -5440,23 +5484,3 @@ fetch(imageUrl)
 export default generateForm7;
 
 
-
-
-
-
-// new TableCell({
-//     width: {
-//         size: 2500,
-//         type: WidthType.DXA
-//     },
-//     children: [
-//         new Paragraph({
-//             style: "TableRowContent",
-//             children: [
-//                 new TextRun({
-//                     text: nineteenthYearCode_List_Rows
-//                 })
-//             ]
-//         })
-//     ]
-// }),

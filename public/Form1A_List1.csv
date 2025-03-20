@@ -4,11 +4,11 @@
 0.3,Means of type identification if stated on vehicle,FALSE
 0.4,Location of that means of identification,FALSE
 0.5,Vehicle category (IS 14272),FALSE
-0.6,""Name and address of manufacturer with contact persons’ name, designation, e-mail, phone nos. etc. Provide details of importer, if applicable.,FALSE
+0.6,Name and address of manufacturer with contact persons name designation e-mail phone nos. etc. Provide details of importer if applicable.,FALSE
 0.7,Name(s) and address (es) of assembly plants,FALSE
 0.8,Name and address of the vehicle importer ,FALSE
 0.9,Name and address of manufacturer's authorized representative. if any,FALSE
-0.1,Method of inscription of VIN on the chassis,FALSE
+0.10,Method of inscription of VIN on the chassis,FALSE
 0.11,The serial numbering (of production vehicles) of the type begins with No,FALSE
 0.12,Position and method of affixing the component type-approval mark for components and separate technical units,FALSE
 1,General arrangement of the vehicle,TRUE
@@ -33,7 +33,7 @@
 2.1,Commercial name (s),FALSE
 3,Transmission(8) ,TRUE
 3.1.,Diagram of transmission system,FALSE
-3.2.,Type (mechanical, hydraulic, electrical, etc.) (1):,FALSE
+3.2.,Type (mechanical hydraulic electrical etc.):,FALSE
 3.3.,Clutch (type),FALSE
 3.4.,Gearbox,FALSE
 3.4.1.,Type: automatic/manual(1),FALSE

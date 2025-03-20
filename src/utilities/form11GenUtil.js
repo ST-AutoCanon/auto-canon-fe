@@ -65,68 +65,123 @@ function generateTableData(dataList) {
         return ""; // Return an empty string if no data is available
     }
 }
-function generateForm11(form11Data, footerData) {
-    console.log('form11Data:',form11Data);
-    const dataOfFooter = footerData.footerData.footer.properties;
-    const dataOfFooterr = footerData.footerData.SealSign.properties;    
-    let imageUrl;
-
+async function fetchAndProcessImage(footerData) {
+    const dataOfFooterr = footerData.footerData.SealSign.properties;
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+  
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+  
+      // Convert the blob to Base64
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+  
+        reader.onloadend = () => {
+          resolve(reader.result); // Resolve with the Base64 string
+        };
+  
+        reader.onerror = reject; // Reject on error
+  
+        reader.readAsDataURL(blob);
+      });
+  
+      // Create an ImageRun object with the Base64 data
+      const docSealImage = new ImageRun({
+        data: base64Data, // Use the Base64 data here
+        transformation: {
+          width: 90,
+          height: 50,
+        },
+      });
+  
+      console.log("ImageRun instance created:", docSealImage);
+  
+      return docSealImage; // Return the docSealImage after it's ready
+    } catch (error) {
+      console.error("Error loading or converting image:", error);
+      throw error; // If the image fails to load, throw an error
+    }
+  }
+  async function generateForm11(form11Data, footerData) {
+    const docSealImage = await fetchAndProcessImage(footerData);
+
+    console.log('form11Data:', form11Data);
+    const dataOfFooter = footerData.footerData.footer.properties;
+    const dataOfFooterr = footerData.footerData.SealSign.properties;
+    // let imageUrl;
+
+    // const fileName = dataOfFooterr.Upload_Seal.file_name;
+    // imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
 
 
 
-    // Fetch the image as a Blob
-    fetch(imageUrl)
-        .then(response => response.blob())
-        .then(blob => {
-            // Create a FileReader to convert the blob into Base64
-            const reader = new FileReader();
+    // // Fetch the image as a Blob
+    // fetch(imageUrl)
+    //     .then(response => response.blob())
+    //     .then(blob => {
+    //         // Create a FileReader to convert the blob into Base64
+    //         const reader = new FileReader();
 
-            // Define the onload event handler for FileReader
-            reader.onloadend = () => {
-                const base64Data = reader.result; // This will be the Base64 encoded string
-                // Optionally, create an ImageRun object with the Base64 data
-                docSealImage = new ImageRun({
-                    data: base64Data, // Use the Base64 data here
-                    transformation: {
-                        width: 90,
-                        height: 50,
-                    }
-                });
-            };
+    //         // Define the onload event handler for FileReader
+    //         reader.onloadend = () => {
+    //             const base64Data = reader.result; // This will be the Base64 encoded string
+    //             // Optionally, create an ImageRun object with the Base64 data
+    //             docSealImage = new ImageRun({
+    //                 data: base64Data, // Use the Base64 data here
+    //                 transformation: {
+    //                     width: 90,
+    //                     height: 50,
+    //                 }
+    //             });
+    //         };
 
-            // Read the blob as a data URL (Base64)
-            reader.readAsDataURL(blob);
-        })
-        .catch(error => {
-            console.error("Error loading image:", error);
-        });
+    //         // Read the blob as a data URL (Base64)
+    //         reader.readAsDataURL(blob);
+    //     })
+    //     .catch(error => {
+    //         console.error("Error loading image:", error);
+    //     });
 
-        const drawing1=footerData.form11Data.diagrams.properties.Upload_drawing1.file_name;
-        const drawing2=footerData.form11Data.diagrams.properties.Upload_drawing2.file_name;
-        const drawing3=footerData.form11Data.diagrams.properties.Upload_drawing3.file_name;
-        let drawingList1=[];
-        let drawingList2=[];
-        let drawingList3=[];
-        const vehModel1 = {    
-            value: drawing1
-        }
-        drawingList1.push(vehModel1);
-        const vehModel2 = {    
-            value: drawing2
-        }
-        drawingList2.push(vehModel2);
-        const vehModel3 = {    
-            value: drawing3
-        }
-        drawingList3.push(vehModel3);
-        const drawing1_Rows=generateTableData(drawingList1);
-        const drawing2_Rows=generateTableData(drawingList2);
-        const drawing3_Rows=generateTableData(drawingList3);
+    const drawing1 = footerData.form11Data.diagrams.properties.Upload_drawing1.file_name;
+    const drawing2 = footerData.form11Data.diagrams.properties.Upload_drawing2.file_name;
+    const drawing3 = footerData.form11Data.diagrams.properties.Upload_drawing3.file_name;
+    const extractFileName = (fileName) => {
+        const parts = fileName.split('-');
+        return parts.slice(1).join('-');
+    };
+        
+    let drawingList1 = [];
+    let drawingList2 = [];
+    let drawingList3 = [];
+    // const vehModel1 = {
+    //     value: drawing1
+    // }
+    // drawingList1.push(vehModel1);
+    // const vehModel2 = {
+    //     value: drawing2
+    // }
+    // drawingList2.push(vehModel2);
+    // const vehModel3 = {
+    //     value: drawing3
+    // }
+    // drawingList3.push(vehModel3);
+
+    drawingList1 = [{ value: extractFileName(drawing1) }];
+    drawingList2 = [{ value: extractFileName(drawing2) }];
+    drawingList3 = [{ value: extractFileName(drawing3) }];
+    const drawing1_Rows=generateTableData(drawingList1);
+    const drawing2_Rows=generateTableData(drawingList2);
+    const drawing3_Rows=generateTableData(drawingList3);
+
+
+    // const drawing1_Rows = generateTableData(drawingList1);
+    // const drawing2_Rows = generateTableData(drawingList2);
+    // const drawing3_Rows = generateTableData(drawingList3);
     const vehicleGeneralInformation_list = form11Data?.Vehicle_General_Information?.vehicleGeneralInformation;
     const vehicleIdentificationNumber_list = form11Data?.Vehicle_Identification_Number?.VehicleIdentificationNumber;
-    const codForMonthProduction_list = form11Data?.Month_of_Production?.codeForMonthOfProduction;
+    const codForMonthProduction_list = form11Data?.Month_of_Production?.codeForMonthOfProduction;  
     let Specify_the_Location_of_VIN_on_Chassis_List = [];
     let Position_of_the_code_for_month_in_the_Chassis_number_List = [];
     let Position_of_the_code_for_year_in_the_Chassis_number_List = [];
@@ -176,13 +231,13 @@ function generateForm11(form11Data, footerData) {
                 value: vehDesc?.VIN_Numbering?.properties?.Position_of_the_code_for_month_in_the_Chassis_number?.value
             }
             Position_of_the_code_for_month_in_the_Chassis_number_List.push(Position_of_the_code_for_month_in_the_Chassis_number);
-            
+
             const Position_of_the_code_for_year_in_the_Chassis_number = {
                 supplier: supplierName,
                 value: vehDesc?.VIN_Numbering?.properties?.Position_of_the_code_for_year_in_the_Chassis_number?.value
             }
-            Position_of_the_code_for_year_in_the_Chassis_number_List.push(Position_of_the_code_for_year_in_the_Chassis_number);          
-           
+            Position_of_the_code_for_year_in_the_Chassis_number_List.push(Position_of_the_code_for_year_in_the_Chassis_number);
+
             const Height_of_VIN_characters = {
                 supplier: supplierName,
                 value: vehDesc?.VIN_Numbering?.properties?.Height_of_VIN_characters?.value
@@ -247,7 +302,6 @@ function generateForm11(form11Data, footerData) {
 
     // Generate Rows for all 30 Years
     let firstyear_List = [];
-    console.log('firstYear_list:',firstyear_List);
     let firstyear_List_Rows;
 
     let secondyear_List = [];
@@ -428,6 +482,55 @@ function generateForm11(form11Data, footerData) {
     let thirtiethYearCode_List = [];
     let thirtiethYearCode_List_Rows;
 
+    let VDS_value_fourth_List = [];
+    let VDS_value_fourth_List_Rows;
+
+    let VDS_fourth_type_List = [];
+    let VDS_fourth_type_List_Rows;
+
+    let VDS_value_fifth_List = [];
+    let VDS_value_fifth_List_Rows;
+
+    let VDS_fifth_type_List = [];
+    let VDS_fifth_type_List_Rows;
+
+    let VDS_value_sixth_List = [];
+    let VDS_value_sixth_List_Rows;
+
+    let VDS_sixth_type_List = [];
+    let VDS_sixth_type_List_Rows;
+
+    let VDS_value_seventh_List = [];
+    let VDS_value_seventh_List_Rows;
+
+    let VDS_seventh_type_List = [];
+    let VDS_seventh_type_List_Rows;
+
+    let VDS_value_eighth_List = [];
+    let VDS_value_eighth_List_Rows;
+
+    let VDS_eighth_type_List = [];
+    let VDS_eighth_type_List_Rows;
+
+    let VDS_value_ninth_List = [];
+    let VDS_value_ninth_List_Rows;
+
+    let VDS_ninth_type_List = [];
+    let VDS_ninth_type_List_Rows;
+
+    let concatenatedResult_List =[];
+    let concatenatedResult_List_Rows;
+
+    let WMI_Code_List = [];
+let WMI_Code_List_Rows;
+let Month_List = [];
+let Month_List_Rows;
+let Year_List = [];
+let Year_List_Rows;
+let WMI_Extension_Code_List = [];
+let WMI_Extension_Code_List_Rows;
+let Serial_Number_List = [];
+let Serial_Number_List_Rows;
 
     codForMonthProduction_list.map(vehDesc => {
         if (vehDesc.supplier.active === true) {
@@ -435,51 +538,51 @@ function generateForm11(form11Data, footerData) {
             //         // Months
             January_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.January?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.January?.value,
             });
             February_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.February?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.February?.value,
             });
             March_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.March?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.March?.value,
             });
             April_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.April?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.April?.value,
             });
             May_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.May?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.May?.value,
             });
             June_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.June?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.June?.value,
             });
             July_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.July?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.July?.value,
             });
             August_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.August?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.August?.value,
             });
             September_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.September?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.September?.value,
             });
             October_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.October?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.October?.value,
             });
             November_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.November?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.November?.value,
             });
             December_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production?.properties?.December?.value,
+                value: vehDesc?.Month_of_Production1?.properties?.December?.value,
             });
             firstyear_List.push({
                 supplier: supplierName,
@@ -724,9 +827,90 @@ function generateForm11(form11Data, footerData) {
                 value: vehDesc?.Code_for_Year?.properties?.thirtiethYearCode?.value,
             });
 
+            VDS_value_fourth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_fourth?.value,
+            });
+
+            VDS_fourth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_fourth_type?.value,
+            });
+
+            VDS_value_fifth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_fifth?.value,
+            });
+
+            VDS_fifth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_fifth_type?.value,
+            });
+
+            VDS_value_sixth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_sixth?.value,
+            });
+
+            VDS_sixth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_sixth_type?.value,
+            });
+
+            VDS_value_seventh_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_seventh?.value,
+            });
+
+            VDS_seventh_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_seventh_type?.value,
+            });
+
+            VDS_value_eighth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_eighth?.value,
+            });
+
+            VDS_eighth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_eighth_type?.value,
+            });
+
+            VDS_value_ninth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_ninth?.value,
+            });
+
+            VDS_ninth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_ninth_type?.value,
+            });
+
+            WMI_Code_List.push({
+                supplier: supplierName,
+                value: vehDesc?.chassis_Number?.properties?.WMI_Code?.value,
+            });
+            Month_List.push({
+                supplier: supplierName,
+                value: vehDesc?.chassis_Number?.properties?.month?.value,
+            });
+            Year_List.push({
+                supplier: supplierName,
+                value: vehDesc?.chassis_Number?.properties?.year?.value,
+            });
+            WMI_Extension_Code_List.push({
+                supplier: supplierName,
+                value: vehDesc?.chassis_Number?.properties?.wmi_extension_code?.value,
+            });
+            Serial_Number_List.push({
+                supplier: supplierName,
+                value: vehDesc?.chassis_Number?.properties?.serial_number?.value,
+            });
 
         }
     });
+
 
     January_List_Rows = generateTableData(January_List);
     February_List_Rows = generateTableData(February_List);
@@ -744,70 +928,46 @@ function generateForm11(form11Data, footerData) {
 
 
 
-    ///
-
-
-    // let startYear = parseInt(firstyear_List[0].value); // Extract and convert the string to an integer
-
-    // for (let i = 0; i <= 29; i++) {
-    //     year.push({ value: (startYear + i).toString() });  // Add year as an object with "value" key
-    // }
-    // console.log('Type of year[0]:', year[1]);
-
    
-
-    // if (isNaN(startYear)) {
-    //     // If startYear is invalid (blank or non-numeric), push blank years
-    //     for (let i = 0; i <= 29; i++) {
-    //         year.push({ value: " " });  // Push blank value if startYear is invalid
-    //     }
-    // } else {
-    //     // If startYear is valid, generate years from startYear
-    //     for (let i = 0; i <= 29; i++) {
-    //         year.push({ value: (startYear + i).toString() });  // Add year as an object with "value" key
-    //     }
-    // }
 
     let startYear = parseInt(firstyear_List[0].value) || ''; // Extract and convert the string to an integer
 
-if (startYear !== '') { // Only iterate if startYear is not an empty string
-    for (let i = 0; i <= 29; i++) {
-        year.push({ value: (startYear + i).toString() }); // Add year as an object with "value" key
+    if (startYear !== '') { // Only iterate if startYear is not an empty string
+        for (let i = 0; i <= 29; i++) {
+            year.push({ value: (startYear + i).toString() }); // Add year as an object with "value" key
+        }
     }
-}
 
-let secondyear = year[1] ? [{ value: year[1].value }] : [];
-let thirdyear = year[2] ? [{ value: year[2].value }] : [];
-let fourthyear = year[3] ? [{ value: year[3].value }] : [];
-let fifthyear = year[4] ? [{ value: year[4].value }] : [];
-let sixthyear = year[5] ? [{ value: year[5].value }] : [];
-let seventhyear = year[6] ? [{ value: year[6].value }] : [];
-let eighthyear = year[7] ? [{ value: year[7].value }] : [];
-let ninthyear = year[8] ? [{ value: year[8].value }] : [];
-let tenthyear = year[9] ? [{ value: year[9].value }] : [];
-let eleventhyear = year[10] ? [{ value: year[10].value }] : [];
-let twelfthyear = year[11] ? [{ value: year[11].value }] : [];
-let thirteenthyear = year[12] ? [{ value: year[12].value }] : [];
-let fourteenthyear = year[13] ? [{ value: year[13].value }] : [];
-let fifteenthyear = year[14] ? [{ value: year[14].value }] : [];
-let sixteenthyear = year[15] ? [{ value: year[15].value }] : [];
-let seventeenthyear = year[16] ? [{ value: year[16].value }] : [];
-let eighteenthyear = year[17] ? [{ value: year[17].value }] : [];
-let nineteenthyear = year[18] ? [{ value: year[18].value }] : [];
-let twentiethyear = year[19] ? [{ value: year[19].value }] : [];
-let twentyfirstyear = year[20] ? [{ value: year[20].value }] : [];
-let twentysecondyear = year[21] ? [{ value: year[21].value }] : [];
-let twentythirdyear = year[22] ? [{ value: year[22].value }] : [];
-let twentyfourthyear = year[23] ? [{ value: year[23].value }] : [];
-let twentyfifthyear = year[24] ? [{ value: year[24].value }] : [];
-let twentysixthyear = year[25] ? [{ value: year[25].value }] : [];
-let twentyseventhyear = year[26] ? [{ value: year[26].value }] : [];
-let twentyeighthyear = year[27] ? [{ value: year[27].value }] : [];
-let twentyninthyear = year[28] ? [{ value: year[28].value }] : [];
-let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
+    let secondyear = year[1] ? [{ value: year[1].value }] : [];
+    let thirdyear = year[2] ? [{ value: year[2].value }] : [];
+    let fourthyear = year[3] ? [{ value: year[3].value }] : [];
+    let fifthyear = year[4] ? [{ value: year[4].value }] : [];
+    let sixthyear = year[5] ? [{ value: year[5].value }] : [];
+    let seventhyear = year[6] ? [{ value: year[6].value }] : [];
+    let eighthyear = year[7] ? [{ value: year[7].value }] : [];
+    let ninthyear = year[8] ? [{ value: year[8].value }] : [];
+    let tenthyear = year[9] ? [{ value: year[9].value }] : [];
+    let eleventhyear = year[10] ? [{ value: year[10].value }] : [];
+    let twelfthyear = year[11] ? [{ value: year[11].value }] : [];
+    let thirteenthyear = year[12] ? [{ value: year[12].value }] : [];
+    let fourteenthyear = year[13] ? [{ value: year[13].value }] : [];
+    let fifteenthyear = year[14] ? [{ value: year[14].value }] : [];
+    let sixteenthyear = year[15] ? [{ value: year[15].value }] : [];
+    let seventeenthyear = year[16] ? [{ value: year[16].value }] : [];
+    let eighteenthyear = year[17] ? [{ value: year[17].value }] : [];
+    let nineteenthyear = year[18] ? [{ value: year[18].value }] : [];
+    let twentiethyear = year[19] ? [{ value: year[19].value }] : [];
+    let twentyfirstyear = year[20] ? [{ value: year[20].value }] : [];
+    let twentysecondyear = year[21] ? [{ value: year[21].value }] : [];
+    let twentythirdyear = year[22] ? [{ value: year[22].value }] : [];
+    let twentyfourthyear = year[23] ? [{ value: year[23].value }] : [];
+    let twentyfifthyear = year[24] ? [{ value: year[24].value }] : [];
+    let twentysixthyear = year[25] ? [{ value: year[25].value }] : [];
+    let twentyseventhyear = year[26] ? [{ value: year[26].value }] : [];
+    let twentyeighthyear = year[27] ? [{ value: year[27].value }] : [];
+    let twentyninthyear = year[28] ? [{ value: year[28].value }] : [];
+    let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
 
-    console.log('firstyear_List::',firstyear_List[0]);
-    console.log('secondyear::',secondyear);
     // Generate Rows for all 30 Years
     firstyear_List_Rows = generateTableData(firstyear_List);
     secondyear_List_Rows = generateTableData(secondyear);
@@ -874,6 +1034,44 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
     twentyeighthYearCode_List_rows = generateTableData(twentyeighthYearCode_List);
     twentyninthYearCode_List_Rows = generateTableData(twentyninthYearCode_List);
     thirtiethYearCode_List_Rows = generateTableData(thirtiethYearCode_List);
+
+    VDS_value_fourth_List_Rows = generateTableData(VDS_value_fourth_List);
+    VDS_fourth_type_List_Rows = generateTableData(VDS_fourth_type_List);
+
+    VDS_value_fifth_List_Rows = generateTableData(VDS_value_fifth_List);
+    VDS_fifth_type_List_Rows = generateTableData(VDS_fifth_type_List);
+
+    VDS_value_sixth_List_Rows = generateTableData(VDS_value_sixth_List);
+    VDS_sixth_type_List_Rows = generateTableData(VDS_sixth_type_List);
+
+    VDS_value_seventh_List_Rows = generateTableData(VDS_value_seventh_List);
+    VDS_seventh_type_List_Rows = generateTableData(VDS_seventh_type_List);
+
+    VDS_value_eighth_List_Rows = generateTableData(VDS_value_eighth_List);
+    VDS_eighth_type_List_Rows = generateTableData(VDS_eighth_type_List);
+
+    VDS_value_ninth_List_Rows = generateTableData(VDS_value_ninth_List);
+    VDS_ninth_type_List_Rows = generateTableData(VDS_ninth_type_List);
+
+    WMI_Code_List_Rows = generateTableData(WMI_Code_List);
+    Month_List_Rows = generateTableData(Month_List);
+    Year_List_Rows = generateTableData(Year_List);  
+    WMI_Extension_Code_List_Rows = generateTableData(WMI_Extension_Code_List);
+    Serial_Number_List_Rows = generateTableData(Serial_Number_List);
+
+    
+
+    const concatenatedResult = `${WMI_Code_List_Rows}${VDS_value_fourth_List_Rows}${VDS_value_fifth_List_Rows}${VDS_value_sixth_List_Rows}` + 
+    `${VDS_value_seventh_List_Rows}${VDS_value_eighth_List_Rows}` + 
+    `${VDS_value_ninth_List_Rows}${Year_List_Rows}${Month_List_Rows}` + 
+    `${WMI_Extension_Code_List_Rows}${Serial_Number_List_Rows}`;
+// console.log(concatenatedResult);
+concatenatedResult_List=concatenatedResult || " ";
+concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
+
+
+
+
     function generateYearProductionItems() {
         let yearItems = [];
 
@@ -969,7 +1167,7 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
         yearItems.push(yearTitle1);
         yearItems.push(yearTitle2);
         let month1code = 200;
-        console.log('month1code:', month1code);
+        // console.log('month1code:', month1code);
         const row1 = new TableRow({
             children: [
                 // Month Cell (1st Column)
@@ -2004,10 +2202,10 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: WMI_Code_List_Rows
                                 })
                             ]
                         })
@@ -2024,7 +2222,7 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                 }),
             ],
         });
-        
+
         const row2 = new TableRow({
             children: [
                 new TableCell({
@@ -2034,27 +2232,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_fourth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Cargo Vehicle" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_fourth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-        
+
         const row3 = new TableRow({
             children: [
                 new TableCell({
@@ -2064,27 +2269,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_fifth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Design Sequence" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_fifth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-        
+
         const row4 = new TableRow({
             children: [
                 new TableCell({
@@ -2094,27 +2306,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_sixth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Motor Capacity" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_sixth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-    const row5 = new TableRow({
+        const row5 = new TableRow({
             children: [
                 new TableCell({
                     width: {
@@ -2123,27 +2342,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_seventh_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Battery Capacity" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_seventh_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-        
+
         const row6 = new TableRow({
             children: [
                 new TableCell({
@@ -2153,27 +2379,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_eighth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Design Version" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_eighth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-        
+
         const row7 = new TableRow({
             children: [
                 new TableCell({
@@ -2183,27 +2416,34 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: VDS_value_ninth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Month of Production" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_ninth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
-        
+
         const row8 = new TableRow({
             children: [
                 new TableCell({
@@ -2213,10 +2453,10 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: Month_List_Rows
                                 })
                             ]
                         })
@@ -2227,13 +2467,13 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Year of Production" })],
+                            children: [new TextRun({ text: "Month Of Production" })],
                         }),
                     ],
                 }),
             ],
         });
-    const row9 = new TableRow({
+        const row9 = new TableRow({
             children: [
                 new TableCell({
                     width: {
@@ -2242,10 +2482,10 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: Year_List_Rows
                                 })
                             ]
                         })
@@ -2256,13 +2496,13 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Plant Code" })],
+                            children: [new TextRun({ text: "Year Of Production " })],
                         }),
                     ],
                 }),
             ],
         });
-        
+
         const row10 = new TableRow({
             children: [
                 new TableCell({
@@ -2272,10 +2512,10 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: WMI_Extension_Code_List_Rows
                                 })
                             ]
                         })
@@ -2292,7 +2532,7 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                 }),
             ],
         });
-        
+
         const row11 = new TableRow({
             children: [
                 new TableCell({
@@ -2302,10 +2542,10 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                     },
                     children: [
                         new Paragraph({
-                            style: "TableRowContent",
+                            style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: January_List_Rows
+                                    text: Serial_Number_List_Rows
                                 })
                             ]
                         })
@@ -2322,22 +2562,22 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                 }),
             ],
         });
-            yearItems.push(row1);
-            yearItems.push(row2);
-            yearItems.push(row3);
-            yearItems.push(row4);
-            yearItems.push(row5);
-            yearItems.push(row6);
-            yearItems.push(row7);
-            yearItems.push(row8);
-            yearItems.push(row9);
-            yearItems.push(row10);
-            yearItems.push(row11);         
-    
-    
+        yearItems.push(row1);
+        yearItems.push(row2);
+        yearItems.push(row3);
+        yearItems.push(row4);
+        yearItems.push(row5);
+        yearItems.push(row6);
+        yearItems.push(row7);
+        yearItems.push(row8);
+        yearItems.push(row9);
+        yearItems.push(row10);
+        yearItems.push(row11);
+
+
         return yearItems;
     }
-    
+
 
     // const docSealImage = new ImageRun({
     //     data: docSeal,
@@ -2845,7 +3085,8 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                         style: "table1Header",
                         children: [
                             new TextRun({
-                                text: "Example of Chassis No. (Vehicle Identification Number) with Month & Year of Manufacture: -"
+                                // text: "Example of Chassis No. (Vehicle Identification Number) with Month & Year of Manufacture: - "`${concatenatedResult}`
+                                text: `Example of Chassis No. (Vehicle Identification Number) with Month & Year of Manufacture: - ${concatenatedResult}`,
                             })
                         ]
                     }),
@@ -2853,7 +3094,7 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                         style: "TableRowContent",
                         children: [
                             new TextRun({
-                                text: Example_of_Chassis_No_with_Month_Year_of_Manufacture_Rows
+                                text:  " "
                             })
                         ]
                     }),
@@ -2864,7 +3105,7 @@ let thirtiethyear = year[29] ? [{ value: year[29].value }] : [];
                             size: "12pt"
                         }
                     ),
-                   
+
                 ],
                 // footers: {
                 //     default: new Footer({

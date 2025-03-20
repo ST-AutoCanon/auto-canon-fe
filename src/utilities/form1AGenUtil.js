@@ -1,5 +1,5 @@
 import exportDoc from './exportUtil';
-import { populateMultiSupData, tyresList } from './form1ADataGenerator';
+import { populateMultiSupData, tyresList, dStrapRows, handholdStrap3wheeler_Rows } from './form1ADataGenerator';
 import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, ImageRun, WidthType, Footer, PageNumber } from "docx";
 let foot;
 let multiSupplierDataList = [];
@@ -7,49 +7,49 @@ let form1ATable1RowsList = [];
 let form1ATable2RowsList = [];
 let form1ATable3RowsList = [];
 let docSealImage;
- function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
-     
-   
+function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
+
+
     const dataOfFooterr = footerData.footerData.SealSign.properties;
-let imageUrl;
+    let imageUrl;
 
-const fileName = dataOfFooterr.Upload_Seal.file_name;
-imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
-console.log("Image loaded successfully:", fileName);
+    const fileName = dataOfFooterr.Upload_Seal.file_name;
+    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    // console.log("Image loaded successfully:", fileName);
 
 
-// Fetch the image as a Blob
-fetch(imageUrl)
-  .then(response => response.blob())
-  .then(blob => {
-    // Create a FileReader to convert the blob into Base64
-    const reader = new FileReader();
+    // Fetch the image as a Blob
+    fetch(imageUrl)
+        .then(response => response.blob())
+        .then(blob => {
+            // Create a FileReader to convert the blob into Base64
+            const reader = new FileReader();
 
-    // Define the onload event handler for FileReader
-    reader.onloadend = () => {
-      const base64Data = reader.result; // This will be the Base64 encoded string
+            // Define the onload event handler for FileReader
+            reader.onloadend = () => {
+                const base64Data = reader.result; // This will be the Base64 encoded string
 
-      // Log the Base64 encoded data
-      console.log("Base64 Image Data:", base64Data);
+                // Log the Base64 encoded data
+                //   console.log("Base64 Image Data:", base64Data);
 
-      // Optionally, create an ImageRun object with the Base64 data
-      docSealImage = new ImageRun({
-        data: base64Data, // Use the Base64 data here
-        transformation: {
-          width: 90,
-          height: 50,
-        }
-      });
+                // Optionally, create an ImageRun object with the Base64 data
+                docSealImage = new ImageRun({
+                    data: base64Data, // Use the Base64 data here
+                    transformation: {
+                        width: 90,
+                        height: 50,
+                    }
+                });
 
-      console.log("ImageRun instance created:", docSealImage);
-    };
+                //   console.log("ImageRun instance created:", docSealImage);
+            };
 
-    // Read the blob as a data URL (Base64)
-    reader.readAsDataURL(blob);
-  })
-  .catch(error => {
-    console.error("Error loading image:", error);
-  });
+            // Read the blob as a data URL (Base64)
+            reader.readAsDataURL(blob);
+        })
+        .catch(error => {
+            console.error("Error loading image:", error);
+        });
 
     fetch(itemsListName).then(response => response.text()).then(responseText => {
         if (responseText) {
@@ -380,7 +380,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -397,7 +397,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                     ]
                 }),
 
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -413,7 +413,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -429,7 +429,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -445,7 +445,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -461,8 +461,8 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                
-                new TableCell({                    
+
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -598,7 +598,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -615,7 +615,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                     ]
                 }),
 
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -631,7 +631,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -647,7 +647,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -663,7 +663,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -679,8 +679,8 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                
-                new TableCell({                    
+
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -816,7 +816,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -833,7 +833,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                     ]
                 }),
 
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -849,7 +849,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -865,7 +865,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -881,7 +881,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                new TableCell({                    
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -897,8 +897,8 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                         })
                     ]
                 }),
-                
-                new TableCell({                    
+
+                new TableCell({
                     width: {
                         size: 1000,
                         type: WidthType.DXA
@@ -1938,21 +1938,21 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
 
                     new TableCell({
                         columnSpan: 2,
-                       width: {
-                           size: 5000,
-                           type: WidthType.DXA
-                       },
-                       children: [
-                           new Paragraph({
-                               style: "TableRowContent",
-                               children: [
-                                   new TextRun({
-                                       text: rowData
-                                   })
-                               ]
-                           })
-                       ]
-                   }),
+                        width: {
+                            size: 5000,
+                            type: WidthType.DXA
+                        },
+                        children: [
+                            new Paragraph({
+                                style: "TableRowContent",
+                                children: [
+                                    new TextRun({
+                                        text: rowData
+                                    })
+                                ]
+                            })
+                        ]
+                    }),
                 ]
             });
         }
@@ -2065,7 +2065,7 @@ function getRowData(listName, serialNo = "") {
 }
 
 function generateForm1A(form1Adata, footerData) {
-    foot=footerData;
+    foot = footerData;
 
     const headerRow = new TableRow({
         children: [
@@ -2407,14 +2407,29 @@ function fillAndDownload(form1Adata, footerData) {
                             level: 0
                         }
                     }),
+                    // new Paragraph("\n\n"),
+                    // new Table(
+                    //     {
+                    //         columnWidths: [7000, 3000],
+                    //         rows: form1ATable3RowsList,
+                    //         size: "12pt"
+                    //     }
+                    // ),
                     new Paragraph("\n\n"),
-                    new Table(
-                        {
-                            columnWidths: [7000, 3000],
-                            rows: form1ATable3RowsList,
-                            size: "12pt"
-                        }
-                    ),
+                    ...(
+                        !(
+                            (Array.isArray(dStrapRows) && dStrapRows.length > 0) && // dStrapRows is present
+                            !(Array.isArray(handholdStrap3wheeler_Rows) && handholdStrap3wheeler_Rows.length > 0) // handholdStrap3wheeler_Rows is NOT present
+                        )
+                            ? [
+                                new Table({
+                                    columnWidths: [7000, 3000],
+                                    rows: form1ATable3RowsList,
+                                    size: "12pt",
+                                }),
+                            ]
+                            : []
+                    )
                 ],
                 // 
                 // footers: {
@@ -2673,7 +2688,7 @@ function fillAndDownload(form1Adata, footerData) {
                                         ]
                                     }),
                                     new TableRow({
-                                        children: [                                           
+                                        children: [
                                             new TableCell({
 
                                                 width: {
@@ -2872,17 +2887,17 @@ function fillAndDownload(form1Adata, footerData) {
 function generateTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim
-        const values = dataList.map(wheelRim => 
-            wheelRim?.Wheel_Rim_Size?.properties?.Wheel_rim_size?.value || 
-            wheelRim?.value || 
+        const values = dataList.map(wheelRim =>
+            wheelRim?.Wheel_Rim_Size?.properties?.Wheel_rim_size?.value ||
+            wheelRim?.value ||
             ""
         );
-        
+
         if (values.length > 1) {
             return values.join(" | ");
         } else {
             return values[0] || ""; // Return the single value if there's only one
-        } 
+        }
     } else {
         return ""; // Return an empty string if no data is available
     }

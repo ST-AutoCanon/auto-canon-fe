@@ -395,8 +395,8 @@ const AddSupplier: FC<Props> = (Props) => {
                                                     message: "Only alphanumeric characters, spaces, ' / ', and ' - ' are allowed."
                                                 },
                                                 maxLength: {
-                                                    value: 20,
-                                                    message: "Max 20 characters can be entered"
+                                                    value: 45,
+                                                    message: "Max 45 characters can be entered"
                                                 }
                                             })
                                             }
