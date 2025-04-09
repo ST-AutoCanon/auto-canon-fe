@@ -392,12 +392,21 @@ export const SelectRotorTypeOptions = [
 ];
 
 export const SelectCoolingSystemOptions = [
-  { value: "Motor: Liquid", name: "Motor: Liquid", disabled: false },
-  { value: "Motor: Air", name: "Motor: Air", disabled: false },
-  { value: "Controller: Liquid", name: "Controller: Liquid", disabled: false },
-  { value: "Controller: Air", name: "Controller: Air", disabled: false },
-  { value: "Battery: Liquid", name: "Battery: Liquid", disabled: false },
-  { value: "Battery: Air", name: "Battery: Air", disabled: false },
+  // { value: "Motor: Liquid", name: "Motor: Liquid", disabled: false },
+  // { value: "Motor: Air", name: "Motor: Air", disabled: false },
+  // { value: "Controller: Liquid", name: "Controller: Liquid", disabled: false },
+  // { value: "Controller: Air", name: "Controller: Air", disabled: false },
+  // { value: "Battery: Liquid", name: "Battery: Liquid", disabled: false },
+  // { value: "Battery: Air", name: "Battery: Air", disabled: false },
+  { "value": "Motor: Liquid, Controller: Liquid, Battery: Liquid", "name": "Motor: Liquid, Controller: Liquid, Battery: Liquid", "disabled": false },
+  { "value": "Motor: Liquid, Controller: Liquid, Battery: Air", "name": "Motor: Liquid, Controller: Liquid, Battery: Air", "disabled": false },
+  { "value": "Motor: Liquid, Controller: Air, Battery: Liquid", "name": "Motor: Liquid, Controller: Air, Battery: Liquid", "disabled": false },
+  { "value": "Motor: Liquid, Controller: Air, Battery: Air", "name": "Motor: Liquid, Controller: Air, Battery: Air", "disabled": false },
+  { "value": "Motor: Air, Controller: Liquid, Battery: Liquid", "name": "Motor: Air, Controller: Liquid, Battery: Liquid", "disabled": false },
+  { "value": "Motor: Air, Controller: Liquid, Battery: Air", "name": "Motor: Air, Controller: Liquid, Battery: Air", "disabled": false },
+  { "value": "Motor: Air, Controller: Air, Battery: Liquid", "name": "Motor: Air, Controller: Air, Battery: Liquid", "disabled": false },
+  { "value": "Motor: Air, Controller: Air, Battery: Air", "name": "Motor: Air, Controller: Air, Battery: Air", "disabled": false }
+
 ];
 
 export const WhetherCirculatingPumpProvidedOptions = [
@@ -505,6 +514,7 @@ export const ControlPrincipleOptions = [
 export const NumberOfSeatsOptions = [
   { value: "D+1", name: "D+1", disabled: false },
   { value: "D+3", name: "D+3", disabled: false },
+  { name: "R+1 seater", value: "R+1 seater", disabled: false },
 ];
 
 export const PassengerSeatTypeOptions = [
@@ -578,6 +588,11 @@ export const ProductionVehicleSerialNumbers = [
   { name: "17", value: "17", disabled: false }
 ];
 
+export const MonthYear = [
+  { value: "Month", name: "Month", disabled: false },
+  { value: "Year", name: "Year", disabled: false },
+];
+
 export const VdsOptions = [
   { name: "Type of Fuel", value: "Type of Fuel", disabled: false },
   { name: "Wheel Base", value: "Wheel Base", disabled: false },
@@ -585,7 +600,8 @@ export const VdsOptions = [
   { name: "Type of Drive", value: "Type of Drive", disabled: false },
   { name: "Plant Code", value: "Plant Code", disabled: false },
   { name: "Check Digit", value: "Check Digit", disabled: false },
-  { name: "Others", value: "Others", disabled: false }
+  { name: "Month/Year", value: "Month/Year", disabled: false },
+  { name: "Others", value: "Others", disabled: false },
 ];
 
 export const FuelOptions = [
@@ -844,6 +860,78 @@ export const CodeValuesEighth = [
 ];
 
 export const CodeValuesNinth = [
+  { name: "A", value: "A", disabled: false },
+  { name: "B", value: "B", disabled: false },
+  { name: "C", value: "C", disabled: false },
+  { name: "D", value: "D", disabled: false },
+  { name: "E", value: "E", disabled: false },
+  { name: "F", value: "F", disabled: false },
+  { name: "G", value: "G", disabled: false },
+  { name: "H", value: "H", disabled: false },
+  { name: "J", value: "J", disabled: false },
+  { name: "K", value: "K", disabled: false },
+  { name: "L", value: "L", disabled: false },
+  { name: "M", value: "M", disabled: false },
+  { name: "N", value: "N", disabled: false },
+  { name: "P", value: "P", disabled: false },
+  { name: "R", value: "R", disabled: false },
+  { name: "S", value: "S", disabled: false },
+  { name: "T", value: "T", disabled: false },
+  { name: "U", value: "U", disabled: false },
+  { name: "V", value: "V", disabled: false },
+  { name: "W", value: "W", disabled: false },
+  { name: "X", value: "X", disabled: false },
+  { name: "Y", value: "Y", disabled: false },
+  { name: "Z", value: "Z", disabled: false },
+  { name: "0", value: "0", disabled: false },
+  { name: "1", value: "1", disabled: false },
+  { name: "2", value: "2", disabled: false },
+  { name: "3", value: "3", disabled: false },
+  { name: "4", value: "4", disabled: false },
+  { name: "5", value: "5", disabled: false },
+  { name: "6", value: "6", disabled: false },
+  { name: "7", value: "7", disabled: false },
+  { name: "8", value: "8", disabled: false },
+  { name: "9", value: "9", disabled: false },
+];
+/////
+export const CodeValuesTenth = [
+  { name: "A", value: "A", disabled: false },
+  { name: "B", value: "B", disabled: false },
+  { name: "C", value: "C", disabled: false },
+  { name: "D", value: "D", disabled: false },
+  { name: "E", value: "E", disabled: false },
+  { name: "F", value: "F", disabled: false },
+  { name: "G", value: "G", disabled: false },
+  { name: "H", value: "H", disabled: false },
+  { name: "J", value: "J", disabled: false },
+  { name: "K", value: "K", disabled: false },
+  { name: "L", value: "L", disabled: false },
+  { name: "M", value: "M", disabled: false },
+  { name: "N", value: "N", disabled: false },
+  { name: "P", value: "P", disabled: false },
+  { name: "R", value: "R", disabled: false },
+  { name: "S", value: "S", disabled: false },
+  { name: "T", value: "T", disabled: false },
+  { name: "U", value: "U", disabled: false },
+  { name: "V", value: "V", disabled: false },
+  { name: "W", value: "W", disabled: false },
+  { name: "X", value: "X", disabled: false },
+  { name: "Y", value: "Y", disabled: false },
+  { name: "Z", value: "Z", disabled: false },
+  { name: "0", value: "0", disabled: false },
+  { name: "1", value: "1", disabled: false },
+  { name: "2", value: "2", disabled: false },
+  { name: "3", value: "3", disabled: false },
+  { name: "4", value: "4", disabled: false },
+  { name: "5", value: "5", disabled: false },
+  { name: "6", value: "6", disabled: false },
+  { name: "7", value: "7", disabled: false },
+  { name: "8", value: "8", disabled: false },
+  { name: "9", value: "9", disabled: false },
+];
+
+export const CodeValuesEleventh = [
   { name: "A", value: "A", disabled: false },
   { name: "B", value: "B", disabled: false },
   { name: "C", value: "C", disabled: false },

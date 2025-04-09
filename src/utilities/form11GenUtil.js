@@ -69,42 +69,42 @@ async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
     const fileName = dataOfFooterr.Upload_Seal.file_name;
     const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
-  
+
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-  
-      // Convert the blob to Base64
-      const base64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-  
-        reader.onloadend = () => {
-          resolve(reader.result); // Resolve with the Base64 string
-        };
-  
-        reader.onerror = reject; // Reject on error
-  
-        reader.readAsDataURL(blob);
-      });
-  
-      // Create an ImageRun object with the Base64 data
-      const docSealImage = new ImageRun({
-        data: base64Data, // Use the Base64 data here
-        transformation: {
-          width: 90,
-          height: 50,
-        },
-      });
-  
-      console.log("ImageRun instance created:", docSealImage);
-  
-      return docSealImage; // Return the docSealImage after it's ready
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Convert the blob to Base64
+        const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                resolve(reader.result); // Resolve with the Base64 string
+            };
+
+            reader.onerror = reject; // Reject on error
+
+            reader.readAsDataURL(blob);
+        });
+
+        // Create an ImageRun object with the Base64 data
+        const docSealImage = new ImageRun({
+            data: base64Data, // Use the Base64 data here
+            transformation: {
+                width: 90,
+                height: 50,
+            },
+        });
+
+        console.log("ImageRun instance created:", docSealImage);
+
+        return docSealImage; // Return the docSealImage after it's ready
     } catch (error) {
-      console.error("Error loading or converting image:", error);
-      throw error; // If the image fails to load, throw an error
+        console.error("Error loading or converting image:", error);
+        throw error; // If the image fails to load, throw an error
     }
-  }
-  async function generateForm11(form11Data, footerData) {
+}
+async function generateForm11(form11Data, footerData) {
     const docSealImage = await fetchAndProcessImage(footerData);
 
     console.log('form11Data:', form11Data);
@@ -151,7 +151,7 @@ async function fetchAndProcessImage(footerData) {
         const parts = fileName.split('-');
         return parts.slice(1).join('-');
     };
-        
+
     let drawingList1 = [];
     let drawingList2 = [];
     let drawingList3 = [];
@@ -171,9 +171,9 @@ async function fetchAndProcessImage(footerData) {
     drawingList1 = [{ value: extractFileName(drawing1) }];
     drawingList2 = [{ value: extractFileName(drawing2) }];
     drawingList3 = [{ value: extractFileName(drawing3) }];
-    const drawing1_Rows=generateTableData(drawingList1);
-    const drawing2_Rows=generateTableData(drawingList2);
-    const drawing3_Rows=generateTableData(drawingList3);
+    const drawing1_Rows = generateTableData(drawingList1);
+    const drawing2_Rows = generateTableData(drawingList2);
+    const drawing3_Rows = generateTableData(drawingList3);
 
 
     // const drawing1_Rows = generateTableData(drawingList1);
@@ -181,7 +181,7 @@ async function fetchAndProcessImage(footerData) {
     // const drawing3_Rows = generateTableData(drawingList3);
     const vehicleGeneralInformation_list = form11Data?.Vehicle_General_Information?.vehicleGeneralInformation;
     const vehicleIdentificationNumber_list = form11Data?.Vehicle_Identification_Number?.VehicleIdentificationNumber;
-    const codForMonthProduction_list = form11Data?.Month_of_Production?.codeForMonthOfProduction;  
+    const codForMonthProduction_list = form11Data?.Month_of_Production?.codeForMonthOfProduction;
     let Specify_the_Location_of_VIN_on_Chassis_List = [];
     let Position_of_the_code_for_month_in_the_Chassis_number_List = [];
     let Position_of_the_code_for_year_in_the_Chassis_number_List = [];
@@ -518,19 +518,34 @@ async function fetchAndProcessImage(footerData) {
     let VDS_ninth_type_List = [];
     let VDS_ninth_type_List_Rows;
 
-    let concatenatedResult_List =[];
+
+
+    let VDS_value_tenth_List = [];
+    let VDS_value_tenth_List_Rows;
+
+    let VDS_tenth_type_List = [];
+    let VDS_tenth_type_List_Rows;
+
+    let VDS_value_eleventh_List = [];
+    let VDS_value_eleventh_List_Rows;
+
+    let VDS_eleventh_type_List = [];
+    let VDS_eleventh_type_List_Rows;
+
+
+    let concatenatedResult_List = [];
     let concatenatedResult_List_Rows;
 
     let WMI_Code_List = [];
-let WMI_Code_List_Rows;
-let Month_List = [];
-let Month_List_Rows;
-let Year_List = [];
-let Year_List_Rows;
-let WMI_Extension_Code_List = [];
-let WMI_Extension_Code_List_Rows;
-let Serial_Number_List = [];
-let Serial_Number_List_Rows;
+    let WMI_Code_List_Rows;
+    let Month_List = [];
+    let Month_List_Rows;
+    let Year_List = [];
+    let Year_List_Rows;
+    let WMI_Extension_Code_List = [];
+    let WMI_Extension_Code_List_Rows;
+    let Serial_Number_List = [];
+    let Serial_Number_List_Rows;
 
     codForMonthProduction_list.map(vehDesc => {
         if (vehDesc.supplier.active === true) {
@@ -887,6 +902,26 @@ let Serial_Number_List_Rows;
                 value: vehDesc?.vds_Sequence?.properties?.VDS_ninth_type?.value,
             });
 
+
+            /// 
+            VDS_value_tenth_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_tenth?.value,
+            });
+            VDS_tenth_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_tenth_type?.value,
+            });
+            //
+            VDS_value_eleventh_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_value_eleventh?.value,
+            });
+            VDS_eleventh_type_List.push({
+                supplier: supplierName,
+                value: vehDesc?.vds_Sequence?.properties?.VDS_eleventh_type?.value,
+            });
+
             WMI_Code_List.push({
                 supplier: supplierName,
                 value: vehDesc?.chassis_Number?.properties?.WMI_Code?.value,
@@ -928,7 +963,7 @@ let Serial_Number_List_Rows;
 
 
 
-   
+
 
     let startYear = parseInt(firstyear_List[0].value) || ''; // Extract and convert the string to an integer
 
@@ -1053,21 +1088,81 @@ let Serial_Number_List_Rows;
     VDS_value_ninth_List_Rows = generateTableData(VDS_value_ninth_List);
     VDS_ninth_type_List_Rows = generateTableData(VDS_ninth_type_List);
 
+    VDS_value_tenth_List_Rows = generateTableData(VDS_value_tenth_List);
+    VDS_tenth_type_List_Rows = generateTableData(VDS_tenth_type_List);
+    VDS_value_eleventh_List_Rows = generateTableData(VDS_value_eleventh_List);
+    VDS_eleventh_type_List_Rows = generateTableData(VDS_eleventh_type_List);
     WMI_Code_List_Rows = generateTableData(WMI_Code_List);
     Month_List_Rows = generateTableData(Month_List);
-    Year_List_Rows = generateTableData(Year_List);  
+    Year_List_Rows = generateTableData(Year_List);
     WMI_Extension_Code_List_Rows = generateTableData(WMI_Extension_Code_List);
     Serial_Number_List_Rows = generateTableData(Serial_Number_List);
 
-    
+///////////////////////////////////////
 
-    const concatenatedResult = `${WMI_Code_List_Rows}${VDS_value_fourth_List_Rows}${VDS_value_fifth_List_Rows}${VDS_value_sixth_List_Rows}` + 
-    `${VDS_value_seventh_List_Rows}${VDS_value_eighth_List_Rows}` + 
-    `${VDS_value_ninth_List_Rows}${Year_List_Rows}${Month_List_Rows}` + 
-    `${WMI_Extension_Code_List_Rows}${Serial_Number_List_Rows}`;
-// console.log(concatenatedResult);
-concatenatedResult_List=concatenatedResult || " ";
-concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
+
+// function checkVdsType(variableName, vdsType) {
+//     switch (vdsType) {
+//       case "Month":
+//         console.log(`${variableName} consists the Month`);
+//         break;
+//       case "Year":
+//         console.log(`${variableName} consists the Year`);
+//         break;
+//       default:
+//         break; // Do nothing for other values
+//     }
+//   }
+  
+//   // Checking each VDS type separately
+//   checkVdsType("VDS_fourth_type_List_Rows", VDS_fourth_type_List_Rows);
+//   checkVdsType("VDS_fifth_type_List_Rows", VDS_fifth_type_List_Rows);
+//   checkVdsType("VDS_sixth_type_List_Rows", VDS_sixth_type_List_Rows);
+//   checkVdsType("VDS_seventh_type_List_Rows", VDS_seventh_type_List_Rows);
+//   checkVdsType("VDS_eighth_type_List_Rows", VDS_eighth_type_List_Rows);
+//   checkVdsType("VDS_ninth_type_List_Rows", VDS_ninth_type_List_Rows);
+//   checkVdsType("VDS_tenth_type_List_Rows", VDS_tenth_type_List_Rows);
+//   checkVdsType("VDS_eleventh_type_List_Rows", VDS_eleventh_type_List_Rows);
+// Store the first "Month" and "Year" occurrences
+let firstMonth = "";
+let firstYear = "";
+
+// Function to check and print only the first occurrences
+function checkVdsType(valueData, typeData, valueLabel) {
+    const lowerCaseTypeData = typeData.toLowerCase(); // Convert to lowercase
+  
+    if (lowerCaseTypeData.includes("month") && firstMonth === "") {
+      console.log(`${valueLabel} contains the Month`);
+      firstMonth = valueLabel;
+    } else if (lowerCaseTypeData.includes("year") && firstYear === "") {
+      console.log(`${valueLabel} contains the Year`);
+      firstYear = valueLabel;
+    }
+  }
+
+
+
+// Call the function with the correct mapping
+checkVdsType(VDS_value_fourth_List_Rows, VDS_fourth_type_List_Rows, "4");
+checkVdsType(VDS_value_fifth_List_Rows, VDS_fifth_type_List_Rows, "5");
+checkVdsType(VDS_value_sixth_List_Rows, VDS_sixth_type_List_Rows, "6");
+checkVdsType(VDS_value_seventh_List_Rows, VDS_seventh_type_List_Rows, "7");
+checkVdsType(VDS_value_eighth_List_Rows, VDS_eighth_type_List_Rows, "8");
+checkVdsType(VDS_value_ninth_List_Rows, VDS_ninth_type_List_Rows, "9");
+checkVdsType(VDS_value_tenth_List_Rows, VDS_tenth_type_List_Rows, "10");
+checkVdsType(VDS_eleventh_type_List_Rows, VDS_eleventh_type_List_Rows,"11");
+// Output stored first occurrences
+console.log("First Month stored:", firstMonth);
+console.log("First Year stored:", firstYear);
+//////////////////////////////////////
+
+    const concatenatedResult = `${WMI_Code_List_Rows}${VDS_value_fourth_List_Rows}${VDS_value_fifth_List_Rows}${VDS_value_sixth_List_Rows}` +
+        `${VDS_value_seventh_List_Rows}${VDS_value_eighth_List_Rows}` +
+        `${VDS_value_ninth_List_Rows}${VDS_value_tenth_List_Rows}${VDS_value_eleventh_List_Rows}` +
+        `${WMI_Extension_Code_List_Rows}${Serial_Number_List_Rows}`;
+    // console.log(concatenatedResult);
+    concatenatedResult_List = concatenatedResult || " ";
+    concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
 
 
 
@@ -2456,20 +2551,28 @@ concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
                             style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: Month_List_Rows
+                                    text: VDS_value_tenth_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
+
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Month Of Production" })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_tenth_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
@@ -2485,20 +2588,28 @@ concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
                             style: "table1Header",
                             children: [
                                 new TextRun({
-                                    text: Year_List_Rows
+                                    text: VDS_value_eleventh_List_Rows
                                 })
                             ]
                         })
                     ]
                 }),
+
                 new TableCell({
-                    width: { size: 5000, type: WidthType.DXA },
+                    width: {
+                        size: 5000,
+                        type: WidthType.DXA
+                    },
                     children: [
                         new Paragraph({
                             style: "table1Header",
-                            children: [new TextRun({ text: "Year Of Production " })],
-                        }),
-                    ],
+                            children: [
+                                new TextRun({
+                                    text: VDS_eleventh_type_List_Rows
+                                })
+                            ]
+                        })
+                    ]
                 }),
             ],
         });
@@ -2977,7 +3088,7 @@ concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: Position_of_the_code_for_month_in_the_Chassis_number_Rows
+                                                        text: firstMonth
                                                     })
                                                 ]
                                             })
@@ -3014,7 +3125,7 @@ concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: Position_of_the_code_for_year_in_the_Chassis_number_Rows
+                                                        text: firstYear
                                                     })
                                                 ]
                                             })
@@ -3094,7 +3205,7 @@ concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
                         style: "TableRowContent",
                         children: [
                             new TextRun({
-                                text:  " "
+                                text: " "
                             })
                         ]
                     }),

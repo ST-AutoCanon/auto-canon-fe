@@ -2334,7 +2334,8 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: Type_of_Shock_absorbers_provided_at_the_front_and_Rear_Rows
+                                                        // text: Type_of_Shock_absorbers_provided_at_the_front_and_Rear_Rows
+                                                        text: ""
                                                     })
                                                 ]
                                             })

@@ -532,20 +532,23 @@ const Dashboard: FC = () => {
                                                     if (checkDownLoad === 'true') {
                                                         percentageFilled = 100;
                                                     }
-                                                    if (item === 'form1AData' && percentageFilled>50 ) {
-                                                        percentageFilled +=28;   
-                                                        console.log('form1AData:',item);
+                                                    if (item === 'form1AData' && percentageFilled>70 ) {
+                                                        percentageFilled = 100;
+                                                        // percentageFilled +=28;   
+                                                        // console.log('form1AData:',item);
                                                     }
                                                     // if (item === 'form13Data' && percentageFilled>50 ) {
                                                     //     percentageFilled += 6;   
                                                     // }
-                                                    if (item === 'form7Data' && percentageFilled>50 ) {
-                                                        percentageFilled += 23;     
-                                                        console.log('form7Data:',item)
+                                                    if (item === 'form7Data' && percentageFilled>76 ) {
+                                                        percentageFilled = 100;
+                                                        // percentageFilled += 23;     
+                                                        // console.log('form7Data:',item)
                                                     }
-                                                    if (item === 'form8Data' && percentageFilled>50 ) {
-                                                        percentageFilled += 27;  
-                                                        console.log('form8Data:',item)   
+                                                    if (item === 'form8Data' && percentageFilled>78 ) {
+                                                        percentageFilled = 100;
+                                                        // percentageFilled += 22;  
+                                                        // console.log('form8Data:',item)   
                                                     }
                                                     let filledValue: any = percentageFilled;
                                                     let integer: number = 0;
@@ -775,21 +778,23 @@ const Dashboard: FC = () => {
                                                     if (checkDownLoad === 'true') {
                                                         percentageFilled = 100;
                                                     }
-                                                    if (item === 'form1AData' && percentageFilled>50 ) {
-                                                        percentageFilled += 10;                                                 
-                                                      console.log('form1AData:',item);
+                                                    if (item === 'form1AData' && percentageFilled>90 ) {
+                                                        percentageFilled = 100;
+                                                        // percentageFilled += 10;                                                 
+                                                    //   console.log('form1AData:',item);
                                                         
                                                     }
-                                                    if (item === 'form7Data' && percentageFilled>50 ) {
-                                                        percentageFilled += 16;     
-                                                        console.log('form7Data:',item);
+                                                    if (item === 'form7Data' && percentageFilled>84 ) {
+                                                        percentageFilled = 100;
+                                                        // percentageFilled += 16;     
+                                                        // console.log('form7Data:',item);
                                                     }
                                                     // if (item === 'form8Data' && percentageFilled>50 ) {
                                                     //     percentageFilled +=5;     
                                                     // }
                                                     if (item === 'form8Data' && percentageFilled>93 ) {                                                       
                                                             percentageFilled=100;
-                                                            console.log('form8Data:',item);
+                                                            // console.log('form8Data:',item);
                                                        
                                                     }
                                                     let filledValue: any = percentageFilled;

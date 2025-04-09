@@ -165,7 +165,7 @@ let rearCoordinates_Rows = generateTableData(rearCoordinatesList);
     
 allTablesData.push({
     rowKey: "List2_812",
-    value: hzlDiagramLocationRows
+    value: coupling_Rows
 });
 allTablesData.push({
     rowKey: "List3_2331",
@@ -509,9 +509,19 @@ allTablesData.push({
         rowKey: "List1_36",
         value: transmMaxSpeedRows
     });
-    const suspensionList = (form1AData?.Suspension?.SuspensionData && Object.keys(form1AData.Suspension.SuspensionData).length > 0)
-        ? form1AData.Suspension.SuspensionData
-        : form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
+    // const suspensionList = (form1AData?.Suspension?.SuspensionData && Object.keys(form1AData.Suspension.SuspensionData).length > 0)
+    //     // ? form1AData.Suspension.SuspensionData
+    //     ? form1AData.Handle_Lock_Anti_Theft_Device.HandleLock
+    //     : form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
+    const handleLockData = form1AData?.Suspension?.SuspensionData;
+const steeringData = form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
+console.log('handleLockData:',handleLockData);
+console.log('steeringData:',steeringData);
+const suspensionList = (
+  handleLockData && Object.keys(handleLockData).length > 0
+) ? handleLockData
+  : (steeringData && Object.keys(steeringData).length > 0 ? steeringData : {});
+
     let suspDrawingList = [];
     let suspBriefDescOfECUsList = [];
     let suspSpringsFrontRearList = [];
@@ -3270,27 +3280,56 @@ allTablesData.push({
         value: trBulbRows
     });
     // Updated code: Mapping Grab handle or Straps data and pushing to table
-    const GrabHandleList = form1AData?.Grab_handle?.GrabHandle;
+    // const TwoWheelerAggregatesListt = form1AData?.Two_Wheeler_Aggregates?.TwoWheelerAggregatesData;
+    // const GrabHandleList = form1AData?.Grab_handle?.GrabHandle;
+    const twoWheelerData = form1AData?.Two_Wheeler_Aggregates?.TwoWheelerAggregatesData;
+    const grabHandleData = form1AData?.Grab_handle?.GrabHandle;
+    
+    const TwoWheelerAggregatesListt = (
+      twoWheelerData && Object.keys(twoWheelerData).length > 0
+    ) ? twoWheelerData
+      : (grabHandleData && Object.keys(grabHandleData).length > 0 ? grabHandleData : {});
+    
     let dStrapList = [];
+    let hTwoWheelerList = [];
     let hWheelerList = [];
-    GrabHandleList && GrabHandleList.map(GrabHandle => {
+    let typeHWheelerList = [];
+    TwoWheelerAggregatesListt && TwoWheelerAggregatesListt.map(GrabHandle => {
         if (GrabHandle.supplier.active === true) {
             const supplierName = GrabHandle?.supplier?.nameOfSupplier;
             dStrapList.push({
                 supplier: supplierName,
                 value: GrabHandle?.Grab_handle_Straps?.properties?.Drawing_handhold_Strap?.value
             });
+            hTwoWheelerList.push({
+                supplier: supplierName,
+                value: GrabHandle?.Grab_handle_Straps?.properties?.Handholds_pillion_Rider?.value
+            });
             hWheelerList.push({
                 supplier: supplierName,
                 value: GrabHandle?.Grab_handle_Straps?.properties?.Handholds_passenger_3_wheeler?.value
+            });
+            typeHWheelerList.push({
+                supplier: supplierName,
+                value: GrabHandle?.Grab_handle_Straps?.properties?.Type_Handhold_Pillion_rider?.value
             });
         }
     });
     // let dStrapRows = generateTableData(dStrapList);
     let hWheelerRows = generateTableData(hWheelerList);
+    let hTwoWheelerRows = generateTableData(hTwoWheelerList);
+    let typeHWheelerListRows = generateTableData(typeHWheelerList);
+    allTablesData.push({
+        rowKey: "List2_101",
+        value: hTwoWheelerRows
+    });
     allTablesData.push({
         rowKey: "List2_1012",
         value: dStrapRows
+    });
+    allTablesData.push({
+        rowKey: "List2_1011",
+        value: typeHWheelerListRows
     });
     allTablesData.push({
         rowKey: "List2_1013",
@@ -3751,7 +3790,7 @@ allTablesData.push({
     let stOuterCoilDiamRows = generateTableData(stOuterCoilDiamList);
     let ssAssLengthRows = generateTableData(ssAssLengthList);
     let ssAssLengthNotInUseRows = generateTableData(ssAssLengthNotInUseList);
-    let ssSpringMaterialRows = generateTableData(ssAssLengthNotInUseList);
+    let ssSpringMaterialRows = generateTableData(ssSpringMaterialList);
     // let stDiagInstallRows = generateTableData(stDiagInstallList);
     // let ssDrawingRows = generateTableData(ssDrawingList);
     let ssTyreMaxWidthRows = generateTableData(ssTyreMaxWidthList);

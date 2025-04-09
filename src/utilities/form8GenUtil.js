@@ -132,7 +132,13 @@ async function generateForm8(form8Data, footerData) {
             reflDataList.frontWhiteList.tacNumberList.push(frontWhiteTACValue);
 
             // Check if TAC value is present
-            reflDataList.suppNameList.push(frontWhiteTACValue ? supplierName : "");
+            // reflDataList.suppNameList.push(frontWhiteTACValue ? supplierName : "");
+            // reflDataList.suppNameList.push(frontWhiteTACValue === "NA" ? "" : supplierName);
+            if (frontWhiteTACValue && frontWhiteTACValue.trim() !== "NA") {
+                reflDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             reflDataList.frontWhiteList.possibleDateList.push(vehRefl?.Front_White_Reflector?.properties?.Possible_date_of_submission_of_required_approval?.value);
             reflDataList.frontWhiteList.copCertList.push(vehRefl?.Front_White_Reflector?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -171,10 +177,30 @@ async function generateForm8(form8Data, footerData) {
             hornDataList.validityList.push(hornTACValue);
 
             // Check if TAC value is present
-            hornDataList.suppNameList.push(hornTACValue ? supplierName : "");
+            // hornDataList.suppNameList.push(hornTACValue ? supplierName : "");
+            if (hornTACValue && hornTACValue.trim() !== "") {
+                hornDataList.suppNameList.push(supplierName);
+            }
+            
 
             hornDataList.possibleDateList.push(vehHorn?.Horn?.properties?.Possible_date_of_submission_of_required_approval?.value);
             hornDataList.copCertList.push(vehHorn?.Horn?.properties?.CoP_Cert_No_with_validity_date?.value);
+        }
+    });
+
+    const tyreList = form8Data?.Tyres?.TyresData;
+    // console.log('tyreList:',tyreList);
+    let ftyreDataList = mainData();
+    let rtyreDataList = mainData();
+    tyreList.map(vehTyre => {
+        if (vehTyre.supplier.active === true) {
+            ftyreDataList.suppNameList.push(vehTyre?.supplier?.nameOfSupplier);
+            ftyreDataList.validityList.push(vehTyre?.Front_tyre?.properties?.TAC_Number_Its_Validity?.value);
+            ftyreDataList.possibleDateList.push(vehTyre?.Front_tyre?.properties?.Possible_date_of_submission_of_required_approval?.value);
+            ftyreDataList.copCertList.push(vehTyre?.Front_tyre?.properties?.CoP_Cert_No_with_validity_date?.value);
+            rtyreDataList.validityList.push(vehTyre?.Rear_tyre?.properties?.TAC_Number_Its_Validity?.value);
+            rtyreDataList.possibleDateList.push(vehTyre?.Rear_tyre?.properties?.Possible_date_of_submission_of_required_approval?.value);
+            rtyreDataList.copCertList.push(vehTyre?.Rear_tyre?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
     });
 
@@ -194,44 +220,81 @@ async function generateForm8(form8Data, footerData) {
             // hlMainBeamDataList.suppNameList.push(supplierName);
 
             // // hlMainBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
-            // hlMainBeamDataList.validityList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value);
+            hlMainBeamDataList.validityList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Main Beam Head Lamp
-            const hlMainBeamTACValue = vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Validity?.value;
+            const hlMainBeamTACValue = vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Number?.value;
 
             // Push the TAC value to hlMainBeamDataList
-            hlMainBeamDataList.validityList.push(hlMainBeamTACValue);
+            hlMainBeamDataList.tacNumberList.push(hlMainBeamTACValue);
 
-            // Check if TAC value is present
-            hlMainBeamDataList.suppNameList.push(hlMainBeamTACValue ? supplierName : "");
+            // // Check if TAC value is present
+            // hlMainBeamDataList.suppNameList.push(hlMainBeamTACValue ? supplierName : "");
+            // If hlMainBeamTACValue is "NA", push an empty string; otherwise, push supplierName
+// hlMainBeamDataList.suppNameList.push(hlMainBeamTACValue === "NA" ? "" : supplierName);
+
+// hlMainBeamDataList.suppNameList.push(hlMainBeamTACValue?.trim() === "NA" ? "" : supplierName);
+if (hlMainBeamTACValue && hlMainBeamTACValue.trim() !== "NA") {
+    hlMainBeamDataList.suppNameList.push(supplierName);
+  }
+  
 
             hlMainBeamDataList.possibleDateList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlMainBeamDataList.copCertList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.CoP_Cert_No_with_validity_date?.value)
-            hlMainBeamDataList.tacNumberList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Number?.value)
+            // hlMainBeamDataList.tacNumberList.push(vehHeadLamp?.Main_Beam_Head_Lamp_LED_type?.properties?.TAC_Number?.value)
             // hlDipBeamDataList.suppNameList.push(vehHeadLamp?.supplier?.nameOfSupplier);
             // hlDipBeamDataList.suppNameList.push(supplierName);
-            // hlDipBeamDataList.validityList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value);
+            hlDipBeamDataList.validityList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Dipped Beam Headlamp
-            const hlDipBeamTACValue = vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Validity?.value;
+            const hlDipBeamTACValue = vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the TAC value to hlDipBeamDataList
-            hlDipBeamDataList.validityList.push(hlDipBeamTACValue);
+            hlDipBeamDataList.tacNumberList.push(hlDipBeamTACValue);
 
-            // Check if TAC value is present
-            hlDipBeamDataList.suppNameList.push(hlDipBeamTACValue ? supplierName : "");
-
+            // // Check if TAC value is present
+            // hlDipBeamDataList.suppNameList.push(hlDipBeamTACValue ? supplierName : "");
+            // hlDipBeamDataList.suppNameList.push(hlDipBeamTACValue === "NA" ? "" : supplierName);
+            if (hlDipBeamTACValue && hlDipBeamTACValue.trim() !== "NA") {
+                hlDipBeamDataList.suppNameList.push(supplierName);
+              }
+              
             hlDipBeamDataList.possibleDateList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlDipBeamDataList.copCertList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value)
-            hlDipBeamDataList.tacNumberList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Number?.value)
+            // hlDipBeamDataList.tacNumberList.push(vehHeadLamp?.Dipped_Beam_Headlamp_LED_Type?.properties?.TAC_Number?.value)
 
             hlMainBeamDataList.validityLampList.push(vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.TAC_Validity?.value)
+            const hlMainBeamTAcValue = vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value;
+
+// Push the TAC value to hlMainBeamDataList
+hlMainBeamDataList.tacNumberLampList.push(hlMainBeamTAcValue);
+
+// Check if TAC value is present
+// hlMainBeamDataList.suppNameLampList.push(hlMainBeamTAcValue ? supplierName : "");
+// hlMainBeamDataList.suppNameLampList.push(hlMainBeamTAcValue === "NA" ? "" : supplierName);
+if (hlMainBeamTAcValue && hlMainBeamTAcValue.trim() !== "NA") {
+    hlMainBeamDataList.suppNameLampList.push(supplierName);
+  }
+  
             hlMainBeamDataList.possibleDateLampList.push(vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlMainBeamDataList.copCertLampList.push(vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.CoP_Cert_No_with_validity_date?.value)
-            hlMainBeamDataList.tacNumberLampList.push(vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value)
+            // hlMainBeamDataList.tacNumberLampList.push(vehHeadLamp?.Main_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value)
 
-            hlDipBeamDataList.validityLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Validity?.value)
+            // hlDipBeamDataList.validityLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Validity?.value)
+            const hlDipBeamFilamentTACValue = vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value;
+
+// Push the TAC value to hlDipBeamDataList
+hlDipBeamDataList.tacNumberLampList.push(hlDipBeamFilamentTACValue);
+
+// Check if TAC value is present
+// hlDipBeamDataList.suppNameLampList.push(hlDipBeamFilamentTACValue ? supplierName : "");
+// hlDipBeamDataList.suppNameLampList.push(hlDipBeamFilamentTACValue === "NA" ? "" : supplierName);
+if (hlDipBeamFilamentTACValue && hlDipBeamFilamentTACValue.trim() !== "NA") {
+    hlDipBeamDataList.suppNameLampList.push(supplierName);
+}
+
             hlDipBeamDataList.possibleDateLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.Possible_date_of_submission_of_required_approval?.value)
             hlDipBeamDataList.copCertLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.CoP_Cert_No_with_validity_date?.value)
-            hlDipBeamDataList.tacNumberLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value)
+            // hlDipBeamDataList.tacNumberLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value)
+            hlDipBeamDataList.validityLampList.push(vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Validity?.value)
 
         }
     });
@@ -252,16 +315,21 @@ async function generateForm8(form8Data, footerData) {
             // // dtRunnLampDataList.suppNameList.push(vehRunnLamp?.supplier?.nameOfSupplier);
             // dtRunnLampDataList.validityList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Daytime Running Lamp
-            const dtRunnLampTACValue = vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value;
+            const dtRunnLampTACValue = vehRunnLamp?.Daytime_Running_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value;
 
             // Push the TAC value to dtRunnLampDataList
-            dtRunnLampDataList.validityList.push(dtRunnLampTACValue);
+            dtRunnLampDataList.copCertList.push(dtRunnLampTACValue);
 
             // Check if TAC value is present
-            dtRunnLampDataList.suppNameList.push(dtRunnLampTACValue ? supplierName : "");
-
+            // dtRunnLampDataList.suppNameList.push(dtRunnLampTACValue ? supplierName : "");
+            // dtRunnLampDataList.suppNameList.push(dtRunnLampTACValue === "NA" ? "" : supplierName);
+            if (dtRunnLampTACValue && dtRunnLampTACValue.trim() !== "NA") {
+                dtRunnLampDataList.suppNameList.push(supplierName);
+            }
+            
             dtRunnLampDataList.possibleDateList.push(vehRunnLamp?.Daytime_Running_Lamp.properties?.Possible_date_of_submission_of_required_approval?.value);
-            dtRunnLampDataList.copCertList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
+            dtRunnLampDataList.validityList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.TAC_Validity?.value);
+            // dtRunnLampDataList.copCertList.push(vehRunnLamp?.Daytime_Running_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
     });
 
@@ -282,43 +350,56 @@ async function generateForm8(form8Data, footerData) {
             // frontPosLampDataList.suppNameList.push(vehPosLamp?.supplier.nameOfSupplier);
             // frontPosLampDataList.validityList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value);
             // Get the validity value (TAC_Validity)
-            const validityValue = vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+            const validityValue = vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the validity value to validityList
-            frontPosLampDataList.validityList.push(validityValue);
+            frontPosLampDataList.tacNumberList.push(validityValue);
 
             // Check if validity data is present
-            if (validityValue) {
-                // If data is present, add supplier name
+            // if (validityValue) {
+            //     // If data is present, add supplier name
+            //     frontPosLampDataList.suppNameList.push(supplierName);
+            // } else {
+            //     // If no data is present, add a blank space
+            //     frontPosLampDataList.suppNameList.push("");
+            // }
+            // frontPosLampDataList.suppNameList.push(validityValue === "NA" ? "" : supplierName);
+            if (validityValue && validityValue.trim() !== "NA") {
                 frontPosLampDataList.suppNameList.push(supplierName);
-            } else {
-                // If no data is present, add a blank space
-                frontPosLampDataList.suppNameList.push("");
             }
+            
             frontPosLampDataList.possibleDateList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             frontPosLampDataList.copCertList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            frontPosLampDataList.tacNumberList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Number?.value);
+            frontPosLampDataList.validityList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // frontPosLampDataList.tacNumberList.push(vehPosLamp?.Front_Position_Lamp_LED_Type?.properties?.TAC_Number?.value);
             // rearPosLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
 
             // rearPosLampDataList.suppNameList.push(supplierName);
             // rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
             // Get the validity value for Parking_Lamp_Bulb_Rear (TAC_Validity)
-            const rearValidityValue = vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value;
+            const rearValidityValue = vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value;
 
             // Push the validity value to validityList for rearPosLampDataList
-            rearPosLampDataList.validityList.push(rearValidityValue);
+            rearPosLampDataList.tacNumberList.push(rearValidityValue);
 
-            // Check if validity data is present
-            if (rearValidityValue) {
-                // If data is present, add supplier name
+            // // Check if validity data is present
+            // if (rearValidityValue) {
+            //     // If data is present, add supplier name
+            //     rearPosLampDataList.suppNameList.push(supplierName);
+            // } else {
+            //     // If no data is present, add a blank space
+            //     rearPosLampDataList.suppNameList.push("");
+            // }
+            // rearPosLampDataList.suppNameList.push(rearValidityValue === "NA" ? "" : supplierName);
+            if (rearValidityValue && rearValidityValue.trim() !== "NA") {
                 rearPosLampDataList.suppNameList.push(supplierName);
-            } else {
-                // If no data is present, add a blank space
-                rearPosLampDataList.suppNameList.push("");
             }
+            
+
             rearPosLampDataList.possibleDateList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rearPosLampDataList.copCertList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.CoP_Cert_No_with_validity_date?.value);
-            rearPosLampDataList.tacNumberList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value);
+            rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
+            // rearPosLampDataList.tacNumberList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value);
 
             // stopLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
 
@@ -326,43 +407,63 @@ async function generateForm8(form8Data, footerData) {
             // stopLampDataList.validityList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value);
 
             // Get the validity value for Stop Lamp
-            const stopValidityValue = vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+            const stopValidityValue = vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the validity value to stopLampDataList and add the supplier name (or blank space)
-            stopLampDataList.validityList.push(stopValidityValue);
-            stopLampDataList.suppNameList.push(stopValidityValue ? supplierName : "");
+            stopLampDataList.tacNumberList.push(stopValidityValue);
+            // stopLampDataList.suppNameList.push(stopValidityValue ? supplierName : "");
+            // stopLampDataList.suppNameList.push(stopValidityValue === "NA" ? "" : supplierName);
+            if (stopValidityValue && stopValidityValue.trim() !== "NA") {
+                stopLampDataList.suppNameList.push(supplierName);
+            }
+            
 
             stopLampDataList.possibleDateList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             stopLampDataList.copCertList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            stopLampDataList.tacNumberList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Number?.value);
+            stopLampDataList.validityList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // stopLampDataList.tacNumberList.push(vehPosLamp?.Stop_Lamp_LED_Type?.properties?.TAC_Number?.value);
             // stopLampDataList.suppNameLampList.push(supplierName);
             // stopLampDataList.validityLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Stop Lamp
-const stopLampTACValue = vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value;
+const stopLampTACValue = vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Number?.value;
 
 // Push the TAC value to stopLampDataList
-stopLampDataList.validityLampList.push(stopLampTACValue);
+stopLampDataList.tacNumberLampList.push(stopLampTACValue);
 
 // Check if TAC value is present
-stopLampDataList.suppNameLampList.push(stopLampTACValue ? supplierName : "");
+// stopLampDataList.suppNameLampList.push(stopLampTACValue ? supplierName : "");
+// stopLampDataList.suppNameLampList.push(stopLampTACValue === "NA" ? "" : supplierName);
+if (stopLampTACValue && stopLampTACValue.trim() !== "NA") {
+    stopLampDataList.suppNameLampList.push(supplierName);
+}
+
+
 
             stopLampDataList.possibleDateLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             stopLampDataList.copCertLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            stopLampDataList.tacNumberLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Number?.value);
+            stopLampDataList.validityLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Validity?.value);
+            // stopLampDataList.tacNumberLampList.push(vehPosLamp?.Stop_lamp_bulb_Filament_Type?.properties?.TAC_Number?.value);
 
             // frontPosLampDataList.validityLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Front Position Lamp
-const frontPosLampTACValue = vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value;
+const frontPosLampTACValue = vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Number?.value;
 
 // Push the TAC value to frontPosLampDataList
-frontPosLampDataList.validityLampList.push(frontPosLampTACValue);
+frontPosLampDataList.tacNumberLampList.push(frontPosLampTACValue);
 
 // Check if TAC value is present
-frontPosLampDataList.suppNameLampList.push(frontPosLampTACValue ? supplierName : "");
+// frontPosLampDataList.suppNameLampList.push(frontPosLampTACValue ? supplierName : "");
+// frontPosLampDataList.suppNameLampList.push(frontPosLampTACValue === "NA" ? "" : supplierName);
+if (frontPosLampTACValue && frontPosLampTACValue.trim() !== "NA") {
+    frontPosLampDataList.suppNameLampList.push(supplierName);
+}
+
+
 
             frontPosLampDataList.possibleDateLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             frontPosLampDataList.copCertLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            frontPosLampDataList.tacNumberLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
+            frontPosLampDataList.validityLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // frontPosLampDataList.tacNumberLampList.push(vehPosLamp?.Front_Position_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
 
 
         }
@@ -385,74 +486,109 @@ frontPosLampDataList.suppNameLampList.push(frontPosLampTACValue ? supplierName :
 
             // fdIndLampDataList.validityList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
             // Get the validity value for Front Direction Indicator Lamp
-            const fdIndValidityValue = vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value;
+            const fdIndValidityValue = vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the validity value to fdIndLampDataList
-            fdIndLampDataList.validityList.push(fdIndValidityValue);
+            fdIndLampDataList.tacNumberList.push(fdIndValidityValue);
 
             // Check if validity data is present
-            fdIndLampDataList.suppNameList.push(fdIndValidityValue ? supplierName : "");
+            // fdIndLampDataList.suppNameList.push(fdIndValidityValue ? supplierName : "");
+            // fdIndLampDataList.suppNameList.push(fdIndValidityValue === "NA" ? "" : supplierName);
+            if (fdIndValidityValue && fdIndValidityValue.trim() !== "NA") {
+                fdIndLampDataList.suppNameList.push(supplierName);
+            }
+            
 
-            fdIndLampDataList.tacNumberList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
+
+            fdIndLampDataList.validityList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+            // fdIndLampDataList.tacNumberList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
             fdIndLampDataList.possibleDateList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             fdIndLampDataList.copCertList.push(vehDirInd?.Front_Direction_Indicator_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
             // sdIndLampDataList.suppNameList.push(supplierName);
             // sdIndLampDataList.validityList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Validity?.value);
             // Get the validity value for Side Direction Indicator Lamp
-            const sdIndValidityValue = vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Validity?.value;
+            const sdIndValidityValue = vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Number?.value;
 
             // Push the validity value to sdIndLampDataList
-            sdIndLampDataList.validityList.push(sdIndValidityValue);
+            sdIndLampDataList.tacNumberList.push(sdIndValidityValue);
 
             // Check if validity data is present
-            sdIndLampDataList.suppNameList.push(sdIndValidityValue ? supplierName : "");
+            // sdIndLampDataList.suppNameList.push(sdIndValidityValue ? supplierName : "");
+            // sdIndLampDataList.suppNameList.push(sdIndValidityValue === "NA" ? "" : supplierName);
+            if (sdIndValidityValue && sdIndValidityValue.trim() !== "NA") {
+                sdIndLampDataList.suppNameList.push(supplierName);
+            }
+            
 
-            sdIndLampDataList.tacNumberList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Number?.value);
+
+            sdIndLampDataList.validityList.push(vehDirInd?.Side_Direction_Indicator?.properties?.validityList?.value);
+            // sdIndLampDataList.tacNumberList.push(vehDirInd?.Side_Direction_Indicator?.properties?.TAC_Number?.value);
             sdIndLampDataList.possibleDateList.push(vehDirInd?.Side_Direction_Indicator?.properties?.Possible_date_of_submission_of_required_approval?.value);
             sdIndLampDataList.copCertList.push(vehDirInd?.Side_Direction_Indicator?.properties?.CoP_Cert_No_with_validity_date?.value);
 
             // rdIndLampDataList.suppNameList.push(supplierName);
             // rdIndLampDataList.validityList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
             // Get the validity value for Rear Direction Indicator Lamp
-            const rdIndValidityValue = vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value;
+            const rdIndValidityValue = vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the validity value to rdIndLampDataList
-            rdIndLampDataList.validityList.push(rdIndValidityValue);
+            rdIndLampDataList.tacNumberList.push(rdIndValidityValue);
 
             // Check if validity data is present
-            rdIndLampDataList.suppNameList.push(rdIndValidityValue ? supplierName : "");
+            // rdIndLampDataList.suppNameList.push(rdIndValidityValue ? supplierName : "");
+            // rdIndLampDataList.suppNameList.push(rdIndValidityValue === "NA" ? "" : supplierName);
+            if (rdIndValidityValue && rdIndValidityValue.trim() !== "NA") {
+                rdIndLampDataList.suppNameList.push(supplierName);
+            }
+            
 
-            rdIndLampDataList.tacNumberList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
+
+            rdIndLampDataList.validityList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Validity?.value);
+            // rdIndLampDataList.tacNumberList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.TAC_Number?.value);
             rdIndLampDataList.possibleDateList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rdIndLampDataList.copCertList.push(vehDirInd?.Rear_Direction_Indicator_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
 
             // fdIndLampDataList.validityLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Front Direction Indicator Lamp
-const fdIndLampTACValue = vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value;
+const fdIndLampTACValue = vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Number?.value;
 
 // Push the TAC value to fdIndLampDataList
-fdIndLampDataList.validityLampList.push(fdIndLampTACValue);
+fdIndLampDataList.tacNumberLampList.push(fdIndLampTACValue);
 
 // Check if TAC value is present
-fdIndLampDataList.suppNameLampList.push(fdIndLampTACValue ? supplierName : "");
+// fdIndLampDataList.suppNameLampList.push(fdIndLampTACValue ? supplierName : "");
+// fdIndLampDataList.suppNameLampList.push(fdIndLampTACValue === "NA" ? "" : supplierName);
+if (fdIndLampTACValue && fdIndLampTACValue.trim() !== "NA") {
+    fdIndLampDataList.suppNameLampList.push(supplierName);
+}
 
-            fdIndLampDataList.tacNumberLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Number?.value);
+
+
+            fdIndLampDataList.validityLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // fdIndLampDataList.tacNumberLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.TAC_Number?.value);
             fdIndLampDataList.possibleDateLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             fdIndLampDataList.copCertLampList.push(vehDirInd?.Front_Direction_indicator_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
             // rdIndLampDataList.validityLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Rear Direction Indicator Lamp
-const rdIndLampTACValue = vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value;
+const rdIndLampTACValue = vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Number?.value;
 
 // Push the TAC value to rdIndLampDataList
-rdIndLampDataList.validityLampList.push(rdIndLampTACValue);
+rdIndLampDataList.tacNumberLampList.push(rdIndLampTACValue);
 
 // Check if TAC value is present
-rdIndLampDataList.suppNameLampList.push(rdIndLampTACValue ? supplierName : "");
+// rdIndLampDataList.suppNameLampList.push(rdIndLampTACValue ? supplierName : "");
+// rdIndLampDataList.suppNameLampList.push(rdIndLampTACValue === "NA" ? "" : supplierName);
+if (rdIndLampTACValue && rdIndLampTACValue.trim() !== "NA") {
+    rdIndLampDataList.suppNameLampList.push(supplierName);
+}
 
-            rdIndLampDataList.tacNumberLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Number?.value);
+
+
+            rdIndLampDataList.validityLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Validity?.value);
+            // rdIndLampDataList.tacNumberLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.TAC_Number?.value);
             rdIndLampDataList.possibleDateLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rdIndLampDataList.copCertLampList.push(vehDirInd?.Rear_Direction_Indicator_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -475,31 +611,45 @@ rdIndLampDataList.suppNameLampList.push(rdIndLampTACValue ? supplierName : "");
             // // revLampDataList.suppNameList.push(vehRevLamp?.supplier?.nameOfSupplier);
             // revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
             // Get the validity value for Reversing Lamp
-            const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value;
+            const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value;
 
             // Push the validity value to revLampDataList
-            revLampDataList.validityList.push(revLampValidityValue);
+            revLampDataList.copCertList.push(revLampValidityValue);
 
             // Check if validity data is present
-            revLampDataList.suppNameList.push(revLampValidityValue ? supplierName : "");
+            // revLampDataList.suppNameList.push(revLampValidityValue ? supplierName : "");
+            // revLampDataList.suppNameList.push(revLampValidityValue === "NA" ? "" : supplierName);
+            if (revLampValidityValue && revLampValidityValue.trim() !== "NA") {
+                revLampDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             revLampDataList.possibleDateList.push(vehRevLamp?.Reversing_Lamp?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            revLampDataList.copCertList.push(vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
-            revLampDataList.tacNumberList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Number?.value);
+            // revLampDataList.copCertList.push(vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
+            revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
+            // revLampDataList.tacNumberList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Number?.value);
 
             // revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Reverse Lamp
-const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value;
+const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value;
 
 // Push the TAC value to revLampDataList
-revLampDataList.validityLampList.push(revLampTACValue);
+revLampDataList.copCertLampList.push(revLampTACValue);
 
 // Check if TAC value is present
-revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
+// revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
+// revLampDataList.suppNameLampList.push(revLampTACValue === "NA" ? "" : supplierName);
+if (revLampTACValue && revLampTACValue.trim() !== "NA") {
+    revLampDataList.suppNameLampList.push(supplierName);
+}
+
+
 
             revLampDataList.possibleDateLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            revLampDataList.copCertLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            revLampDataList.tacNumberLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
+            // revLampDataList.copCertLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
+            revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+            // revLampDataList.tacNumberLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
         }
     });
 
@@ -518,29 +668,43 @@ revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
             // // rrpLampDataList.suppNameList.push(vehRRPLamp?.supplier?.nameOfSupplier);
             // rrpLampDataList.validityList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value);
             // Get the validity value for Registration Plate Lamp
-            const rrpLampValidityValue = vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value;
+            const rrpLampValidityValue = vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Number?.value;
 
             // Push the validity value to rrpLampDataList
-            rrpLampDataList.validityList.push(rrpLampValidityValue);
+            rrpLampDataList.tacNumberList.push(rrpLampValidityValue);
 
             // Check if validity data is present
-            rrpLampDataList.suppNameList.push(rrpLampValidityValue ? supplierName : "");
+            // rrpLampDataList.suppNameList.push(rrpLampValidityValue ? supplierName : "");
+            // rrpLampDataList.suppNameList.push(rrpLampValidityValue === "NA" ? "" : supplierName);
+            if (rrpLampValidityValue && rrpLampValidityValue.trim() !== "NA") {
+                rrpLampDataList.suppNameList.push(supplierName);
+            }
+            
 
-            rrpLampDataList.tacNumberList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Number?.value);
+
+            rrpLampDataList.validityList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Validity?.value);
+            // rrpLampDataList.tacNumberList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.TAC_Number?.value);
             rrpLampDataList.possibleDateList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rrpLampDataList.copCertList.push(vehRRPLamp?.Registration_Plate_Lamp_LED_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
 
             // rrpLampDataList.validityLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value);
             // Get the TAC Validity value for Registration Plate Lamp
-const rrpLampTACValue = vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value;
+const rrpLampTACValue = vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Number?.value;
 
 // Push the TAC value to rrpLampDataList
-rrpLampDataList.validityLampList.push(rrpLampTACValue);
+rrpLampDataList.tacNumberLampList.push(rrpLampTACValue);
 
 // Check if TAC value is present
-rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
+// rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
+// rrpLampDataList.suppNameLampList.push(rrpLampTACValue === "NA" ? "" : supplierName);
+if (rrpLampTACValue && rrpLampTACValue.trim() !== "NA") {
+    rrpLampDataList.suppNameLampList.push(supplierName);
+}
 
-            rrpLampDataList.tacNumberLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Number?.value);
+
+
+            rrpLampDataList.validityLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Validity?.value);
+            // rrpLampDataList.tacNumberLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.TAC_Number?.value);
             rrpLampDataList.possibleDateLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rrpLampDataList.copCertLampList.push(vehRRPLamp?.Registration_Plate_Lamp_bulb_type?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -568,10 +732,16 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             hydrBrkHoseDataList.validityList.push(hydrBrkHoseTACValue);
 
             // Check if validity data is present
-            hydrBrkHoseDataList.suppNameList.push(hydrBrkHoseTACValue ? supplierName : "");
+            // hydrBrkHoseDataList.suppNameList.push(hydrBrkHoseTACValue ? supplierName : "");
+            // hydrBrkHoseDataList.suppNameList.push(hydrBrkHoseTACValue === "NA" ? "" : supplierName);
 
+            if (hydrBrkHoseTACValue && hydrBrkHoseTACValue.trim() !== "") {
+                hydrBrkHoseDataList.suppNameList.push(supplierName);
+            }
+            
             hydrBrkHoseDataList.possibleDateList.push(vehHydr?.Hydraulic_Brake_Hose?.properties?.Possible_date_of_submission_of_required_approval?.value);
             hydrBrkHoseDataList.copCertList.push(vehHydr?.Hydraulic_Brake_Hose?.properties.CoP_Cert_No_with_validity_date?.value);
+            
         }
     });
 
@@ -607,10 +777,17 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             rearViewMirrorsDataList.tacNumberList.push(rearViewMirrorTACValue);
 
             // Check if TAC value is present
-            rearViewMirrorsDataList.suppNameList.push(rearViewMirrorTACValue ? supplierName : "");
+            // rearViewMirrorsDataList.suppNameList.push(rearViewMirrorTACValue ? supplierName : "");
+            // rearViewMirrorsDataList.suppNameList.push(rearViewMirrorTACValue === "NA" ? "" : supplierName);
+            if (rearViewMirrorTACValue && rearViewMirrorTACValue.trim() !== "") {
+                rearViewMirrorsDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             rearViewMirrorsDataList.possibleDateList.push(vehMirror?.Rear_View_Mirror?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rearViewMirrorsDataList.copCertList.push(vehMirror?.Rear_View_Mirror?.properties?.CoP_Cert_No_with_validity_date?.value);
+          
         }
     });
     const TractionBatterypackList = form8Data?.Traction_Battery_Pack?.TractionBatterypack;
@@ -634,7 +811,12 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             TractionBatterypackDataList.tacNumberList.push(tractionBatteryTACValue);
 
             // Check if TAC value is present
-            TractionBatterypackDataList.suppNameList.push(tractionBatteryTACValue ? supplierName : "");
+            // TractionBatterypackDataList.suppNameList.push(tractionBatteryTACValue ? supplierName : "");
+            // TractionBatterypackDataList.suppNameList.push(tractionBatteryTACValue === "NA" ? "" : supplierName);
+            if (tractionBatteryTACValue && tractionBatteryTACValue.trim() !== "") {
+                TractionBatterypackDataList.suppNameList.push(supplierName);
+            }
+            
 
             TractionBatterypackDataList.possibleDateList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.Possible_date_of_submission_of_required_approval?.value);
             TractionBatterypackDataList.copCertList.push(vehTractionBatterypack?.Traction_Battery_Pack?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -665,7 +847,13 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             FWheelRimDataList.tacNumberList.push(fWheelRimTACValue);
 
             // Check if TAC value is present
-            FWheelRimDataList.suppNameList.push(fWheelRimTACValue ? supplierName : "");
+            // FWheelRimDataList.suppNameList.push(fWheelRimTACValue ? supplierName : "");
+            // FWheelRimDataList.suppNameList.push(fWheelRimTACValue === "NA" ? "" : supplierName);
+            if (fWheelRimTACValue && fWheelRimTACValue.trim() !== "") {
+                FWheelRimDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             FWheelRimDataList.possibleDateList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.Possible_date_of_submission_of_required_approval?.value);
             FWheelRimDataList.copCertList.push(vehWheelRim?.Front_Wheel_Rim?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -698,7 +886,13 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             WindscreenDataList.tacNumberList.push(windscreenTACValue);
 
             // Check if TAC value is present
-            WindscreenDataList.suppNameList.push(windscreenTACValue ? supplierName : "");
+            // WindscreenDataList.suppNameList.push(windscreenTACValue ? supplierName : "");
+            // WindscreenDataList.suppNameList.push(windscreenTACValue === "NA" ? "" : supplierName);
+            if (windscreenTACValue && windscreenTACValue.trim() !== "") {
+                WindscreenDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             WindscreenDataList.possibleDateList.push(vehWindscreen?.Windscreen?.properties?.Possible_date_of_submission_of_required_approval?.value);
             WindscreenDataList.copCertList.push(vehWindscreen?.Windscreen?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -725,7 +919,13 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             SideglassDataList.tacNumberList.push(sideglassTACValue);
 
             // Check if TAC value is present
-            SideglassDataList.suppNameList.push(sideglassTACValue ? supplierName : "");
+            // SideglassDataList.suppNameList.push(sideglassTACValue ? supplierName : "");
+            // SideglassDataList.suppNameList.push(sideglassTACValue === "NA" ? "" : supplierName);
+            if (sideglassTACValue && sideglassTACValue.trim() !== "") {
+                SideglassDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             SideglassDataList.possibleDateList.push(vehSideglass?.Side_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
             SideglassDataList.copCertList.push(vehSideglass?.Side_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -752,7 +952,13 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             RearglassDataList.tacNumberList.push(rearglassTACValue);
 
             // Check if TAC value is present
-            RearglassDataList.suppNameList.push(rearglassTACValue ? supplierName : "");
+            // RearglassDataList.suppNameList.push(rearglassTACValue ? supplierName : "");
+            // RearglassDataList.suppNameList.push(rearglassTACValue === "NA" ? "" : supplierName);
+            if (rearglassTACValue && rearglassTACValue.trim() !== "") {
+                RearglassDataList.suppNameList.push(supplierName);
+            }
+            
+
 
             RearglassDataList.possibleDateList.push(vehRearglass?.Rear_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
             RearglassDataList.copCertList.push(vehRearglass?.Rear_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
@@ -779,8 +985,13 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
             WindscreenwipingDataList.tacNumberList.push(windscreenwipingTACValue);
 
             // Check if TAC value is present
-            WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue ? supplierName : "");
+            // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue ? supplierName : "");
+            // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue === "NA" ? "" : supplierName);
 
+            if (windscreenwipingTACValue && windscreenwipingTACValue.trim() !== "") {
+                WindscreenwipingDataList.suppNameList.push(supplierName);
+            }
+            
             WindscreenwipingDataList.possibleDateList.push(vehWindscreenwiping?.Wiping_System?.properties?.Possible_date_of_submission_of_required_approval?.value);
             WindscreenwipingDataList.copCertList.push(vehWindscreenwiping?.Wiping_System?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
@@ -1325,7 +1536,228 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 ]
                                             }
                                         ),
-                                        new TableCell(
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     text: "Front",
+                                //                                     size: "12pt",
+                                //                                     bold: true
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "paragrapgBold",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 }),
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         )
+                                //     ]
+                                // }),
+                                // new TableRow({
+                                //     children: [
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 1000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     bold: true,
+                                //                                     text: "",
+                                //                                     size: "12pt"
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     text: "Rear",
+                                //                                     size: "12pt",
+                                //                                     bold: true
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "paragrapgBold",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 }),
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         ),
+                                new TableCell(
                                             {
                                                 width: {
                                                     size: 3000,
@@ -1355,34 +1787,12 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
-                                                            style: "paragrapgBold",
-                                                            children: [
-                                                                new TextRun({
-                                                                    size: "12pt",
-                                                                    bold: true,
-                                                                    text: ""
-                                                                }),
-                                                            ]
-                                                        }
-                                                    )
-                                                ]
-                                            }
-                                        ),
-                                        new TableCell(
-                                            {
-                                                width: {
-                                                    size: 3000,
-                                                    type: WidthType.DXA
-                                                },
-                                                children: [
-                                                    new Paragraph(
-                                                        {
                                                             style: "table1Header",
                                                             children: [
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: ftyreDataList.suppNameList.join(",")
                                                                 })
                                                             ]
                                                         }
@@ -1404,7 +1814,7 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: ftyreDataList.validityList.join(",")
                                                                 })
                                                             ]
                                                         }
@@ -1426,14 +1836,36 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: ftyreDataList.possibleDateList.join(",")
                                                                 })
                                                             ]
                                                         }
                                                     )
                                                 ]
                                             }
-                                        )
+                                        ),
+                                        new TableCell(
+                                            {
+                                                width: {
+                                                    size: 3000,
+                                                    type: WidthType.DXA
+                                                },
+                                                children: [
+                                                    new Paragraph(
+                                                        {
+                                                            style: "table1Header",
+                                                            children: [
+                                                                new TextRun({
+                                                                    size: "12pt",
+                                                                    bold: true,
+                                                                    text: ftyreDataList.copCertList.join(",")
+                                                                })
+                                                            ]
+                                                        }
+                                                    )
+                                                ]
+                                            }
+                                        ),
                                     ]
                                 }),
                                 new TableRow({
@@ -1489,34 +1921,12 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
-                                                            style: "paragrapgBold",
-                                                            children: [
-                                                                new TextRun({
-                                                                    size: "12pt",
-                                                                    bold: true,
-                                                                    text: ""
-                                                                }),
-                                                            ]
-                                                        }
-                                                    )
-                                                ]
-                                            }
-                                        ),
-                                        new TableCell(
-                                            {
-                                                width: {
-                                                    size: 3000,
-                                                    type: WidthType.DXA
-                                                },
-                                                children: [
-                                                    new Paragraph(
-                                                        {
                                                             style: "table1Header",
                                                             children: [
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: ftyreDataList.suppNameList.join(",")
                                                                 })
                                                             ]
                                                         }
@@ -1538,7 +1948,7 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: rtyreDataList.validityList.join(",")
                                                                 })
                                                             ]
                                                         }
@@ -1560,16 +1970,62 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                                 new TextRun({
                                                                     size: "12pt",
                                                                     bold: true,
-                                                                    text: ""
+                                                                    text: rtyreDataList.possibleDateList.join(",")
                                                                 })
                                                             ]
                                                         }
                                                     )
                                                 ]
                                             }
-                                        )
+                                        ),
+                                        new TableCell(
+                                            {
+                                                width: {
+                                                    size: 3000,
+                                                    type: WidthType.DXA
+                                                },
+                                                children: [
+                                                    new Paragraph(
+                                                        {
+                                                            style: "table1Header",
+                                                            children: [
+                                                                new TextRun({
+                                                                    size: "12pt",
+                                                                    bold: true,
+                                                                    text: rtyreDataList.copCertList.join(",")
+                                                                })
+                                                            ]
+                                                        }
+                                                    )
+                                                ]
+                                            }
+                                        ),
                                     ]
                                 }),
+                                //         new TableCell(
+                                //             {
+                                //                 width: {
+                                //                     size: 3000,
+                                //                     type: WidthType.DXA
+                                //                 },
+                                //                 children: [
+                                //                     new Paragraph(
+                                //                         {
+                                //                             style: "table1Header",
+                                //                             children: [
+                                //                                 new TextRun({
+                                //                                     size: "12pt",
+                                //                                     bold: true,
+                                //                                     text: ""
+                                //                                 })
+                                //                             ]
+                                //                         }
+                                //                     )
+                                //                 ]
+                                //             }
+                                //         )
+                                //     ]
+                                // }),
                                 new TableRow({
                                     children: [
                                         new TableCell(
@@ -2170,6 +2626,37 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
 
 
 
+                                        // new TableCell({
+                                        //     width: {
+                                        //         size: 3000,
+                                        //         type: WidthType.DXA,
+                                        //     },
+                                        //     children: [
+                                        //         new Paragraph({
+                                        //             style: "table1Header",
+                                        //             children: [
+                                        //                 // Create an array of TextRun for each supplier
+                                        //                 ...[
+                                        //                     reflDataList.frontWhiteList,
+                                        //                     reflDataList.rearRedList,
+                                        //                     reflDataList.sideAmberList,
+                                        //                 ].map((supplier) => {
+                                        //                     // Generate a formatted string for the supplier
+                                        //                     const formattedData = supplier.tacNumberList.map((tacNumber, index) => {
+                                        //                         const validity = supplier.validityList[index] || '';
+                                        //                         return `${tacNumber} ${validity}  `; // Use backticks for string interpolation
+                                        //                     }).join(', ');
+
+                                        //                     return new TextRun({
+                                        //                         size: 24, // Adjust size to the correct point value if needed
+                                        //                         bold: true,
+                                        //                         text: formattedData,
+                                        //                     });
+                                        //                 }),
+                                        //             ],
+                                        //         }),
+                                        //     ],
+                                        // }),
                                         new TableCell({
                                             width: {
                                                 size: 3000,
@@ -2179,22 +2666,37 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 new Paragraph({
                                                     style: "table1Header",
                                                     children: [
-                                                        // Create an array of TextRun for each supplier
-                                                        ...[
-                                                            reflDataList.frontWhiteList,
-                                                            reflDataList.rearRedList,
-                                                            reflDataList.sideAmberList,
-                                                        ].map((supplier) => {
-                                                            // Generate a formatted string for the supplier
-                                                            const formattedData = supplier.tacNumberList.map((tacNumber, index) => {
-                                                                const validity = supplier.validityList[index] || '';
-                                                                return `${tacNumber} ${validity}  `; // Use backticks for string interpolation
-                                                            }).join(', ');
-
+                                                        // Process frontWhiteList (first one)
+                                                        ...reflDataList.frontWhiteList.tacNumberList.map((tacNumber, index) => {
+                                                            const validity = reflDataList.frontWhiteList.validityList[index] || '';
                                                             return new TextRun({
-                                                                size: 24, // Adjust size to the correct point value if needed
+                                                                size: 24,
                                                                 bold: true,
-                                                                text: formattedData,
+                                                                text: `${tacNumber} ${validity} ` ,
+                                                            });
+                                                        }),
+                                        
+                                                        // Add a line break
+                                                        new TextRun({ break: 1 }),
+                                        
+                                                        // Process rearRedList (second one in new line)
+                                                        ...reflDataList.rearRedList.tacNumberList.map((tacNumber, index) => {
+                                                            const validity = reflDataList.rearRedList.validityList[index] || '';
+                                                            return new TextRun({
+                                                                size: 24,
+                                                                bold: true,
+                                                                text: `${tacNumber} ${validity} ` ,
+                                                            });
+                                                        }),
+                                         // Add a line break
+                                         new TextRun({ break: 1 }),
+                                                        // Process sideAmberList (continues on the same line as rearRedList)
+                                                        ...reflDataList.sideAmberList.tacNumberList.map((tacNumber, index) => {
+                                                            const validity = reflDataList.sideAmberList.validityList[index] || '';
+                                                            return new TextRun({
+                                                                size: 24,
+                                                                bold: true,
+                                                                text: `${tacNumber} ${validity} ` ,
                                                             });
                                                         }),
                                                     ],
@@ -4803,7 +5305,8 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: hlMainBeamDataList.suppNameList.join("\n\r"),
+                                                                    // text: hlMainBeamDataList.suppNameList.join("\n\r"),
+                                                                    text: hlMainBeamDataList.suppNameLampList.join("\n\r"),                                                                    
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -4935,7 +5438,8 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                         {
                                                             children: [
                                                                 new TextRun({
-                                                                    text: hlDipBeamDataList.suppNameList.join("\n\r"),
+                                                                    // text: hlDipBeamDataList.suppNameList.join("\n\r"),
+                                                                    text: hlDipBeamDataList.suppNameLampList.join("\n\r"),                                                                    
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5791,9 +6295,15 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: sdIndLampDataList.suppNameList.join("\n\r"),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: sdIndLampDataList.suppNameList.join("\n\r"),
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5811,23 +6321,30 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: sdIndLampDataList.tacNumberList.join(","),
+                                                            //         size: "12pt"
+                                                            //     }),
+                                                            //     new TextRun({
+                                                            //         text: " ",
+                                                            //         size: "12pt",
+                                                            //     }),
+                                                            //     new TextRun({
+                                                            //         text: sdIndLampDataList.validityList.join(","),
+                                                            //         size: "12pt"
+                                                            //     }),
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: sdIndLampDataList.tacNumberList.join(","),
+                                                                    text: "",
                                                                     size: "12pt"
-                                                                }),
-                                                                new TextRun({
-                                                                    text: " ",
-                                                                    size: "12pt",
-                                                                }),
-                                                                new TextRun({
-                                                                    text: sdIndLampDataList.validityList.join(","),
-                                                                    size: "12pt"
-                                                                }),
+                                                                })
                                                             ]
                                                         }
                                                     )
                                                 ]
+                                              
                                             }
                                         ),
                                         new TableCell(
@@ -5839,9 +6356,15 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: sdIndLampDataList.possibleDateList.join(","),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: sdIndLampDataList.possibleDateList.join(","),
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -5859,9 +6382,15 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: sdIndLampDataList.copCertList.join(","),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: sdIndLampDataList.copCertList.join(","),
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -11449,6 +11978,10 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                         {
                                                             children: [
                                                                 new TextRun({
+                                                                    text: hlMainBeamDataList.suppNameList.join(","),
+                                                                    size: "12pt"
+                                                                }),
+                                                                new TextRun({
                                                                     text: hlDipBeamDataList.suppNameList.join(","),
                                                                     size: "12pt"
                                                                 }),
@@ -12008,9 +12541,15 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: rearPosLampDataList.suppNameList.join("\n\r"),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: rearPosLampDataList.suppNameList.join("\n\r"),
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -12028,37 +12567,23 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: rearPosLampDataList.tacNumberList.join(","),
+                                                            //         size: "12pt"
+                                                            //     }),
+                                                            //     new TextRun({
+                                                            //         text: " ",
+                                                            //         size: "12pt",
+                                                            //     }),
+                                                            //     new TextRun({
+                                                            //         text: rearPosLampDataList.validityList.join(","),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: rearPosLampDataList.tacNumberList.join(","),
-                                                                    size: "12pt"
-                                                                }),
-                                                                new TextRun({
-                                                                    text: " ",
-                                                                    size: "12pt",
-                                                                }),
-                                                                new TextRun({
-                                                                    text: rearPosLampDataList.validityList.join(","),
-                                                                    size: "12pt"
-                                                                })
-                                                            ]
-                                                        }
-                                                    )
-                                                ]
-                                            }
-                                        ),
-                                        new TableCell(
-                                            {
-                                                width: {
-                                                    size: 3000,
-                                                    type: WidthType.DXA
-                                                },
-                                                children: [
-                                                    new Paragraph(
-                                                        {
-                                                            children: [
-                                                                new TextRun({
-                                                                    text: rearPosLampDataList.possibleDateList.join(","),
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -12076,9 +12601,42 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                                                 children: [
                                                     new Paragraph(
                                                         {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: rearPosLampDataList.possibleDateList.join(","),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
                                                             children: [
                                                                 new TextRun({
-                                                                    text: rearPosLampDataList.copCertList.join(","),
+                                                                    text: "",
+                                                                    size: "12pt"
+                                                                })
+                                                            ]
+                                                        }
+                                                    )
+                                                ]
+                                               
+                                            }
+                                        ),
+                                        new TableCell(
+                                            {
+                                                width: {
+                                                    size: 3000,
+                                                    type: WidthType.DXA
+                                                },
+                                                children: [
+                                                    new Paragraph(
+                                                        {
+                                                            // children: [
+                                                            //     new TextRun({
+                                                            //         text: rearPosLampDataList.copCertList.join(","),
+                                                            //         size: "12pt"
+                                                            //     })
+                                                            // ]
+                                                            children: [
+                                                                new TextRun({
+                                                                    text: "",
                                                                     size: "12pt"
                                                                 })
                                                             ]
@@ -15886,193 +16444,7 @@ rrpLampDataList.suppNameLampList.push(rrpLampTACValue ? supplierName : "");
                             size: "12pt"
                         }
                     )
-                ],
-                // footers: {
-                //     default: new Footer({
-                //         children: [
-                //             new Table({
-                //                 width: {
-                //                     size: 10000,
-                //                     type: WidthType.DXA
-                //                 },
-                //                 rows: [
-                //                     new TableRow({
-                //                         children: [
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Manufacturer :" + dataOfFooter.Manufacture_Name.value
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Sheet No : "
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Test Agency : "
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             })
-                //                         ]
-                //                     }),
-                //                     new TableRow({
-                //                         children: [
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: ""
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Document No: " + dataOfFooter.Document_No.value
-                //                                             }),                                                           
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: ""
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             })
-                //                         ]
-                //                     }),
-                //                     new TableRow({
-                //                         children: [
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value
-                //                                             }),
-                //                                             new TextRun({
-                //                                                 text: "Designation:" + dataOfFooter.Engineer_Designation.value,
-                //                                                 break: 1
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Date : "
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             }),
-                //                             new TableCell({
-                //                                 width: {
-                //                                     size: 3300,
-                //                                     WidthType: WidthType.DXA
-                //                                 },
-                //                                 children: [
-                //                                     new Paragraph({
-                //                                         style: "redColorText",
-                //                                         children: [
-                //                                             new TextRun({
-                //                                                 text: "Name: "
-                //                                             }),
-                //                                             new TextRun({
-                //                                                 text: "Designation: ",
-                //                                                 break: 1
-                //                                             })
-                //                                         ]
-                //                                     })
-                //                                 ]
-                //                             })
-                //                         ]
-                //                     })
-                //                 ]
-                //             }),
-                //             new Paragraph({
-                //                 children: [
-                //                     new TextRun({
-                //                         children: ["Page | ", PageNumber.CURRENT]
-                //                     })
-                //                 ],
-                //                 alignment: AlignmentType.RIGHT
-                //             })
-                //         ]
-                //     })
-                // }
+                ],             
                 footers: {
                     default: new Footer({
                         children: [

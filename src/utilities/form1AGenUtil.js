@@ -2,14 +2,32 @@ import exportDoc from './exportUtil';
 import { populateMultiSupData, tyresList, dStrapRows, handholdStrap3wheeler_Rows } from './form1ADataGenerator';
 import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, ImageRun, WidthType, Footer, PageNumber } from "docx";
 let foot;
+let vehicle_Type;
 let multiSupplierDataList = [];
 let form1ATable1RowsList = [];
 let form1ATable2RowsList = [];
 let form1ATable3RowsList = [];
 let docSealImage;
+
 function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
 
+    // if (dStrapRows) {
+    //     vehicle_Type = 2;
+    //     console.log('true it is two wheeler', dStrapRows)
+    // } else {
+    //     vehicle_Type = 3;
+    //     console.log('false it is three wheeler', handholdStrap3wheeler_Rows)
+    // }
+    const isTwoWheeler = !!dStrapRows;  // Truthy check for Two-Wheeler
+const isThreeWheeler = !!handholdStrap3wheeler_Rows;  // Truthy check for Three-Wheeler
 
+if (isTwoWheeler && isThreeWheeler) {
+    vehicle_Type = 3;  // If both are present, create table
+} else if (isTwoWheeler) {
+    vehicle_Type = 2;  // Only Two-Wheeler, no table
+} else {
+    vehicle_Type = 3;  // Either Three-Wheeler is present or both are absent, create table
+}
     const dataOfFooterr = footerData.footerData.SealSign.properties;
     let imageUrl;
 
@@ -52,6 +70,8 @@ function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
         });
 
     fetch(itemsListName).then(response => response.text()).then(responseText => {
+        console.log('dStrapRows:', dStrapRows);
+        console.log('handholdStrap3wheeler_Rows:', handholdStrap3wheeler_Rows);
         if (responseText) {
             const lines = responseText.split("\n");
             if (lines && lines.length > 0) {
@@ -2097,6 +2117,7 @@ function generateForm1A(form1Adata, footerData) {
             )
         ]
     });
+    form1ATable1RowsList=[];
     form1ATable1RowsList.push(headerRow);
 
     const headerRowTable2 = new TableRow({
@@ -2125,8 +2146,15 @@ function generateForm1A(form1Adata, footerData) {
             )
         ]
     });
+    form1ATable2RowsList=[];
     form1ATable2RowsList.push(headerRowTable2);
-
+    // if (dStrapRows && dStrapRows.length > 0) {
+    // if (
+    //     !(
+    //         (Array.isArray(dStrapRows) && dStrapRows.length > 0) && // dStrapRows is present
+    //         !(Array.isArray(handholdStrap3wheeler_Rows) && handholdStrap3wheeler_Rows.length > 0) // handholdStrap3wheeler_Rows is NOT present
+    //     )
+    // ) {
     const headerRowTable3 = new TableRow({
         children: [
             new TableCell(
@@ -2153,7 +2181,9 @@ function generateForm1A(form1Adata, footerData) {
             )
         ]
     });
+    form1ATable3RowsList=[];
     form1ATable3RowsList.push(headerRowTable3);
+    // }
     multiSupplierDataList = populateMultiSupData(form1Adata);
     readList('./Form1A_List1.csv', form1Adata, footerData);
 }
@@ -2407,6 +2437,30 @@ function fillAndDownload(form1Adata, footerData) {
                             level: 0
                         }
                     }),
+
+
+
+                    new Paragraph("\n\n"),
+                    // ...(vehicle_Type && vehicle_Type === 3
+                    //     ? [
+                    //         new Table({
+                    //             columnWidths: [7000, 3000],
+                    //             rows: form1ATable3RowsList,
+                    //             size: "12pt",
+                    //         }),
+                    //     ]
+                    //     : []),
+
+                    ...(vehicle_Type === 3
+                        ? [
+                            new Table({
+                                columnWidths: [7000, 3000],
+                                rows: form1ATable3RowsList,
+                                size: "12pt",
+                            }),
+                        ]
+                        : [])
+
                     // new Paragraph("\n\n"),
                     // new Table(
                     //     {
@@ -2415,21 +2469,55 @@ function fillAndDownload(form1Adata, footerData) {
                     //         size: "12pt"
                     //     }
                     // ),
-                    new Paragraph("\n\n"),
-                    ...(
-                        !(
-                            (Array.isArray(dStrapRows) && dStrapRows.length > 0) && // dStrapRows is present
-                            !(Array.isArray(handholdStrap3wheeler_Rows) && handholdStrap3wheeler_Rows.length > 0) // handholdStrap3wheeler_Rows is NOT present
-                        )
-                            ? [
-                                new Table({
-                                    columnWidths: [7000, 3000],
-                                    rows: form1ATable3RowsList,
-                                    size: "12pt",
-                                }),
-                            ]
-                            : []
-                    )
+                    // new Paragraph("\n\n"),
+                    // ...(
+                    //     !(
+                    //         (Array.isArray(dStrapRows) && dStrapRows.length > 0) && // dStrapRows is present
+                    //         !(Array.isArray(handholdStrap3wheeler_Rows) && handholdStrap3wheeler_Rows.length > 0) // handholdStrap3wheeler_Rows is NOT present
+                    //     )
+
+                    //         ?
+
+                    //  [
+                    //     new Table({
+                    //         columnWidths: [7000, 3000],
+                    //         rows: form1ATable3RowsList,
+                    //         size: "12pt",
+                    //     }),
+                    // ]
+                    // : []
+
+
+                    //         (
+                    //             console.log("Table dStrapRows inside :",dStrapRows),
+                    //             console.log(
+                    //                 !(
+                    //                     (Array.isArray(dStrapRows) && dStrapRows.length > 0) &&
+                    //                     !(Array.isArray(handholdStrap3wheeler_Rows) && handholdStrap3wheeler_Rows.length > 0)
+                    //                 )
+                    //             ),
+                    //             []
+
+                    //             // [
+                    //             //     new Table({
+                    //             //         columnWidths: [7000, 3000],
+                    //             //         rows: form1ATable3RowsList,
+                    //             //         size: "12pt",
+                    //             //     }),
+                    //             // ]
+                    //         )
+                    //         : (
+                    //             console.log("Table dStrapRows:",dStrapRows),
+                    //             // []
+                    //              [
+                    //                 new Table({
+                    //                     columnWidths: [7000, 3000],
+                    //                     rows: form1ATable3RowsList,
+                    //                     size: "12pt",
+                    //                 }),
+                    //             ]
+                    //         )
+                    // ),
                 ],
                 // 
                 // footers: {
