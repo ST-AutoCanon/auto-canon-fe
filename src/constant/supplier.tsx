@@ -392,12 +392,6 @@ export const SelectRotorTypeOptions = [
 ];
 
 export const SelectCoolingSystemOptions = [
-  // { value: "Motor: Liquid", name: "Motor: Liquid", disabled: false },
-  // { value: "Motor: Air", name: "Motor: Air", disabled: false },
-  // { value: "Controller: Liquid", name: "Controller: Liquid", disabled: false },
-  // { value: "Controller: Air", name: "Controller: Air", disabled: false },
-  // { value: "Battery: Liquid", name: "Battery: Liquid", disabled: false },
-  // { value: "Battery: Air", name: "Battery: Air", disabled: false },
   { "value": "Motor: Liquid, Controller: Liquid, Battery: Liquid", "name": "Motor: Liquid, Controller: Liquid, Battery: Liquid", "disabled": false },
   { "value": "Motor: Liquid, Controller: Liquid, Battery: Air", "name": "Motor: Liquid, Controller: Liquid, Battery: Air", "disabled": false },
   { "value": "Motor: Liquid, Controller: Air, Battery: Liquid", "name": "Motor: Liquid, Controller: Air, Battery: Liquid", "disabled": false },
@@ -523,12 +517,34 @@ export const PassengerSeatTypeOptions = [
 ];
 
 
+// export const LubricationMethodOptions = [
+//   { name: "Bearings (Friction / Ball)", value: "Bearings (Friction / Ball)", disabled: false },
+//   { name: "Lubricant (Grease / Oil)", value: "Lubricant (Grease / Oil)", disabled: false },
+//   { name: "Seal (Yes / No)", value: "Seal (Yes / No)", disabled: false },
+//   { name: "Circulation (With / Without)", value: "Circulation (With / Without)", disabled: false },
+// ];
 export const LubricationMethodOptions = [
-  { name: "Bearings (Friction / Ball)", value: "Bearings (Friction / Ball)", disabled: false },
-  { name: "Lubricant (Grease / Oil)", value: "Lubricant (Grease / Oil)", disabled: false },
-  { name: "Seal (Yes / No)", value: "Seal (Yes / No)", disabled: false },
-  { name: "Circulation (With / Without)", value: "Circulation (With / Without)", disabled: false },
+  { "value": "Bearings: friction, Lubricant: Grease, Seal: Yes, Circulation: With", "name": "Bearings: friction, Lubricant: Grease, Seal: Yes, Circulation: With", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Grease, Seal: Yes, Circulation: Without", "name": "Bearings: friction, Lubricant: Grease, Seal: Yes, Circulation: Without", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Grease, Seal: No, Circulation: With", "name": "Bearings: friction, Lubricant: Grease, Seal: No, Circulation: With", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Grease, Seal: No, Circulation: Without", "name": "Bearings: friction, Lubricant: Grease, Seal: No, Circulation: Without", "disabled": false },
+  
+  { "value": "Bearings: friction, Lubricant: Oil, Seal: Yes, Circulation: With", "name": "Bearings: friction, Lubricant: Oil, Seal: Yes, Circulation: With", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Oil, Seal: Yes, Circulation: Without", "name": "Bearings: friction, Lubricant: Oil, Seal: Yes, Circulation: Without", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Oil, Seal: No, Circulation: With", "name": "Bearings: friction, Lubricant: Oil, Seal: No, Circulation: With", "disabled": false },
+  { "value": "Bearings: friction, Lubricant: Oil, Seal: No, Circulation: Without", "name": "Bearings: friction, Lubricant: Oil, Seal: No, Circulation: Without", "disabled": false },
+  
+  { "value": "Bearings: ball, Lubricant: Grease, Seal: Yes, Circulation: With", "name": "Bearings: ball, Lubricant: Grease, Seal: Yes, Circulation: With", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Grease, Seal: Yes, Circulation: Without", "name": "Bearings: ball, Lubricant: Grease, Seal: Yes, Circulation: Without", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Grease, Seal: No, Circulation: With", "name": "Bearings: ball, Lubricant: Grease, Seal: No, Circulation: With", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Grease, Seal: No, Circulation: Without", "name": "Bearings: ball, Lubricant: Grease, Seal: No, Circulation: Without", "disabled": false },
+  
+  { "value": "Bearings: ball, Lubricant: Oil, Seal: Yes, Circulation: With", "name": "Bearings: ball, Lubricant: Oil, Seal: Yes, Circulation: With", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Oil, Seal: Yes, Circulation: Without", "name": "Bearings: ball, Lubricant: Oil, Seal: Yes, Circulation: Without", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Oil, Seal: No, Circulation: With", "name": "Bearings: ball, Lubricant: Oil, Seal: No, Circulation: With", "disabled": false },
+  { "value": "Bearings: ball, Lubricant: Oil, Seal: No, Circulation: Without", "name": "Bearings: ball, Lubricant: Oil, Seal: No, Circulation: Without", "disabled": false }
 ];
+
 export const TyreTypeOptions = [
   { name: "Radial", value: "Radial", disabled: false },
   { name: "Cross", value: "Cross", disabled: false },

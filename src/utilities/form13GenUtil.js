@@ -268,6 +268,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     const InstrumentClusterList = form13Data?.Instrument_Cluster?.InstrumentCluster;
     const TractionMotorList = form13Data?.Drive_Train_System?.DriveTrainSystemData;
     const LubricationList = form13Data?.Lubrication?.LubricationData;
+    const vehiclePerformanceList=form13Data?.Vehicle_Performance?.VehiclePerformance;
     let vehModelList = [];
     let vehTypeList = [];
     let drawingUploadList = [];
@@ -702,6 +703,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let ctOnBoardTimeRatingList = [];
     let crOnBoardWhetherSoftStartList = [];
     let crOnBoardMaxInitialList = [];
+    let ChargerPowerratingsList = [];
+    let ChargerConnectortypeList = [];
 
     let crUploadSchematicList = [];
 
@@ -780,6 +783,14 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 value: chargerSpec?.on_board_charger?.properties?.Maximum_initial_in_rush_current?.value
             });
 
+            ChargerPowerratingsList.push({
+                supplier: supplierName,
+                value: chargerSpec?.on_board_charger?.properties?.Charger_Power_ratings?.value
+            });
+            ChargerConnectortypeList.push({
+                supplier: supplierName,
+                value: chargerSpec?.on_board_charger?.properties?.Charger_Connector_type?.value
+            });
             crUploadSchematicList.push({
                 supplier: supplierName,
                 value: chargerSpec?.Electrical_details_of_vehicle?.properties?.Upload_Schematic_Drawing?.value
@@ -806,7 +817,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let ctOnBoardTimeRatingRows = generateTableData(ctOnBoardTimeRatingList);
     let crOnBoardWhetherSoftStartRows = generateTableData(crOnBoardWhetherSoftStartList);
     let crOnBoardMaxInitialRows = generateTableData(crOnBoardMaxInitialList);
-
+    let ChargerPowerratingsRows = generateTableData(ChargerPowerratingsList);
+    let ChargerConnectortypeRows = generateTableData(ChargerConnectortypeList);
     // let crUploadSchematicRows = generateTableData(crUploadSchematicList);
 
     let esdISIECSpecList = [];
@@ -915,7 +927,17 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
     let icIPCodeRows = generateTableData(icIPCodeList);
 
-
+    let electricalConsumptionList = [];
+    vehiclePerformanceList && vehiclePerformanceList.map(vehiclePerformance => {
+        if (vehiclePerformance.supplier.active === true) {
+            
+            electricalConsumptionList.push({
+               
+                value: vehiclePerformance?.Performance?.properties?.Electrical_energy_consumption?.value
+            });
+        }
+    });
+    let electricalConsumptionRows = generateTableData(electricalConsumptionList);
 
 
     let insMakeList = [];
@@ -2106,7 +2128,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: BatteryTypeApprovalRows
+                                                        text: ""
                                                     })
                                                 ]
                                             })
@@ -2158,7 +2180,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: BatteryTypeApprovalRows
                                                     })
                                                 ]
                                             })
@@ -6809,7 +6831,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -7778,7 +7800,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: " "
+                                                        text:ChargerPowerratingsRows
                                                     })
                                                 ]
                                             })
@@ -7830,7 +7852,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: ChargerConnectortypeRows
                                                     })
                                                 ]
                                             })
@@ -8771,7 +8793,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: electricalConsumptionRows
                                                     })
                                                 ]
                                             })

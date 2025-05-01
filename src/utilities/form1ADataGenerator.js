@@ -4,6 +4,7 @@ let tyresList;
 let allTablesData = [];
 let handholdStrap3wheeler_Rows;
 let dStrapRows;
+let twoWheeler;
 function populateMultiSupData(form1AData) {
     console.log('form1AData:',form1AData);
 let footerData=foot;
@@ -522,6 +523,9 @@ const suspensionList = (
 ) ? handleLockData
   : (steeringData && Object.keys(steeringData).length > 0 ? steeringData : {});
 
+  const handleLockDataa =form1AData.Handle_Lock_Anti_Theft_Device.HandleLock;
+  console.log('handleLockDataa:',handleLockDataa);
+console.log("suspensionList:",suspensionList);
     let suspDrawingList = [];
     let suspBriefDescOfECUsList = [];
     let suspSpringsFrontRearList = [];
@@ -536,6 +540,8 @@ const suspensionList = (
     let sBreifList = [];
     let thLockList = [];
     let MatDeviceList = [];
+    let thLockListt = [];
+    let MatDeviceListt = [];
     suspensionList && suspensionList.map(vehSusp => {
         if (vehSusp.supplier.active === true) {
             const supplierName = vehSusp?.supplier?.nameOfSupplier;
@@ -588,12 +594,26 @@ const suspensionList = (
                 value: vehSusp?.Steering_System?.properties?.Brief_desc_ECUs_Steering?.value
             });
             thLockList.push({
-                supplier: supplierName,
+                
                 value: vehSusp?.Lock_Anti_theft_device?.properties?.Type_of_handle_Lock?.value
             });
             MatDeviceList.push({
-                supplier: supplierName,
+            
                 value: vehSusp?.Lock_Anti_theft_device?.properties?.Make_of_Anti_Theft_Device?.value
+            });
+        }
+    });
+
+    handleLockDataa && handleLockDataa.map(vehhand => {
+        if (vehhand.supplier.active === true) {
+          
+            thLockListt.push({
+               
+                value: vehhand?.Lock_Anti_theft_device?.properties?.Type_of_handle_Lock?.value
+            });
+            MatDeviceListt.push({
+              
+                value: vehhand?.Lock_Anti_theft_device?.properties?.Make_of_Anti_Theft_Device?.value
             });
         }
     });
@@ -602,15 +622,70 @@ const suspensionList = (
     let suspSpringsFrontRearRows = generateTableData(suspSpringsFrontRearList);
     let suspAntiRollBarRows = generateTableData(suspAntiRollBarList);
     let suspSockAbsorbersRows = generateTableData(suspSockAbsorbersList);
-    let sControlProvidedRows = generateTableData(sControlProvidedList);
-    let sLocationRows = generateTableData(sLocationList);
-    let smechanismRows = generateTableData(smechanismList);
-    let sMakeRows = generateTableData(sMakeList);
-    let sGearRatioRows = generateTableData(sGearRatioList);
-    let sMaxWheelRows = generateTableData(sMaxWheelList);
-    let sBreifRows = generateTableData(sBreifList);
-    let thLockRows = generateTableData(thLockList);
-    let MatDeviceRows = generateTableData(MatDeviceList);
+    // let sControlProvidedRows = generateTableData(sControlProvidedList);
+    let sControlProvidedRows = twoWheeler ? 'handle bar' : generateTableData(sControlProvidedList);
+    // let sLocationRows = generateTableData(sLocationList);
+    let sLocationRows = twoWheeler ? 'NA' : generateTableData(sLocationList);
+
+    // let smechanismRows = generateTableData(smechanismList);
+    let smechanismRows = twoWheeler ? 'NA' : generateTableData(smechanismList);
+
+    // let sMakeRows = generateTableData(sMakeList);
+    let sMakeRows = twoWheeler ? 'NA' : generateTableData(sMakeList);
+
+    // let sGearRatioRows = generateTableData(sGearRatioList);
+    let sGearRatioRows = twoWheeler ? 'NA' : generateTableData(sGearRatioList);
+
+    // let sMaxWheelRows = generateTableData(sMaxWheelList);
+    let sMaxWheelRows = twoWheeler ? 'NA' : generateTableData(sMaxWheelList);
+
+    // let sBreifRows = generateTableData(sBreifList);
+    let sBreifRows = twoWheeler ? 'NA' : generateTableData(sBreifList);
+    // let thLockRows = generateTableData(thLockList);
+    // let MatDeviceRows = generateTableData(MatDeviceList);
+    // let thLockRows = generateTableData(thLockList.length ? thLockList : thLockListt);
+    console.log('thLockListt:',thLockListt);
+    console.log('MatDeviceListt:',MatDeviceListt);
+    console.log('thLockList length:', thLockList.length);
+    console.log('thLockListt length:', thLockListt.length);
+    const isValidList = (arr) =>
+        Array.isArray(arr) &&
+        arr.some(item =>
+          item &&
+          Object.values(item).some(v => v !== undefined && v !== null && v !== '')
+        );
+        const finalThLockList = isValidList(thLockList) ? thLockList : (isValidList(thLockListt) ? thLockListt : []);
+        console.log('finalThLockList used for generateTableData:', finalThLockList);
+        let thLockRows = generateTableData(finalThLockList);
+    // For MatDeviceList
+    const finalMatDeviceList = isValidList(MatDeviceList)
+    ? MatDeviceList
+    : (isValidList(MatDeviceListt) ? MatDeviceListt : []);
+  
+  console.log('finalMatDeviceList used for generateTableData:', finalMatDeviceList);
+  
+  let MatDeviceRows = generateTableData(finalMatDeviceList);
+// let MatDeviceRows = generateTableData(finalMatDeviceList);
+// let MatDeviceRows = generateTableData(MatDeviceList || MatDeviceListt);
+console.log('MatDeviceList:',MatDeviceList);
+console.log('thlockRows:',thLockRows);
+// let MatDeviceRows = generateTableData(MatDeviceList.length ? MatDeviceList : MatDeviceListt);
+console.log('MatDeviceList length:', MatDeviceList.length);
+console.log('MatDeviceListt length:', MatDeviceListt.length);
+    console.log('suspBriefDescOfECUsRows:', suspBriefDescOfECUsRows);
+console.log('suspSpringsFrontRearRows:', suspSpringsFrontRearRows);
+console.log('suspAntiRollBarRows:', suspAntiRollBarRows);
+console.log('suspSockAbsorbersRows:', suspSockAbsorbersRows);
+console.log('sControlProvidedRows:', sControlProvidedRows);
+console.log('sLocationRows:', sLocationRows);
+console.log('smechanismRows:', smechanismRows);
+console.log('sMakeRows:', sMakeRows);
+console.log('sGearRatioRows:', sGearRatioRows);
+console.log('sMaxWheelRows:', sMaxWheelRows);
+console.log('sBreifRows:', sBreifRows);
+console.log('thLockRows:', thLockRows);
+console.log('MatDeviceRows:', finalMatDeviceList);
+
     allTablesData.push({
         rowKey: "List1_41",
         value: suspDrawingRows
@@ -668,6 +743,7 @@ const suspensionList = (
         value: MatDeviceRows
     });
 
+
     // Updated code: Mapping Tyre Description data and pushing to table
     tyresList = form1AData.Tyres.TyresData;
     let tyreLadenList = [];
@@ -676,6 +752,7 @@ const suspensionList = (
     let tyreMinSpeedCategoryList = [];
     let tyreMinLoadCapIndexList = [];
     let tyreCategCompatibleList = [];
+    let vehTypeList=[];
     tyresList && tyresList.map(vehTyre => {
         if (vehTyre?.supplier?.active === true) {
             const supplierName = vehTyre.supplier.nameOfSupplier;
@@ -703,6 +780,10 @@ const suspensionList = (
                 supplier: supplierName,
                 value: vehTyre?.Tyre_Description?.properties?.Categories_compatible_for_vehicle?.value
             });
+            vehTypeList.push({
+                supplier: supplierName,
+                value: vehTyre?.Front_Tyre?.properties?.tyre_vehicle_type?.value
+            });
 
 
         }
@@ -713,6 +794,13 @@ const suspensionList = (
     let tyreMinSpeedCategoryRows = generateTableData(tyreMinSpeedCategoryList);
     let tyreMinLoadCapIndexRows = generateTableData(tyreMinLoadCapIndexList);
     let tyreCategCompatibleRows = generateTableData(tyreCategCompatibleList);
+    let vehTypeRows = generateTableData(vehTypeList);
+    console.log('vehTypeRows:',vehTypeRows);
+    const firstValue=vehTypeRows;
+    if (firstValue === "2-Wheeler") {
+        twoWheeler = true;
+        console.log('true');
+    }
     allTablesData.push({
         rowKey: "List2_4211",
         value: tyreLadenRows
@@ -1856,6 +1944,14 @@ const suspensionList = (
     let reflSideNumberColorOfLightList = [];
     let reflSideSurfAreaList = [];
     let reflSideShapeList = [];
+
+    let Reflective_Tape_Front_MakeList=[];
+    let Reflective_Tape_Front_WidthList=[];
+    let Reflective_Tape_TAC_NOList=[];
+    let Reflective_Tape_Rear_MakeList=[];
+    let Reflective_Tape_Rear_WidthList=[];
+    let Reflective_Tape_Rear_TAC_NOList=[];
+   
     reflectorsList && reflectorsList.map(vehRefl => {
         if (vehRefl.supplier.active === true) {
             const supplierName = vehRefl?.supplier?.nameOfSupplier;
@@ -1931,6 +2027,34 @@ const suspensionList = (
                 supplier: supplierName,
                 value: vehRefl?.Side_Amber_Reflector?.properties?.Shape?.value
             });
+
+
+            Reflective_Tape_Front_MakeList.push({
+               
+                value: vehRefl?.Reflective_Tape?.properties?.Front_Make?.value
+            });
+            Reflective_Tape_Front_WidthList.push({
+               
+                value: vehRefl?.Reflective_Tape?.properties?.Front_Width?.value
+            });
+            Reflective_Tape_TAC_NOList.push({
+            
+                value: vehRefl?.Reflective_Tape?.properties?.TAC_NO_BIS_License_NO?.value
+            });
+            Reflective_Tape_Rear_MakeList.push({
+            
+                value: vehRefl?.Reflective_Tape?.properties?.Rear_Make?.value
+            });
+            Reflective_Tape_Rear_WidthList.push({
+              
+                value: vehRefl?.Reflective_Tape?.properties?.Rear_Width?.value
+            });
+            Reflective_Tape_Rear_TAC_NOList.push({
+              
+                value: vehRefl?.Reflective_Tape?.properties?.Rear_TAC_NO_BIS_License_NO?.value
+            });
+         
+
         }
     });
     let reflFrontMakeRows = generateTableData(reflFrontMakeList);
@@ -1951,6 +2075,15 @@ const suspensionList = (
     let reflSideNumberColorOfLightRows = generateTableData(reflSideNumberColorOfLightList);
     let reflSideSurfAreaRows = generateTableData(reflSideSurfAreaList);
     let reflSideShapeRows = generateTableData(reflSideShapeList);
+
+
+    let Reflective_Tape_Front_MakeRows = generateTableData(Reflective_Tape_Front_MakeList);
+    let Reflective_Tape_Front_WidthRows = generateTableData(Reflective_Tape_Front_WidthList);
+    let Reflective_Tape_TAC_NORows = generateTableData(Reflective_Tape_TAC_NOList);
+    let Reflective_Tape_Rear_MakeRows = generateTableData(Reflective_Tape_Rear_MakeList);
+    let Reflective_Tape_Rear_WidthRows = generateTableData(Reflective_Tape_Rear_WidthList);
+    let Reflective_Tape_Rear_TAC_NORows = generateTableData(Reflective_Tape_Rear_TAC_NOList);
+   
     allTablesData.push({
         rowKey: "List2_71711",
         value: reflFrontMakeRows
@@ -2024,6 +2157,37 @@ const suspensionList = (
         value: reflSideShapeRows
     });
 
+
+
+
+    allTablesData.push({
+        rowKey: "List3_1011",
+        value: Reflective_Tape_Front_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_1012",
+        value: Reflective_Tape_Front_WidthRows
+    });
+    allTablesData.push({
+        rowKey: "List3_1013",
+        value: Reflective_Tape_TAC_NORows
+    });
+    allTablesData.push({
+        rowKey: "List3_1021",
+        value: Reflective_Tape_Rear_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_1022",
+        value: Reflective_Tape_Rear_WidthRows
+    });
+    allTablesData.push({
+        rowKey: "List3_1023",
+        value: Reflective_Tape_Rear_TAC_NORows
+    });
+    allTablesData.push({
+        rowKey: "List3_1024",
+        value: rearCoordinates_Rows
+    });
     const hazardLightsList = form1AData?.Hazard_Warning_Lamp?.HazardWarningLamp;
     let hzlFrontMakeList = [];
     let hzlFrontTACNumberList = [];
@@ -2397,6 +2561,10 @@ const suspensionList = (
     const indicatorsList = form1AData?.Indicators?.IndicatorsData;
     let indSpeedometerList = [];
     let indOthersList = [];
+    let FuelIndicatorList = [];
+    let EngineCoolantTempList = [];
+    let ElectricalChargingList = [];
+    let EngineOilList = [];
     indicatorsList && indicatorsList.map(vehInd => {
         if (vehInd.supplier.active === true) {
             const supplierName = vehInd?.supplier?.nameOfSupplier;
@@ -2408,10 +2576,31 @@ const suspensionList = (
                 supplier: supplierName,
                 value: vehInd?.Indicators?.properties?.Any_other_Indicator?.value
             });
+
+            FuelIndicatorList.push({
+                supplier: supplierName,
+                value: vehInd?.Indicators?.properties?.Fuel_Indicator?.value
+            });
+            EngineCoolantTempList.push({
+                supplier: supplierName,
+                value: vehInd?.Indicators?.properties?.Engine_coolant_temperature?.value
+            });
+            ElectricalChargingList.push({
+                supplier: supplierName,
+                value: vehInd?.Indicators?.properties?.Electrical_Charging?.value
+            });
+            EngineOilList.push({
+                supplier: supplierName,
+                value: vehInd?.Indicators?.properties?.Engine_Oil?.value
+            });
         }
     });
     let indSpeedometerRows = generateTableData(indSpeedometerList);
     let indOthersRows = generateTableData(indOthersList);
+    let FuelIndicatorRows = generateTableData(FuelIndicatorList);
+    let EngineCoolantTempRows = generateTableData(EngineCoolantTempList);
+    let ElectricalChargingRows = generateTableData(ElectricalChargingList);
+    let EngineOilRows = generateTableData(EngineOilList);
     allTablesData.push({
         rowKey: "List2_82261",
         value: indSpeedometerRows
@@ -2420,7 +2609,22 @@ const suspensionList = (
         rowKey: "List2_82266",
         value: indOthersRows
     });
-
+    allTablesData.push({
+        rowKey: "List2_82262",
+        value: FuelIndicatorRows
+    });
+    allTablesData.push({
+        rowKey: "List2_82263",
+        value: EngineCoolantTempRows
+    });
+    allTablesData.push({
+        rowKey: "List2_82264",
+        value: ElectricalChargingRows
+    });
+    allTablesData.push({
+        rowKey: "List2_82265",
+        value: EngineOilRows
+    });
     const rearViewMirrorsList = form1AData?.Rear_View_Mirror?.RearViewMirror;
     let rvmMakeList = [];
     let rvmTACNumberList = [];
@@ -2606,23 +2810,23 @@ const suspensionList = (
     let reProtectiveEdgeRows = generateTableData(reProtectiveEdgeList);
 
     allTablesData.push({
-        rowKey: "List3_101",
+        rowKey: "List3_91",
         value: reUploadRows
     });
     allTablesData.push({
-        rowKey: "List3_1011",
+        rowKey: "List3_911",
         value: reHeightRows
     });
     allTablesData.push({
-        rowKey: "List3_1012",
+        rowKey: "List3_912",
         value: reWidthRows
     });
     allTablesData.push({
-        rowKey: "List3_1013",
+        rowKey: "List3_913",
         value: reDepthRows
     });
     allTablesData.push({
-        rowKey: "List3_1014",
+        rowKey: "List3_914",
         value: reProtectiveEdgeRows
     });
 
@@ -2672,27 +2876,27 @@ const suspensionList = (
     let fhPassengerRows = generateTableData(fhPassengerList);
 
     allTablesData.push({
-        rowKey: "List3_811",
+        rowKey: "List3_711",
         value: seDriverRows
     });
     allTablesData.push({
-        rowKey: "List3_812",
+        rowKey: "List3_712",
         value: sePassengerRows
     });
     allTablesData.push({
-        rowKey: "List3_821",
+        rowKey: "List3_721",
         value: shDriverRows
     });
     allTablesData.push({
-        rowKey: "List3_822",
+        rowKey: "List3_722",
         value: shPassengerRows
     });
     allTablesData.push({
-        rowKey: "List3_91",
+        rowKey: "List3_81",
         value: fhDriverRows
     });
     allTablesData.push({
-        rowKey: "List3_92",
+        rowKey: "List3_82",
         value: fhPassengerRows
     });
     // Updated code: Mapping Seating Dimension data and pushing to table
@@ -2796,16 +3000,16 @@ const suspensionList = (
         rowKey: "List3_5",
         value: plDimensionRows
     });
+    // allTablesData.push({
+    //     rowKey: "List3_61",
+    //     value: flHeadLampRows
+    // });
     allTablesData.push({
         rowKey: "List3_61",
-        value: flHeadLampRows
-    });
-    allTablesData.push({
-        rowKey: "List3_71",
         value: sbhDriverRows
     });
     allTablesData.push({
-        rowKey: "List3_72",
+        rowKey: "List3_62",
         value: sbhPassengerRows
     });
     allTablesData.push({
@@ -3087,6 +3291,13 @@ const suspensionList = (
     let hrWheelBrakeList = [];
     let ParkingBrakeList = [];
     let anyOtherControlList = [];
+
+    let SupplementalEngList = [];
+    let IgnitionSwitchList = [];
+    let ElectricStarterList = [];
+    let ManualChokeList = [];
+    let FuelShutoffValveList = [];
+ 
     VehicleControlsLocationList && VehicleControlsLocationList.map(VehicleControlsLocation => {
         if (VehicleControlsLocation.supplier.active === true) {
             const supplierName = VehicleControlsLocation?.supplier?.nameOfSupplier;
@@ -3143,6 +3354,29 @@ const suspensionList = (
                 value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Any_other_control?.value
             });
 
+
+
+            SupplementalEngList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Supplemental_engine_stop?.value
+            });
+            IgnitionSwitchList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Ignition_Switch?.value
+            });
+            ElectricStarterList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Electric_Starter?.value
+            });
+            ManualChokeList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Manual_Choke?.value
+            });
+            FuelShutoffValveList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Fuel_Tank_Shutoff_Valve?.value
+            });
+
         }
     });
 
@@ -3159,6 +3393,12 @@ const suspensionList = (
     let hrWheelBrakeRows = generateTableData(hrWheelBrakeList);
     let ParkingBrakeRows = generateTableData(ParkingBrakeList);
     let anyOtherControlRows = generateTableData(anyOtherControlList);
+
+    let SupplementalEngRows = generateTableData(SupplementalEngList);
+    let IgnitionSwitchRows = generateTableData(IgnitionSwitchList);
+    let ElectricStarterRows = generateTableData(ElectricStarterList);
+    let ManualChokeRows = generateTableData(ManualChokeList);
+    let FuelShutoffValveRows = generateTableData(FuelShutoffValveList);
 
     allTablesData.push({
         rowKey: "List2_826",
@@ -3211,6 +3451,27 @@ const suspensionList = (
     allTablesData.push({
         rowKey: "List2_8224",
         value: anyOtherControlRows
+    });
+
+    allTablesData.push({
+        rowKey: "List2_821",
+        value: SupplementalEngRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822",
+        value: IgnitionSwitchRows
+    });
+    allTablesData.push({
+        rowKey: "List2_823",
+        value: ElectricStarterRows
+    });
+    allTablesData.push({
+        rowKey: "List2_824",
+        value: ManualChokeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_825",
+        value: FuelShutoffValveRows
     });
     // Updated code: Mapping Reversing Lamp data and pushing to table
     const ReversingLampList = form1AData?.Reversing_Lamp?.ReversingLamp;
@@ -3857,6 +4118,7 @@ const suspensionList = (
     // Updated code: Mapping Brake Fluid data and pushing to table
     const BrakeFluidList = form1AData?.Brake_Fluid?.BrakeFluid;
     let brMakeList = [];
+    let brTypeList = [];
     BrakeFluidList && BrakeFluidList.map(BrakeFluid => {
         if (BrakeFluid.supplier.active === true) {
             const supplierName = BrakeFluid?.supplier?.nameOfSupplier;
@@ -3864,15 +4126,23 @@ const suspensionList = (
                 supplier: supplierName,
                 value: BrakeFluid?.Hydraulic_Brake_Fluid?.properties?.Make_of_Brake_Fluid?.value
             });
+            brTypeList.push({
+                supplier: supplierName,
+                value: BrakeFluid?.Hydraulic_Brake_Fluid?.properties?.Type_of_Brake_Fluid?.value
+            });
 
         }
     });
     let brMakeRows = generateTableData(brMakeList);
+    let brTypeRows = generateTableData(brTypeList);
     allTablesData.push({
         rowKey: "List2_671",
         value: brMakeRows
     });
-
+    allTablesData.push({
+        rowKey: "List2_672",
+        value: brTypeRows
+    });
     return allTablesData;
 }
 

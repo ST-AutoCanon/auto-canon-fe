@@ -236,7 +236,9 @@ drawing1 = [{ value: extractFileName(drawing) }];
     let vehCategoryList = [];
     let importerNameAddressList = [];
     let mfNameAddressList = [];
-    let variantList = [];
+    // let variantList = [];
+    let variant_typeList=[];
+    let variant_Vehicle_CategoryList = [];
     vehicleGeneralInformationList.map(vehDesc => {
 
         if (vehDesc.supplier.active === true) {
@@ -266,11 +268,21 @@ drawing1 = [{ value: extractFileName(drawing) }];
                 value: vehDesc?.Manufacturer_Details?.properties?.Manufacturer_name_and_address?.value
             }
             mfNameAddressList.push(mfNameAddress);
-            const variant = {
+            // const variant = {
+            //     supplier: supplierName,
+            //     value: vehDesc?.Manufacturer_Details?.properties?.variant?.value
+            // }
+            // variantList.push(variant);
+            const variant_type = {
                 supplier: supplierName,
-                value: vehDesc?.Manufacturer_Details?.properties?.variant?.value
+                value: vehDesc?.Variants?.properties?.Type_Of_Vehicle?.value
             }
-            variantList.push(variant);
+            variant_typeList.push(variant_type);
+            const variant_Vehicle_Category = {
+                supplier: supplierName,
+                value: vehDesc?.Variants?.properties?.Vehicle_category?.value
+            }
+            variant_Vehicle_CategoryList.push(variant_Vehicle_Category);
         }
     });
 
@@ -279,7 +291,10 @@ drawing1 = [{ value: extractFileName(drawing) }];
     const categoryRows = getWheelRimsTableData(vehCategoryList);
     const importerNameAddressRows = getWheelRimsTableData(importerNameAddressList);
     const mfNameAddressRows = getWheelRimsTableData(mfNameAddressList);
-    const variantRows = getWheelRimsTableData(variantList);
+    // const variantRows = getWheelRimsTableData(variantList);
+    const variant_typeRows = getWheelRimsTableData(variant_typeList);
+    const variant_Vehicle_CategoryRows = getWheelRimsTableData(variant_Vehicle_CategoryList);
+
     // Updated code: Mapping General arrangement of the vehicle data and pushing to table
     let Frames_Long_member_size_list = [];
     let Number_of_cross_members_if_any_list = [];
@@ -1049,7 +1064,7 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: variantRows
+                                                        text: ""
                                                     })
                                                 ]
                                             })
@@ -1087,7 +1102,7 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: variant_typeRows
                                                     })
                                                 ]
                                             })
@@ -1125,7 +1140,7 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: variant_Vehicle_CategoryRows
                                                     })
                                                 ]
                                             })
@@ -1951,7 +1966,7 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })
@@ -1989,7 +2004,7 @@ drawing1 = [{ value: extractFileName(drawing) }];
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: ""
+                                                        text: "NA"
                                                     })
                                                 ]
                                             })

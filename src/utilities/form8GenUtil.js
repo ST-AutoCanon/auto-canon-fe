@@ -3,19 +3,21 @@ import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, T
 // Updated code: added tacNumberLampList, possibleDateLampList, copCertLampList, validityLampList, and MakeList, 
 // because lamps should be separated to ensure clear categorization and organization of data for each lamp type.ffgfgf
 let docSealImage;
+let twoWheeler;
 const mainData = function () {
     const suppNameList = [];
     const suppNameLampList = [];    
     const tacNumberList = [];
     const possibleDateList = [];
     const copCertList = [];
+    const vehType = [];
     const validityList = [];
     const tacNumberLampList = [];
     const possibleDateLampList = [];
     const copCertLampList = [];
     const validityLampList = [];
     const MakeList = [];
-    return { suppNameList,suppNameLampList, tacNumberList, possibleDateList, copCertList, validityList, tacNumberLampList, possibleDateLampList, copCertLampList, MakeList, validityLampList };
+    return { suppNameList,suppNameLampList, tacNumberList, possibleDateList, copCertList,vehType, validityList, tacNumberLampList, possibleDateLampList, copCertLampList, MakeList, validityLampList };
 }
 
 async function fetchAndProcessImage(footerData) {
@@ -198,12 +200,17 @@ async function generateForm8(form8Data, footerData) {
             ftyreDataList.validityList.push(vehTyre?.Front_tyre?.properties?.TAC_Number_Its_Validity?.value);
             ftyreDataList.possibleDateList.push(vehTyre?.Front_tyre?.properties?.Possible_date_of_submission_of_required_approval?.value);
             ftyreDataList.copCertList.push(vehTyre?.Front_tyre?.properties?.CoP_Cert_No_with_validity_date?.value);
+            ftyreDataList.vehType.push(vehTyre?.Front_tyre?.properties?.tyre_vehicle_type?.value);
             rtyreDataList.validityList.push(vehTyre?.Rear_tyre?.properties?.TAC_Number_Its_Validity?.value);
             rtyreDataList.possibleDateList.push(vehTyre?.Rear_tyre?.properties?.Possible_date_of_submission_of_required_approval?.value);
             rtyreDataList.copCertList.push(vehTyre?.Rear_tyre?.properties?.CoP_Cert_No_with_validity_date?.value);
         }
     });
-
+    const firstValue = ftyreDataList?.vehType?.[0] || '';
+    if (firstValue === "2-Wheeler") {
+        twoWheeler = true;
+        console.log('true');
+    }
     const headLampList = form8Data?.Head_Lamp?.HeadLamp;
     let hlMainBeamDataList = mainData();
     let hlDipBeamDataList = mainData();
@@ -392,14 +399,32 @@ if (hlDipBeamFilamentTACValue && hlDipBeamFilamentTACValue.trim() !== "NA") {
             // }
             // rearPosLampDataList.suppNameList.push(rearValidityValue === "NA" ? "" : supplierName);
             if (rearValidityValue && rearValidityValue.trim() !== "NA") {
+                rearPosLampDataList.suppNameLampList.push(supplierName);
+            }
+            
+
+            rearPosLampDataList.possibleDateLampList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.Possible_date_of_submission_of_required_approval?.value);
+            rearPosLampDataList.copCertLampList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.CoP_Cert_No_with_validity_date?.value);
+            rearPosLampDataList.validityLampList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
+
+
+            // rearPosLampDataList.tacNumberList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value);
+
+
+
+            const rearValidityValueled = vehPosLamp?.Parking_Lamp_Led_Rear?.properties?.TAC_Number?.value;
+
+            // Push the validity value to validityList for rearPosLampDataList
+            rearPosLampDataList.tacNumberList.push(rearValidityValueled);
+            
+            if (rearValidityValueled && rearValidityValueled.trim() !== "NA") {
                 rearPosLampDataList.suppNameList.push(supplierName);
             }
             
 
-            rearPosLampDataList.possibleDateList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            rearPosLampDataList.copCertList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.CoP_Cert_No_with_validity_date?.value);
-            rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Validity?.value);
-            // rearPosLampDataList.tacNumberList.push(vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value);
+            rearPosLampDataList.possibleDateList.push(vehPosLamp?.Parking_Lamp_Led_Rear?.properties?.Possible_date_of_submission_of_required_approval?.value);
+            rearPosLampDataList.copCertList.push(vehPosLamp?.Parking_Lamp_Led_Rear?.properties?.CoP_Cert_No_with_validity_date?.value);
+            rearPosLampDataList.validityList.push(vehPosLamp?.Parking_Lamp_Led_Rear?.properties?.TAC_Validity?.value);
 
             // stopLampDataList.suppNameList.push(vehPosLamp?.supplier?.nameOfSupplier);
 
@@ -598,60 +623,111 @@ if (rdIndLampTACValue && rdIndLampTACValue.trim() !== "NA") {
     const revLampList = form8Data?.Reversing_Lamp?.ReversingLamp;
 
     let revLampDataList = mainData();
-    revLampList.map(vehRevLamp => {
-        if (vehRevLamp.supplier.active === true) {
-            let supplierName = vehRevLamp?.supplier?.nameOfSupplier;
+//     revLampList.map(vehRevLamp => {
+//         if (vehRevLamp.supplier.active === true) {
+//             let supplierName = vehRevLamp?.supplier?.nameOfSupplier;
 
-            // Modify supplierName directly
-            if (!supplierName.startsWith("M/")) {
-                supplierName = `M/s. ${supplierName}`;
-            }
+//             // Modify supplierName directly
+//             if (!supplierName.startsWith("M/")) {
+//                 supplierName = `M/s. ${supplierName}`;
+//             }
 
-            // revLampDataList.suppNameList.push(supplierName);
-            // // revLampDataList.suppNameList.push(vehRevLamp?.supplier?.nameOfSupplier);
-            // revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
-            // Get the validity value for Reversing Lamp
-            const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value;
+//             // revLampDataList.suppNameList.push(supplierName);
+//             // // revLampDataList.suppNameList.push(vehRevLamp?.supplier?.nameOfSupplier);
+//             // revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
+//             // Get the validity value for Reversing Lamp
+//             const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value;
 
-            // Push the validity value to revLampDataList
-            revLampDataList.copCertList.push(revLampValidityValue);
+//             // Push the validity value to revLampDataList
+//             revLampDataList.copCertList.push(revLampValidityValue);
 
-            // Check if validity data is present
-            // revLampDataList.suppNameList.push(revLampValidityValue ? supplierName : "");
-            // revLampDataList.suppNameList.push(revLampValidityValue === "NA" ? "" : supplierName);
-            if (revLampValidityValue && revLampValidityValue.trim() !== "NA") {
-                revLampDataList.suppNameList.push(supplierName);
-            }
+//             // Check if validity data is present
+//             // revLampDataList.suppNameList.push(revLampValidityValue ? supplierName : "");
+//             // revLampDataList.suppNameList.push(revLampValidityValue === "NA" ? "" : supplierName);
+//             if (revLampValidityValue && revLampValidityValue.trim() !== "NA") {
+//                 revLampDataList.suppNameList.push(supplierName);
+//             }
             
 
 
-            revLampDataList.possibleDateList.push(vehRevLamp?.Reversing_Lamp?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            // revLampDataList.copCertList.push(vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
-            revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
-            // revLampDataList.tacNumberList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Number?.value);
+//             revLampDataList.possibleDateList.push(vehRevLamp?.Reversing_Lamp?.properties?.Possible_date_of_submission_of_required_approval?.value);
+//             // revLampDataList.copCertList.push(vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value);
+//             revLampDataList.validityList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value);
+//             // revLampDataList.tacNumberList.push(vehRevLamp?.Reversing_Lamp?.properties?.TAC_Number?.value);
 
-            // revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
-            // Get the TAC Validity value for Reverse Lamp
-const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value;
+//             // revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+//             // Get the TAC Validity value for Reverse Lamp
+// const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value;
 
-// Push the TAC value to revLampDataList
-revLampDataList.copCertLampList.push(revLampTACValue);
+// // Push the TAC value to revLampDataList
+// revLampDataList.copCertLampList.push(revLampTACValue);
 
-// Check if TAC value is present
-// revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
-// revLampDataList.suppNameLampList.push(revLampTACValue === "NA" ? "" : supplierName);
-if (revLampTACValue && revLampTACValue.trim() !== "NA") {
-    revLampDataList.suppNameLampList.push(supplierName);
-}
+// // Check if TAC value is present
+// // revLampDataList.suppNameLampList.push(revLampTACValue ? supplierName : "");
+// // revLampDataList.suppNameLampList.push(revLampTACValue === "NA" ? "" : supplierName);
+// if (revLampTACValue && revLampTACValue.trim() !== "NA") {
+//     revLampDataList.suppNameLampList.push(supplierName);
+// }
 
 
 
-            revLampDataList.possibleDateLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            // revLampDataList.copCertLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
-            revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
-            // revLampDataList.tacNumberLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
+//             revLampDataList.possibleDateLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value);
+//             // revLampDataList.copCertLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value);
+//             revLampDataList.validityLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value);
+//             // revLampDataList.tacNumberLampList.push(vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Number?.value);
+//         }
+//     });
+
+
+
+
+revLampList?.forEach(vehRevLamp => {
+    if (vehRevLamp?.supplier?.active === true) {
+        let supplierName = vehRevLamp?.supplier?.nameOfSupplier || "";
+
+        if (!supplierName.startsWith("M/")) {
+            supplierName = `M/s. ${supplierName}`;
         }
-    });
+
+        // ==== List (Reversing_Lamp) ====
+        if (!twoWheeler) {
+            const revLampValidityValue = vehRevLamp?.Reversing_Lamp?.properties?.CoP_Cert_No_with_validity_date?.value?.trim();
+            if (revLampValidityValue && revLampValidityValue !== "NA") {
+                revLampDataList.suppNameList.push(supplierName);
+            }
+
+            revLampDataList.copCertList.push(revLampValidityValue || "NA");
+            revLampDataList.possibleDateList.push(
+                vehRevLamp?.Reversing_Lamp?.properties?.Possible_date_of_submission_of_required_approval?.value || "NA"
+            );
+            revLampDataList.validityList.push(
+                vehRevLamp?.Reversing_Lamp?.properties?.TAC_Validity?.value || "NA"
+            );
+        } else {
+            // For twoWheeler: push "NA" only once
+            if (revLampDataList.suppNameList.length === 0) {
+                revLampDataList.suppNameList.push("NA");
+                revLampDataList.copCertList.push("NA");
+                revLampDataList.possibleDateList.push("NA");
+                revLampDataList.validityList.push("NA");
+            }
+        }
+
+        // ==== LampList (Reverse_Lamp_Bulb_Type) ====
+        const revLampTACValue = vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.CoP_Cert_No_with_validity_date?.value?.trim();
+        if (revLampTACValue && revLampTACValue !== "NA") {
+            revLampDataList.suppNameLampList.push(supplierName);
+        }
+
+        revLampDataList.copCertLampList.push(revLampTACValue || "NA");
+        revLampDataList.possibleDateLampList.push(
+            vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.Possible_date_of_submission_of_required_approval?.value || "NA"
+        );
+        revLampDataList.validityLampList.push(
+            vehRevLamp?.Reverse_Lamp_Bulb_Type?.properties?.TAC_Validity?.value || "NA"
+        );
+    }
+});
 
     const rrpLampList = form8Data?.Rear_Registration_Plate_lamp?.RearRegistrationPlatelamp;
     let rrpLampDataList = mainData();
@@ -867,136 +943,258 @@ if (rrpLampTACValue && rrpLampTACValue.trim() !== "NA") {
 
     const WindscreenList = form8Data?.Wind_screen?.Windscreen;
     let WindscreenDataList = mainData();
-    WindscreenList.map(vehWindscreen => {
-        if (vehWindscreen.supplier.active === true) {
-            let supplierName = vehWindscreen?.supplier?.nameOfSupplier;
+    // WindscreenList.map(vehWindscreen => {
+    //     if (vehWindscreen.supplier.active === true) {
+    //         let supplierName = vehWindscreen?.supplier?.nameOfSupplier;
 
-            // Modify supplierName directly
-            if (!supplierName.startsWith("M/")) {
-                supplierName = `M/s. ${supplierName}`;
-            }
+    //         // Modify supplierName directly
+    //         if (!supplierName.startsWith("M/")) {
+    //             supplierName = `M/s. ${supplierName}`;
+    //         }
 
-            // WindscreenDataList.suppNameList.push(supplierName);
-            // // WindscreenDataList.suppNameList.push(vehWindscreen?.supplier?.nameOfSupplier);
-            // WindscreenDataList.tacNumberList.push(vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value);
-            // Get the TAC Number value for Windscreen
-            const windscreenTACValue = vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value;
+    //         // WindscreenDataList.suppNameList.push(supplierName);
+    //         // // WindscreenDataList.suppNameList.push(vehWindscreen?.supplier?.nameOfSupplier);
+    //         // WindscreenDataList.tacNumberList.push(vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value);
+    //         // Get the TAC Number value for Windscreen
+    //         const windscreenTACValue = vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value;
 
-            // Push the TAC value to WindscreenDataList
-            WindscreenDataList.tacNumberList.push(windscreenTACValue);
+    //         // Push the TAC value to WindscreenDataList
+    //         WindscreenDataList.tacNumberList.push(windscreenTACValue);
 
-            // Check if TAC value is present
-            // WindscreenDataList.suppNameList.push(windscreenTACValue ? supplierName : "");
-            // WindscreenDataList.suppNameList.push(windscreenTACValue === "NA" ? "" : supplierName);
-            if (windscreenTACValue && windscreenTACValue.trim() !== "") {
-                WindscreenDataList.suppNameList.push(supplierName);
-            }
+    //         // Check if TAC value is present
+    //         // WindscreenDataList.suppNameList.push(windscreenTACValue ? supplierName : "");
+    //         // WindscreenDataList.suppNameList.push(windscreenTACValue === "NA" ? "" : supplierName);
+    //         if (windscreenTACValue && windscreenTACValue.trim() !== "") {
+    //             WindscreenDataList.suppNameList.push(supplierName);
+    //         }
             
 
 
-            WindscreenDataList.possibleDateList.push(vehWindscreen?.Windscreen?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            WindscreenDataList.copCertList.push(vehWindscreen?.Windscreen?.properties?.CoP_Cert_No_with_validity_date?.value);
-        }
-    });
+    //         WindscreenDataList.possibleDateList.push(vehWindscreen?.Windscreen?.properties?.Possible_date_of_submission_of_required_approval?.value);
+    //         WindscreenDataList.copCertList.push(vehWindscreen?.Windscreen?.properties?.CoP_Cert_No_with_validity_date?.value);
+    //     }
+    // });
+    if (twoWheeler) {
+        WindscreenDataList.suppNameList = ["NA"];
+        WindscreenDataList.tacNumberList = ["NA"];
+        WindscreenDataList.possibleDateList = ["NA"];
+        WindscreenDataList.copCertList = ["NA"];
+    } else {
+        WindscreenList?.forEach(vehWindscreen => {
+            if (vehWindscreen?.supplier?.active === true) {
+                const tacValue = vehWindscreen?.Windscreen?.properties?.BIS_License_Number_Validity?.value?.trim();
+    
+                if (tacValue && tacValue !== "NA") {
+                    let supplierName = vehWindscreen?.supplier?.nameOfSupplier || "";
+    
+                    if (!supplierName.startsWith("M/")) {
+                        supplierName = `M/s. ${supplierName}`;
+                    }
+    
+                    WindscreenDataList.suppNameList.push(supplierName);
+                    WindscreenDataList.tacNumberList.push(tacValue);
+                    WindscreenDataList.possibleDateList.push(
+                        vehWindscreen?.Windscreen?.properties?.Possible_date_of_submission_of_required_approval?.value || ""
+                    );
+                    WindscreenDataList.copCertList.push(
+                        vehWindscreen?.Windscreen?.properties?.CoP_Cert_No_with_validity_date?.value || ""
+                    );
+                }
+            }
+        });
+    }
+    
     const SideglassList = form8Data?.Side_glass?.Sideglass;
     let SideglassDataList = mainData();
-    SideglassList.map(vehSideglass => {
-        if (vehSideglass.supplier.active === true) {
-            let supplierName = vehSideglass?.supplier?.nameOfSupplier;
+    // SideglassList.map(vehSideglass => {
+    //     if (vehSideglass.supplier.active === true) {
+    //         let supplierName = vehSideglass?.supplier?.nameOfSupplier;
 
-            // Modify supplierName directly
-            if (!supplierName.startsWith("M/")) {
-                supplierName = `M/s. ${supplierName}`;
-            }
+    //         // Modify supplierName directly
+    //         if (!supplierName.startsWith("M/")) {
+    //             supplierName = `M/s. ${supplierName}`;
+    //         }
 
-            // SideglassDataList.suppNameList.push(supplierName);
-            // // SideglassDataList.suppNameList.push(vehSideglass?.supplier?.nameOfSupplier);
-            // SideglassDataList.tacNumberList.push(vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value);
-            // Get the TAC Number value for Side Glass
-            const sideglassTACValue = vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value;
+    //         // SideglassDataList.suppNameList.push(supplierName);
+    //         // // SideglassDataList.suppNameList.push(vehSideglass?.supplier?.nameOfSupplier);
+    //         // SideglassDataList.tacNumberList.push(vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value);
+    //         // Get the TAC Number value for Side Glass
+    //         const sideglassTACValue = vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value;
 
-            // Push the TAC value to SideglassDataList
-            SideglassDataList.tacNumberList.push(sideglassTACValue);
+    //         // Push the TAC value to SideglassDataList
+    //         SideglassDataList.tacNumberList.push(sideglassTACValue);
 
-            // Check if TAC value is present
-            // SideglassDataList.suppNameList.push(sideglassTACValue ? supplierName : "");
-            // SideglassDataList.suppNameList.push(sideglassTACValue === "NA" ? "" : supplierName);
-            if (sideglassTACValue && sideglassTACValue.trim() !== "") {
-                SideglassDataList.suppNameList.push(supplierName);
-            }
+    //         // Check if TAC value is present
+    //         // SideglassDataList.suppNameList.push(sideglassTACValue ? supplierName : "");
+    //         // SideglassDataList.suppNameList.push(sideglassTACValue === "NA" ? "" : supplierName);
+    //         if (sideglassTACValue && sideglassTACValue.trim() !== "") {
+    //             SideglassDataList.suppNameList.push(supplierName);
+    //         }
             
 
 
-            SideglassDataList.possibleDateList.push(vehSideglass?.Side_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            SideglassDataList.copCertList.push(vehSideglass?.Side_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
-        }
-    });
+    //         SideglassDataList.possibleDateList.push(vehSideglass?.Side_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
+    //         SideglassDataList.copCertList.push(vehSideglass?.Side_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
+    //     }
+    // });
+
+    if (twoWheeler) {
+        SideglassDataList.suppNameList = ["NA"];
+        SideglassDataList.tacNumberList = ["NA"];
+        SideglassDataList.possibleDateList = ["NA"];
+        SideglassDataList.copCertList = ["NA"];
+    } else {
+        SideglassList?.forEach(vehSideglass => {
+            if (vehSideglass?.supplier?.active === true) {
+                const tacValue = vehSideglass?.Side_Glass?.properties?.BIS_License_Number_Validity?.value?.trim();
+    
+                if (tacValue && tacValue !== "NA") {
+                    let supplierName = vehSideglass?.supplier?.nameOfSupplier || "";
+    
+                    if (!supplierName.startsWith("M/")) {
+                        supplierName = `M/s. ${supplierName}`;
+                    }
+    
+                    SideglassDataList.suppNameList.push(supplierName);
+                    SideglassDataList.tacNumberList.push(tacValue);
+                    SideglassDataList.possibleDateList.push(
+                        vehSideglass?.Side_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value || ""
+                    );
+                    SideglassDataList.copCertList.push(
+                        vehSideglass?.Side_Glass?.properties?.CoP_Cert_No_with_validity_date?.value || ""
+                    );
+                }
+            }
+        });
+    }
+    
     const RearglassList = form8Data?.Rear_glass?.Rearglass;
     let RearglassDataList = mainData();
-    RearglassList.map(vehRearglass => {
-        if (vehRearglass.supplier.active === true) {
-            let supplierName = vehRearglass?.supplier?.nameOfSupplier;
+    // RearglassList.map(vehRearglass => {
+    //     if (vehRearglass.supplier.active === true) {
+    //         let supplierName = vehRearglass?.supplier?.nameOfSupplier;
 
-            // Modify supplierName directly
-            if (!supplierName.startsWith("M/")) {
-                supplierName = `M/s. ${supplierName}`;
-            }
+    //         // Modify supplierName directly
+    //         if (!supplierName.startsWith("M/")) {
+    //             supplierName = `M/s. ${supplierName}`;
+    //         }
 
-            // RearglassDataList.suppNameList.push(supplierName);
-            // // RearglassDataList.suppNameList.push(vehRearglass?.supplier?.nameOfSupplier);
-            // RearglassDataList.tacNumberList.push(vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value);
-            // Get the TAC Number value for Rear Glass
-            const rearglassTACValue = vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value;
+    //         // RearglassDataList.suppNameList.push(supplierName);
+    //         // // RearglassDataList.suppNameList.push(vehRearglass?.supplier?.nameOfSupplier);
+    //         // RearglassDataList.tacNumberList.push(vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value);
+    //         // Get the TAC Number value for Rear Glass
+    //         const rearglassTACValue = vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value;
 
-            // Push the TAC value to RearglassDataList
-            RearglassDataList.tacNumberList.push(rearglassTACValue);
+    //         // Push the TAC value to RearglassDataList
+    //         RearglassDataList.tacNumberList.push(rearglassTACValue);
 
-            // Check if TAC value is present
-            // RearglassDataList.suppNameList.push(rearglassTACValue ? supplierName : "");
-            // RearglassDataList.suppNameList.push(rearglassTACValue === "NA" ? "" : supplierName);
-            if (rearglassTACValue && rearglassTACValue.trim() !== "") {
-                RearglassDataList.suppNameList.push(supplierName);
-            }
+    //         // Check if TAC value is present
+    //         // RearglassDataList.suppNameList.push(rearglassTACValue ? supplierName : "");
+    //         // RearglassDataList.suppNameList.push(rearglassTACValue === "NA" ? "" : supplierName);
+    //         if (rearglassTACValue && rearglassTACValue.trim() !== "") {
+    //             RearglassDataList.suppNameList.push(supplierName);
+    //         }
             
 
 
-            RearglassDataList.possibleDateList.push(vehRearglass?.Rear_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            RearglassDataList.copCertList.push(vehRearglass?.Rear_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
-        }
-    });
+    //         RearglassDataList.possibleDateList.push(vehRearglass?.Rear_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value);
+    //         RearglassDataList.copCertList.push(vehRearglass?.Rear_Glass?.properties?.CoP_Cert_No_with_validity_date?.value);
+    //     }
+    // });
+    if (twoWheeler) {
+        RearglassDataList.suppNameList = ["NA"];
+        RearglassDataList.tacNumberList = ["NA"];
+        RearglassDataList.possibleDateList = ["NA"];
+        RearglassDataList.copCertList = ["NA"];
+    } else {
+        RearglassList?.forEach(vehRearglass => {
+            if (vehRearglass?.supplier?.active === true) {
+                const tacValue = vehRearglass?.Rear_Glass?.properties?.BIS_License_Number_Validity?.value?.trim();
+    
+                if (tacValue && tacValue !== "NA") {
+                    let supplierName = vehRearglass?.supplier?.nameOfSupplier || "";
+    
+                    if (!supplierName.startsWith("M/")) {
+                        supplierName = `M/s. ${supplierName}`;
+                    }
+    
+                    RearglassDataList.suppNameList.push(supplierName);
+                    RearglassDataList.tacNumberList.push(tacValue);
+                    RearglassDataList.possibleDateList.push(
+                        vehRearglass?.Rear_Glass?.properties?.Possible_date_of_submission_of_required_approval?.value || ""
+                    );
+                    RearglassDataList.copCertList.push(
+                        vehRearglass?.Rear_Glass?.properties?.CoP_Cert_No_with_validity_date?.value || ""
+                    );
+                }
+            }
+        });
+    }
+    
     const WindscreenwipingList = form8Data?.Windscreen_wiping?.Windscreenwiping;
     let WindscreenwipingDataList = mainData();
-    WindscreenwipingList.map(vehWindscreenwiping => {
-        if (vehWindscreenwiping.supplier.active === true) {
-            let supplierName = vehWindscreenwiping?.supplier?.nameOfSupplier;
+    // WindscreenwipingList.map(vehWindscreenwiping => {
+    //     if (vehWindscreenwiping.supplier.active === true) {
+    //         let supplierName = vehWindscreenwiping?.supplier?.nameOfSupplier;
 
-            // Modify supplierName directly
-            if (!supplierName.startsWith("M/")) {
-                supplierName = `M/s. ${supplierName}`;
-            }
+    //         // Modify supplierName directly
+    //         if (!supplierName.startsWith("M/")) {
+    //             supplierName = `M/s. ${supplierName}`;
+    //         }
 
-            // WindscreenwipingDataList.suppNameList.push(supplierName);
-            // // WindscreenwipingDataList.suppNameList.push(vehWindscreenwiping?.supplier?.nameOfSupplier);
-            // WindscreenwipingDataList.tacNumberList.push(vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value);
-            // Get the TAC Number value for Wiping System
-            const windscreenwipingTACValue = vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value;
+    //         // WindscreenwipingDataList.suppNameList.push(supplierName);
+    //         // // WindscreenwipingDataList.suppNameList.push(vehWindscreenwiping?.supplier?.nameOfSupplier);
+    //         // WindscreenwipingDataList.tacNumberList.push(vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value);
+    //         // Get the TAC Number value for Wiping System
+    //         const windscreenwipingTACValue = vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value;
 
-            // Push the TAC value to WindscreenwipingDataList
-            WindscreenwipingDataList.tacNumberList.push(windscreenwipingTACValue);
+    //         // Push the TAC value to WindscreenwipingDataList
+    //         WindscreenwipingDataList.tacNumberList.push(windscreenwipingTACValue);
 
-            // Check if TAC value is present
-            // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue ? supplierName : "");
-            // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue === "NA" ? "" : supplierName);
+    //         // Check if TAC value is present
+    //         // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue ? supplierName : "");
+    //         // WindscreenwipingDataList.suppNameList.push(windscreenwipingTACValue === "NA" ? "" : supplierName);
 
-            if (windscreenwipingTACValue && windscreenwipingTACValue.trim() !== "") {
-                WindscreenwipingDataList.suppNameList.push(supplierName);
-            }
+    //         if (windscreenwipingTACValue && windscreenwipingTACValue.trim() !== "") {
+    //             WindscreenwipingDataList.suppNameList.push(supplierName);
+    //         }
             
-            WindscreenwipingDataList.possibleDateList.push(vehWindscreenwiping?.Wiping_System?.properties?.Possible_date_of_submission_of_required_approval?.value);
-            WindscreenwipingDataList.copCertList.push(vehWindscreenwiping?.Wiping_System?.properties?.CoP_Cert_No_with_validity_date?.value);
-        }
-    });
+    //         WindscreenwipingDataList.possibleDateList.push(vehWindscreenwiping?.Wiping_System?.properties?.Possible_date_of_submission_of_required_approval?.value);
+    //         WindscreenwipingDataList.copCertList.push(vehWindscreenwiping?.Wiping_System?.properties?.CoP_Cert_No_with_validity_date?.value);
+    //     }
+    // });
 
+    if (twoWheeler) {
+        WindscreenwipingDataList.suppNameList = ["NA"];
+        WindscreenwipingDataList.tacNumberList = ["NA"];
+        WindscreenwipingDataList.possibleDateList = ["NA"];
+        WindscreenwipingDataList.copCertList = ["NA"];
+    } else {
+        WindscreenwipingList?.forEach(vehWindscreenwiping => {
+            if (vehWindscreenwiping?.supplier?.active === true) {
+                const tacValue = vehWindscreenwiping?.Wiping_System?.properties?.TAC_Number_Its_Validity?.value?.trim();
+    
+                if (tacValue && tacValue !== "NA") {
+                    let supplierName = vehWindscreenwiping?.supplier?.nameOfSupplier || "";
+    
+                    if (!supplierName.startsWith("M/")) {
+                        supplierName = `M/s. ${supplierName}`;
+                    }
+    
+                    WindscreenwipingDataList.suppNameList.push(supplierName);
+                    WindscreenwipingDataList.tacNumberList.push(tacValue);
+                    WindscreenwipingDataList.possibleDateList.push(
+                        vehWindscreenwiping?.Wiping_System?.properties?.Possible_date_of_submission_of_required_approval?.value || ""
+                    );
+                    WindscreenwipingDataList.copCertList.push(
+                        vehWindscreenwiping?.Wiping_System?.properties?.CoP_Cert_No_with_validity_date?.value || ""
+                    );
+                }
+            }
+        });
+    }
+
+    
     // const SpraySuppressionList = form8Data?.Spray_Suppression?.SpraySuppression || [];
     // let SpraySuppressionDataList = mainData();
 
@@ -1081,7 +1279,30 @@ if (rrpLampTACValue && rrpLampTACValue.trim() !== "NA") {
         }
     });
 
+    const GrabHandleList = form8Data?.Grab_handle?.Grabhandle || [];
+    let GrabHandleDataList = mainData();
 
+    // Ensure suppNameList and MakeList are initialized
+   
+    GrabHandleDataList.MakeList = GrabHandleDataList.MakeList || [];
+
+    GrabHandleList.map(GrabHandle => {
+        if (GrabHandle?.supplier?.active === true) {
+           
+            let makeValue = GrabHandle?.Grab_handle_Straps?.properties?.Make?.value || "NA";
+
+          
+            // Modify makeValue if it does not start with "M/s."
+            if (makeValue !== "NA" && !makeValue.startsWith("M/")) {
+                makeValue = `M/s. ${makeValue}`;
+            }
+
+           
+            GrabHandleDataList.MakeList.push(makeValue);
+        }
+    });
+// ///////////////
+console.log('GrabHandleDataList.MakeList:',GrabHandleDataList.MakeList)
     // const BrakeFluidList = form8Data?.Brake_Fluid?.BrakeFluid || [];
     // let BrakeFluidDataList = mainData();
     // // Ensure suppNameList and MakeList are initialized
@@ -5038,9 +5259,9 @@ if (rrpLampTACValue && rrpLampTACValue.trim() !== "NA") {
                                                             style: "paragrapgBold",
                                                             children: [
                                                                 new TextRun({
-                                                                    size: "12pt",
-                                                                    text: "NA"
-                                                                }),
+                                                                    text: GrabHandleDataList.MakeList.join("\n\r"),
+                                                                    size: "12pt"
+                                                                })
                                                             ]
                                                         }
                                                     )

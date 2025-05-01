@@ -545,7 +545,7 @@ const Dashboard: FC = () => {
                                                         // percentageFilled += 23;     
                                                         // console.log('form7Data:',item)
                                                     }
-                                                    if (item === 'form8Data' && percentageFilled>78 ) {
+                                                    if (item === 'form8Data' && percentageFilled>70 ) {
                                                         percentageFilled = 100;
                                                         // percentageFilled += 22;  
                                                         // console.log('form8Data:',item)   
