@@ -550,7 +550,8 @@ const Header: FC = () => {
     setIsOpen(true);
   };
   // Set the title
-  Title({ title: "Auto Canon" });
+  // Title({ title: "Auto Canon" });
+  Title({ title: "Bv-reg" });
 
   // User logout function
   const userLogout = () => {

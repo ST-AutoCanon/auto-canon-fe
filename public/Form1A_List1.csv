@@ -33,7 +33,7 @@
 2.1,Commercial name (s),FALSE
 3,Transmission(8) ,TRUE
 3.1.,Diagram of transmission system,FALSE
-3.2.,Type (mechanical hydraulic electrical etc.):,FALSE
+3.2.,Type (mechanical hydraulic electrical etc.) (1),FALSE
 3.3.,Clutch (type),FALSE
 3.4.,Gearbox,FALSE
 3.4.1.,Type: automatic/manual(1),FALSE
@@ -50,8 +50,7 @@
 3.4.3.3.5,Fifth gear,FALSE
 3.4.3.3.6,Sixth gear,FALSE
 3.4.3.4,Minimum continuously Variable transmission,FALSE
-3.4.3.5,Maximum continuously,FALSE
-,Variable transmission,FALSE
+3.4.3.5,Maximum continuously Variable transmission,FALSE
 3.4.3.6,Reverse Gear,FALSE
 3.5.,Brief description of the ECUs used in the transmission,FALSE
 3.6.,Maximum speed of vehicle and gear in which it is reached (in km/h)(9),FALSE
@@ -60,8 +59,8 @@
 3.7.2.,Type(s),FALSE
 3.7.3.,Photographs and/or drawings of the complete system,FALSE
 3.7.4.,Speed range displayed,FALSE
-3.7.4.1.,Major marking,FALSE
-3.7.4.2.,Minor marking,FALSE
+3.7.4.1.,Major Marking (Applicable only for Analog Type),FALSE
+3.7.4.2.,Minor Marking (Applicable only for Analog Type),FALSE
 3.7.5.,Tolerance of the measuring mechanism of the speedometer,FALSE
 3.7.6.,Technical constant of the speedometer (speedometer ratio),FALSE
 3.7.7.,Method of operation and description of the drive mechanism,FALSE

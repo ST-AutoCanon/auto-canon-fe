@@ -81,7 +81,8 @@ const Register: FC = () => {
             'registrationNumber': values?.registrationNumber,
             'typeOfBusiness': values?.typeOfBusiness,
             'businessName': values?.businessName,
-            'businessDescription': values?.businessDescription
+            'businessDescription': values?.businessDescription,
+            'vehicleType': values?.vehicleType
 
         }
         let profileData = { profileAddress };
@@ -380,8 +381,44 @@ const Register: FC = () => {
                                         </FormHelperText>
                                     </FormControl>
                                 </Flex>
-                                <Flex gap="8" mt={"30px"}>
+                                {/* <Flex gap="8" mt={"30px"}>
                                     <Textarea name='businessDescription' placeholder='Here is a sample placeholder' bg={"#fff"} border={"1px solid #D9D9D9"} />
+                                </Flex> */}
+                                {/* <Flex gap="8" mt={"30px"}> */}
+                                <Flex gap="8" mt="30px" flexWrap={['wrap', 'wrap', 'nowrap']}>
+                                    <FormControl flex="1">
+                                        <FormLabel fontWeight="700" fontSize="14px">
+                                        vehicle Type <Text as="span" className="requiredField">*</Text>
+                                        </FormLabel>
+                                        <Select
+                                            placeholder="Select vehicle Type"
+                                            bg="#fff"
+                                            border="1px solid #D9D9D9"
+                                            {...register('vehicleType', {
+                                                required: 'Please select vehicleType',
+                                            })}
+                                        >
+                                            <option value="2-Wheeler">2-Wheeler</option>
+                                            <option value="3-Wheeler">3-Wheeler</option>
+                                        </Select>                                      
+                                        <FormHelperText color="red">
+                                            <>
+                                                {errors.vehicleType && errors.vehicleType.message}
+                                            </>
+                                        </FormHelperText>
+                                    </FormControl>
+
+                                    <FormControl flex="2">
+                                        <FormLabel fontWeight="700" fontSize="14px">
+                                            Business Description
+                                        </FormLabel>
+                                        <Textarea
+                                            name="businessDescription"
+                                            placeholder="Here is a sample placeholder"
+                                            bg="#fff"
+                                            border="1px solid #D9D9D9"
+                                        />
+                                    </FormControl>
                                 </Flex>
                                 <Flex gap="8" m={"40px 0px"} flexWrap={['wrap', 'wrap', 'nowrap']}>
                                     <FormControl >

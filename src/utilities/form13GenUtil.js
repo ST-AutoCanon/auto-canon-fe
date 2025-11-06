@@ -2,6 +2,7 @@ import exportDoc from './exportUtil';
 import React from 'react';
 
 import { Document, Header, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, Footer, ImageRun, PageNumber } from "docx";
+import { ms } from 'date-fns/locale';
 // Converts data into row format for table generation and Removed the Supplier Name from the document
 
 let docSealImage;
@@ -25,7 +26,22 @@ let docSealImage;
 //                                     })      ]                            })                        ]
 //                     })                ]            });            dataRows.push(rimRow);        });    }    return dataRows;
 // }
-
+const prefixPattern = /^(M\/s\.?|m\/s\.?)\s*/i;
+function normalizeMsPrefix(rowString) {
+    return rowString
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();     
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        if (prefixPattern.test(trimmed)) {
+          const rest = trimmed.replace(prefixPattern, "").trim();
+          return `M/s. ${rest}`;
+        }
+  
+        return `M/s. ${trimmed}`;
+      })
+      .join(" | ");
+  }
 function generateTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim
@@ -44,6 +60,101 @@ function generateTableData(dataList) {
     }
 }
 
+
+function normalizeWithUnit(rowString, unit) {
+    return String(rowString)
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        return `${trimmed} ${unit}`;
+      })
+      .join(" | ");
+  }
+  
+
+//   function normalizeWithTwoUnits(value, unit1, unit2) {
+//     const trimmedValue = String(value).trim();
+//     if (!trimmedValue || trimmedValue.toLowerCase() === "na") return trimmedValue;
+  
+//     const separators = ["&", "-"];
+//     const separator = separators.find(sep => trimmedValue.includes(sep));
+  
+//     if (!separator) {
+//       return `${trimmedValue} ${unit1}`;
+//     }
+  
+//     const parts = trimmedValue.split(separator).map(p => p.trim());
+  
+//     if (parts.length === 2) {
+//       const part1 = parts[0].toLowerCase() === "na" ? "NA" : `${parts[0]} ${unit1}`;
+//       const part2 = parts[1].toLowerCase() === "na" ? "NA" : `${parts[1]} ${unit2}`;
+//       return `${part1} ${separator} ${part2}`;
+//     }
+  
+//     return trimmedValue;
+//   }
+  
+function normalizeWithTwoUnits(value, unit1, unit2) {
+    const trimmedValue = String(value).trim();
+    if (!trimmedValue || trimmedValue.toLowerCase() === "na") return trimmedValue;
+  
+    // ✅ New logic for colon-separated values
+    if (trimmedValue.includes(":")) {
+      const parts = trimmedValue.split(":").map(p => p.trim());
+      if (parts.length === 2) {
+        const part1 = parts[0].toLowerCase() === "na" ? "NA" : `${parts[0]} ${unit1}`;
+        const part2 = parts[1].toLowerCase() === "na" ? "NA" : `${parts[1]} ${unit2}`;
+        return `${part1} ${part2}`;
+      }
+    }
+  
+    const separators = ["&", "-"];
+    const separator = separators.find(sep => trimmedValue.includes(sep));
+  
+    if (!separator) {
+      return `${trimmedValue} ${unit1}`;
+    }
+  
+    const parts = trimmedValue.split(separator).map(p => p.trim());
+  
+    if (parts.length === 2) {
+      const part1 = parts[0].toLowerCase() === "na" ? "NA" : `${parts[0]} ${unit1}`;
+      const part2 = parts[1].toLowerCase() === "na" ? "NA" : `${parts[1]} ${unit2}`;
+      return `${part1} ${separator} ${part2}`;
+    }
+  
+    return trimmedValue;
+  }
+
+  
+  const SQ_CM_MM = 'Square cm/mm';
+  const KG = 'kg';
+  const INCH_MM = 'Inch/mm';
+  const KG_CM2_KPA_PSI = 'kg/cm² /kPa /psi';
+  const V = 'V';
+  const MM = 'mm';
+  const MM_SQ = 'mm Sq';
+  const CM_SQ = 'Cm Sq.';
+  const PERCENT_OR_DEGREE = '% OR °(Degree)';
+  const VOLTS = 'Volts';
+  const RPM = 'RPM';
+  const RPM_KM_H = 'RPM & Km/h';
+  const KW = 'kW';
+  const KM = 'Km';
+  const KM_H = 'Km/h';
+  const AH = 'AH';
+  const KWH = 'kWh';
+  const HERTZ = 'Hz';
+  const VOLTS_AMPS = 'Volts & Amps';
+  const MINUTES_HOURS = 'Minutes/Hours';
+  const AMPS = 'A';
+  const MS = 'ms';
+  const W_H_KM = 'W-h/Km';
+  const DEGREES = 'Degrees';
+  const DEGREE_CELCIUS='°C'
+  const HOURS = 'Hours';
+  const MINUTES = 'Minutes';
 
 // function generateTableData(dataList) {
 //     if (Array.isArray(dataList) && dataList.length > 0) {
@@ -66,6 +177,7 @@ function generateTableData(dataList) {
 // }
 async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
+
     const fileName = dataOfFooterr.Upload_Seal.file_name;
     const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
   
@@ -127,10 +239,18 @@ const schematicDrawingFile = footerData.form13Data.Electrical_details_of_vehicle
 const schematicHighlightingFile = footerData.form13Data.Electrical_details_of_vehicle.properties.Schematic_highlighting.file_name;
 const exposedConductivePartsFile = footerData.form13Data.Electrical_details_of_vehicle.properties.List_of_exposed_conductive.file_name;
 
+// const extractFileName = (fileName) => {
+//     const parts = fileName.split('-');
+//     return parts.slice(1).join('-');
+// };
 const extractFileName = (fileName) => {
-    const parts = fileName.split('-');
-    return parts.slice(1).join('-');
-};
+    const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+    const parts = nameWithoutExt.split('-');
+    const name = parts.length > 1 ? parts.slice(1).join('-') : parts[0];
+    return name ? `ref: ${name}` : " ";
+  };
+  
+
 let generalDescriptionModel=[];
 let batteryVentilationModel=[];
 let motorPowerCurveModel=[];
@@ -213,7 +333,19 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
 
     const dataOfFooter = footerData.footerData.footer.properties;
     const dataOfFooterr = footerData.footerData.SealSign.properties;
-   
+    let homologation_Engg_Name = dataOfFooter.Homologation_Engineer_Name.value;
+
+    // Capitalize first letter and prepend "Mr/Mrs"
+    if (typeof homologation_Engg_Name === 'string' && homologation_Engg_Name.trim().length > 0) {
+        let trimmedName = homologation_Engg_Name.trim();
+        homologation_Engg_Name = `Mr/Mrs. ${trimmedName[0].toUpperCase()}${trimmedName.slice(1)}`;
+      }
+            // Manufacturer Name
+let manufacturer_Name = dataOfFooter.Manufacture_Name.value;
+if (typeof manufacturer_Name === 'string' && manufacturer_Name.trim().length > 0) {
+    let trimmedManu = manufacturer_Name.trim();
+    manufacturer_Name = `M/s. ${trimmedManu[0].toUpperCase()}${trimmedManu.slice(1)}`;
+}
     // let imageUrl;
 
     // const fileName = dataOfFooterr.Upload_Seal.file_name;
@@ -269,6 +401,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     const TractionMotorList = form13Data?.Drive_Train_System?.DriveTrainSystemData;
     const LubricationList = form13Data?.Lubrication?.LubricationData;
     const vehiclePerformanceList=form13Data?.Vehicle_Performance?.VehiclePerformance;
+    const VehicleControlUnitList=form13Data?.Vehicle_Control_Unit?.VehicleControlUnit;
     let vehModelList = [];
     let vehTypeList = [];
     let drawingUploadList = [];
@@ -298,6 +431,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     // const drawingUploadRows = generateTableData(drawingUploadList);
 
     let makeList = [];
+    let ModelList=[];
     let kindOfElectroList = [];
     let nominalVolPackLevelList = [];
     let nominalVolCellLevelList = [];
@@ -317,6 +451,10 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
             makeList.push({
                 supplier: supplierName,
                 value: batteryPack?.Traction_Battery_Pack?.properties?.Make?.value
+            });
+            ModelList.push({
+                supplier: supplierName,
+                value: batteryPack?.Traction_Battery_Pack?.properties?.Model_Number?.value
             });
             kindOfElectroList.push({
                 supplier: supplierName,
@@ -370,25 +508,33 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     const makeRows = generateTableData(makeList);
+    const updatedmakeRows = normalizeMsPrefix(makeRows);
+    const ModelRows = generateTableData(ModelList);
     const kindOfElectroRows = generateTableData(kindOfElectroList);
-    const nominalVolPackLevelRows = generateTableData(nominalVolPackLevelList);
-    const nominalVolCellLevelRows = generateTableData(nominalVolCellLevelList);
+    const nominalVolPackLevelRows1 = generateTableData(nominalVolPackLevelList);
+    let nominalVolPackLevelRows = normalizeWithUnit(nominalVolPackLevelRows1, V);
+    const nominalVolCellLevelRows1 = generateTableData(nominalVolCellLevelList);
+    let nominalVolCellLevelRows = normalizeWithUnit(nominalVolCellLevelRows1, V);
     const noOfCellsRows = generateTableData(noOfCellsList);
-    const batteryEnergyRows = generateTableData(batteryEnergyList);
-    const batteryCapacityRows = generateTableData(batteryCapacityList);
-    const endOfDischargeRows = generateTableData(endOfDischargeList);
+    const batteryEnergyRows1 = generateTableData(batteryEnergyList);
+    let batteryEnergyRows = normalizeWithUnit(batteryEnergyRows1, AH);
+    const batteryCapacityRows1 = generateTableData(batteryCapacityList);
+    let batteryCapacityRows = normalizeWithUnit(batteryCapacityRows1, KWH);
+    const endOfDischargeRows1 = generateTableData(endOfDischargeList);
+    let endOfDischargeRows = normalizeWithUnit(endOfDischargeRows1, V);
     const provOfVentRows = generateTableData(provOfVentList);
     const BatteryTypeApprovalRows = generateTableData(BatteryTypeApprovalList);
     
     // const briefDescRows = generateTableData(briefDescList);
-    const batteryMassRows = generateTableData(batteryMassList);
+    const batteryMassRows1 = generateTableData(batteryMassList);
+    let batteryMassRows = normalizeWithUnit(batteryMassRows1, KG);
     const briefDescOfMaintRows = generateTableData(briefDescOfMaintList);
 
     let bmsMakeList = [];
     let modelNumberList = [];
     let bmsSoftwareVersionList = [];
     let bmsHardwareVersionlist = [];
-    let bmsArchitectureList = [];
+    // let bmsArchitectureList = [];
     let bmsBalancingTypeList = [];
     let bmsCommProtocolList = [];
 
@@ -411,10 +557,10 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 supplier: supplierName,
                 value: batteryManagement?.Battery_Mangement_System?.properties?.BMS_Hardware_Version?.value
             });
-            bmsArchitectureList.push({
-                supplier: supplierName,
-                value: batteryManagement?.Battery_Mangement_System?.properties?.BMS_Architecture_Circuit_Diagram?.value
-            });
+            // bmsArchitectureList.push({
+            //     supplier: supplierName,
+            //     value: batteryManagement?.Battery_Mangement_System?.properties?.BMS_Architecture_Circuit_Diagram?.value
+            // });
             bmsBalancingTypeList.push({
                 supplier: supplierName,
                 value: batteryManagement?.Battery_Mangement_System?.properties?.Choose_BMS_Balancing_Type?.value
@@ -427,10 +573,11 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let bmsMakeRows = generateTableData(bmsMakeList);
+    const updatedbmsMakeRows= normalizeMsPrefix(bmsMakeRows);
     let modelNumberRows = generateTableData(modelNumberList);
     let bmsSoftwareVersionRows = generateTableData(bmsSoftwareVersionList);
     let bmsHardwareVersionRows = generateTableData(bmsHardwareVersionlist);
-    let bmsArchitectureRows = generateTableData(bmsArchitectureList);
+    // let bmsArchitectureRows = generateTableData(bmsArchitectureList);
     let bmsBalancingTypeRows = generateTableData(bmsBalancingTypeList);
     let bmsCommProtocolRows = generateTableData(bmsCommProtocolList);
 
@@ -467,10 +614,15 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let dcMakeRows = generateTableData(dcMakeList);
+    const updateddcMakeRows = normalizeMsPrefix(dcMakeRows);
     let dcModelNumberRows = generateTableData(dcModelNumberList);
     let dcHardwareVersionRows = generateTableData(dcHardwareVersionList);
     let dcInputRangeRows = generateTableData(dcInputRangeList);
+    // let dcInputRangeRows = normalizeWithTwoUnits(dcInputRangeRows1, AMPS,V);
+    // let dcInputRangeRows = normalizeWithUnit(dcInputRangeRows1, V);
     let dcOutputRangeRows = generateTableData(dcOutputRangeList);
+    //  let dcOutputRangeRows = normalizeWithTwoUnits(dcOutputRangeRows1, AMPS,V);
+    // let dcOutputRangeRows = normalizeWithUnit(dcOutputRangeRows1, V);
 
     let dtMakeList = [];
     let dtTypeList = [];
@@ -494,7 +646,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
         }
     });
 
-    let dtMakeRows = generateTableData(dtMakeList);
+    let dtMakeRows = generateTableData(dtMakeList);   
     let dtTypeRows = generateTableData(dtTypeList);
     let dtSelectTypeRows = generateTableData(dtSelectTypeList);
 
@@ -546,13 +698,16 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let pcMakeRows = generateTableData(pcMakeList);
+    const updatedpcMakeRows= normalizeMsPrefix(pcMakeRows);
     let pcModelNumberRows = generateTableData(pcModelNumberList);
     let pcSoftwareVersionRows = generateTableData(pcSoftwareVersionList);
     let pcHardwareVersionRows = generateTableData(pcHardwareVersionList);
     let pcTypeRows = generateTableData(pcTypeList);
     let pcControlPrincipleRows = generateTableData(pcControlPrincipleList);
-    let pcMaxEffectCurrentRows = generateTableData(pcMaxEffectCurrentList);
-    let pcVoltageRangeUseRows = generateTableData(pcVoltageRangeUseList);
+    let pcMaxEffectCurrentRows1 = generateTableData(pcMaxEffectCurrentList);
+    let pcMaxEffectCurrentRows = normalizeWithUnit(pcMaxEffectCurrentRows1, AMPS);
+    let pcVoltageRangeUseRows1 = generateTableData(pcVoltageRangeUseList);
+    let pcVoltageRangeUseRows = normalizeWithUnit(pcVoltageRangeUseRows1, V);
 
     let csCoolingSystemList = [];
     let csLiquidCoolingList = [];
@@ -677,12 +832,18 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let csBriefDescRows = generateTableData(csBriefDescList);
     let csAirFilterRows = generateTableData(csAirFilterList);
     let csMaxTempRecommRows = generateTableData(csMaxTempRecommList);
-    let csMotorOutletRows = generateTableData(csMotorOutletList);
-    let csControllerinletRows = generateTableData(csControllerinletList);
-    let csBatteryInletRows = generateTableData(csBatteryInletList);
-    let csAtMotorRefPointRows = generateTableData(csAtMotorRefPointList);
-    let csAtControllerRefPointRows = generateTableData(csAtControllerRefPointList);
-    let csAtBatteryRefPointRows = generateTableData(csAtBatteryRefPointList);
+    let csMotorOutletRows1 = generateTableData(csMotorOutletList);
+    let csMotorOutletRows = normalizeWithUnit(csMotorOutletRows1, DEGREE_CELCIUS);
+    let csControllerinletRows1 = generateTableData(csControllerinletList);
+    let csControllerinletRows = normalizeWithUnit(csControllerinletRows1, DEGREE_CELCIUS);
+    let csBatteryInletRows1 = generateTableData(csBatteryInletList);
+    let csBatteryInletRows = normalizeWithUnit(csBatteryInletRows1, DEGREE_CELCIUS);
+    let csAtMotorRefPointRows1 = generateTableData(csAtMotorRefPointList);
+    let csAtMotorRefPointRows = normalizeWithUnit(csAtMotorRefPointRows1, DEGREE_CELCIUS);
+    let csAtControllerRefPointRows1 = generateTableData(csAtControllerRefPointList);
+    let csAtControllerRefPointRows = normalizeWithUnit(csAtControllerRefPointRows1, DEGREE_CELCIUS);
+    let csAtBatteryRefPointRows1 = generateTableData(csAtBatteryRefPointList);
+    let csAtBatteryRefPointRows = normalizeWithUnit(csAtBatteryRefPointRows1, DEGREE_CELCIUS);
 
     let crChargerTypeList = [];
     let crChargerMakeList = [];
@@ -705,6 +866,9 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     let crOnBoardMaxInitialList = [];
     let ChargerPowerratingsList = [];
     let ChargerConnectortypeList = [];
+    let ChargerPoartableMakeList = [];
+    let ChargerPoartableModelList = [];
+
 
     let crUploadSchematicList = [];
 
@@ -795,11 +959,23 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                 supplier: supplierName,
                 value: chargerSpec?.Electrical_details_of_vehicle?.properties?.Upload_Schematic_Drawing?.value
             });
+            ChargerPoartableMakeList.push({
+                supplier: supplierName,
+                value: chargerSpec?.Portable_Residual_Current_Device_PRCD?.properties?.Make?.value
+            });
+            ChargerPoartableModelList.push({
+                supplier: supplierName,
+                value: chargerSpec?.Portable_Residual_Current_Device_PRCD?.properties?.Model?.value
+            });
+
+
+            
         }
     });
 
     let crChargerTypeRows = generateTableData(crChargerTypeList);
     let crChargerMakeRows = generateTableData(crChargerMakeList);
+    const updatedcrChargerMakeRows = normalizeMsPrefix(crChargerMakeRows);
     let crChargerModelRows = generateTableData(crChargerModelList);
     let crChargerSoftwareVersionRows = generateTableData(crChargerSoftwareVersionList);
     let crChargerHardwareVersionRows = generateTableData(crChargerHardwareVersionList);
@@ -809,16 +985,29 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
 
     let crSpecMainsSupplyRows = generateTableData(crSpecMainsSupplyList);
     let crSpecInputNominalVoltageRows = generateTableData(crSpecInputNominalVoltageList);
-    let crSpecOutputVoltageRangeRows = generateTableData(crSpecOutputVoltageRangeList);
-    let crSpecResetPeriodRows = generateTableData(crSpecResetPeriodList);
-    let crSpecRecommDurationOfCompleteChargeRows = generateTableData(crSpecRecommDurationOfCompleteChargeList);
+    // let crSpecInputNominalVoltageRows = normalizeWithTwoUnits(crSpecInputNominalVoltageRows1, V,HERTZ);
 
-    let crOnBoardContRatingRows = generateTableData(crOnBoardContRatingList);
+    let crSpecOutputVoltageRangeRows = generateTableData(crSpecOutputVoltageRangeList);
+    // let crSpecOutputVoltageRangeRows = normalizeWithTwoUnits(crSpecOutputVoltageRangeRows1, V,AMPS);
+    let crSpecResetPeriodRows1 = generateTableData(crSpecResetPeriodList);
+    let crSpecResetPeriodRows = normalizeWithUnit(crSpecResetPeriodRows1, MINUTES_HOURS);
+    let crSpecRecommDurationOfCompleteChargeRows1 = generateTableData(crSpecRecommDurationOfCompleteChargeList);
+    // let crSpecRecommDurationOfCompleteChargeRows = normalizeWithUnit(crSpecRecommDurationOfCompleteChargeRows1, MINUTES_HOURS);
+    let crSpecRecommDurationOfCompleteChargeRows = normalizeWithTwoUnits(crSpecRecommDurationOfCompleteChargeRows1, HOURS,MINUTES);
+
+    let crOnBoardContRatingRows1 = generateTableData(crOnBoardContRatingList);
+    let crOnBoardContRatingRows = normalizeWithUnit(crOnBoardContRatingRows1, AMPS);
     let ctOnBoardTimeRatingRows = generateTableData(ctOnBoardTimeRatingList);
     let crOnBoardWhetherSoftStartRows = generateTableData(crOnBoardWhetherSoftStartList);
     let crOnBoardMaxInitialRows = generateTableData(crOnBoardMaxInitialList);
+    // let crOnBoardMaxInitialRows = normalizeWithUnit(crOnBoardMaxInitialRows1, AMPS);
     let ChargerPowerratingsRows = generateTableData(ChargerPowerratingsList);
     let ChargerConnectortypeRows = generateTableData(ChargerConnectortypeList);
+
+
+    let ChargerPoartableMakeRows = generateTableData(ChargerPoartableMakeList);
+    const updatedChargerPoartableMakeRows= normalizeMsPrefix(ChargerPoartableMakeRows);
+    let ChargerPoartableModelRows = generateTableData(ChargerPoartableModelList);
     // let crUploadSchematicRows = generateTableData(crUploadSchematicList);
 
     let esdISIECSpecList = [];
@@ -844,8 +1033,10 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let esdISIECSpecRows = generateTableData(esdISIECSpecList);
-    let esdRatingRows = generateTableData(esdRatingList);
-    let esdOpeningTimeRows = generateTableData(esdOpeningTimeList);
+    let esdRatingRows1 = generateTableData(esdRatingList);
+    let esdRatingRows = normalizeWithUnit(esdRatingRows1, AMPS);
+    let esdOpeningTimeRows1 = generateTableData(esdOpeningTimeList);
+    let esdOpeningTimeRows = normalizeWithUnit(esdOpeningTimeRows1, MS);
 
     let vesWorkingVoltageList = [];
     let vesSchematicList = [];
@@ -904,7 +1095,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
         }
     });
 
-    let vesWorkingVoltageRows = generateTableData(vesWorkingVoltageList);
+    let vesWorkingVoltageRows1 = generateTableData(vesWorkingVoltageList);
+    let vesWorkingVoltageRows = normalizeWithUnit(vesWorkingVoltageRows1, V);
     // let vesSchematicRows = generateTableData(vesSchematicList);
     let vesIECProtectionClassRows = generateTableData(vesIECProtectionClassList);
     let vesInsulMatRows = generateTableData(vesInsulMatList);
@@ -925,7 +1117,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
             });
         }
     });
-    let icIPCodeRows = generateTableData(icIPCodeList);
+    let icIPCodeRows = generateTableData(icIPCodeList);    
 
     let electricalConsumptionList = [];
     vehiclePerformanceList && vehiclePerformanceList.map(vehiclePerformance => {
@@ -937,8 +1129,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
             });
         }
     });
-    let electricalConsumptionRows = generateTableData(electricalConsumptionList);
-
+    let electricalConsumptionRows1 = generateTableData(electricalConsumptionList);
+    let electricalConsumptionRows = normalizeWithUnit(electricalConsumptionRows1, W_H_KM);
 
     let insMakeList = [];
     let insModelList = [];
@@ -992,6 +1184,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let insMakeRows = generateTableData(insMakeList);
+    const updatedinsMakeRows = normalizeMsPrefix(insMakeRows);
     let insModelRows = generateTableData(insModelList);
     let insDisplayRows = generateTableData(insDisplayList);
     let insRecommendedRows = generateTableData(insRecommendedList);
@@ -1104,17 +1297,29 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
         }
     });
 
-    let tractionVoltageRows = generateTableData(tractionVoltageList);
-    let tractionSpeedRows = generateTableData(tractionSpeedList);
-    let tractionMaxSpeedRows = generateTableData(tractionMaxSpeedList);
-    let tractionPowerSpeedRows = generateTableData(tractionPowerSpeedList);
-    let tractionMaxPowerRows = generateTableData(tractionMaxPowerList);
-    let tractionThirtyMinPowerRows = generateTableData(tractionThirtyMinPowerList);
-    let tractionThirtyMinSpeedRows = generateTableData(tractionThirtyMinSpeedList);
-    let tractionRangeRows = generateTableData(tractionRangeList);
-    let tractionBeginSpeedRows = generateTableData(tractionBeginSpeedList);
-    let tractionEndSpeedRows = generateTableData(tractionEndSpeedList);
+    let tractionVoltageRows1 = generateTableData(tractionVoltageList);
+    let tractionVoltageRows = normalizeWithUnit(tractionVoltageRows1, V);
+    let tractionSpeedRows1 = generateTableData(tractionSpeedList);
+    let tractionSpeedRows = normalizeWithUnit(tractionSpeedRows1, RPM);
+    let tractionMaxSpeedRows1 = generateTableData(tractionMaxSpeedList);
+    let tractionMaxSpeedRows = normalizeWithUnit(tractionMaxSpeedRows1, RPM);
+    let tractionPowerSpeedRows1 = generateTableData(tractionPowerSpeedList);
+    let tractionPowerSpeedRows = normalizeWithTwoUnits(tractionPowerSpeedRows1, RPM,KM_H);
+
+    let tractionMaxPowerRows1 = generateTableData(tractionMaxPowerList);
+    let tractionMaxPowerRows = normalizeWithUnit(tractionMaxPowerRows1, KW);
+    let tractionThirtyMinPowerRows1 = generateTableData(tractionThirtyMinPowerList);
+    let tractionThirtyMinPowerRows = normalizeWithUnit(tractionThirtyMinPowerRows1, KW);
+    let tractionThirtyMinSpeedRows1 = generateTableData(tractionThirtyMinSpeedList);
+    let tractionThirtyMinSpeedRows = normalizeWithUnit(tractionThirtyMinSpeedRows1, KM_H);
+    let tractionRangeRows1 = generateTableData(tractionRangeList);
+    let tractionRangeRows = normalizeWithUnit(tractionRangeRows1, KM);
+    let tractionBeginSpeedRows1 = generateTableData(tractionBeginSpeedList);
+    let tractionBeginSpeedRows = normalizeWithUnit(tractionBeginSpeedRows1, KM_H);
+    let tractionEndSpeedRows1 = generateTableData(tractionEndSpeedList);
+    let tractionEndSpeedRows = normalizeWithUnit(tractionEndSpeedRows1, KM_H);
     let tractionMakeRows = generateTableData(tractionMakeList);
+    const updatedtractionMakeRows = normalizeMsPrefix(tractionMakeRows);
     let tractionModelRows = generateTableData(tractionModelList);
     let tractionTypeRows = generateTableData(tractionTypeList);
     let tractionCurrentTypeRows = generateTableData(tractionCurrentTypeList);
@@ -1139,6 +1344,44 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     });
 
     let luTypeRows = generateTableData(luTypeList);
+
+
+    let vehMakeList = [];
+    let vehModeList = [];
+    let vehSoftwareList = [];
+    let vehHardwareList = [];
+
+
+    VehicleControlUnitList && VehicleControlUnitList.map(VehicleControlUnit => {
+        if (VehicleControlUnit.supplier.active === true) {
+            const supplierName = VehicleControlUnit?.supplier?.nameOfSupplier;
+            vehMakeList.push({
+                supplier: supplierName,
+                value: VehicleControlUnit?.Vehicle_Control?.properties?.Make?.value
+            });
+            vehModeList.push({
+                supplier: supplierName,
+                value: VehicleControlUnit?.Vehicle_Control?.properties?.Model_Number?.value
+            });
+            vehSoftwareList.push({
+                supplier: supplierName,
+                value: VehicleControlUnit?.Vehicle_Control?.properties?.Software_Version?.value
+            });
+            vehHardwareList.push({
+                supplier: supplierName,
+                value: VehicleControlUnit?.Vehicle_Control?.properties?.Hardware_Version?.value
+            });
+
+        }
+    });
+
+    let vehMakeRows = generateTableData(vehMakeList);
+    const updatedvehMakeRows= normalizeMsPrefix(vehMakeRows);
+    let vehModeRows = generateTableData(vehModeList);
+    let vehSoftwareRows = generateTableData(vehSoftwareList);
+    let vehHardwareRows = generateTableData(vehHardwareList);
+    
+
 
     let dTrainMakeList = [];
     let dTrainTypeList = [];
@@ -1170,6 +1413,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
         }
     });
     const dTrainMakeRows = generateTableData(dTrainMakeList);
+    const updateddTrainMakeRows= normalizeMsPrefix(dTrainMakeRows);
     const dTrainTypeRows = generateTableData(dTrainTypeList);
     const dTrainSelectTypeRows = generateTableData(dTrainSelectTypeList);
     const dTrainTransmissionRows = generateTableData(dTrainTransmissionList);
@@ -1180,6 +1424,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
     //         height: 50,
     //     }
     // });
+         const today = new Date();
+const formattedDate = today.toLocaleDateString("en-GB");
     const form13Document = new Document({
         styles: {
             paragraphStyles: [
@@ -1580,7 +1826,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make and Trade name (If any) "
+                                                        text: "Make and Trade name (If any)  and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -1597,7 +1843,60 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: makeRows
+                                                        text: updatedmakeRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "2.1.1"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Model No/ Part No of Battery Pack"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: ModelRows
                                                     })
                                                 ]
                                             })
@@ -1899,7 +2198,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Battery Capacity (C5)"
+                                                        text: "Battery capacity (C3 for Pure Electric Vehicle)"
                                                     })
                                                 ]
                                             })
@@ -2111,7 +2410,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Traction Battery Approval as per AIS 048 :Report Number"
+                                                        text: "Traction Battery Approval as per AIS 038 (Rev.2) and AIS-156"
                                                     })
                                                 ]
                                             })
@@ -2445,7 +2744,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: insMakeRows
+                                                        text: updatedinsMakeRows
                                                     })
                                                 ]
                                             })
@@ -2482,6 +2781,112 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 children: [
                                                     new TextRun({
                                                         text: "Model"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: insModelRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "2.10.1.5"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Make of Instrument Cluster"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: updatedinsMakeRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "2.10.1.6"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Model of Instrument Cluster"
                                                     })
                                                 ]
                                             })
@@ -2836,7 +3241,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -2853,7 +3258,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: bmsMakeRows
+                                                        text: updatedbmsMakeRows
                                                     })
                                                 ]
                                             })
@@ -3020,6 +3425,59 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                     }),
                                 ]
                             }),
+                            // new TableRow({
+                            //     children: [
+                            //         new TableCell({
+                            //             width: {
+                            //                 size: 5000,
+                            //                 WidthType: WidthType.DXA
+                            //             },
+                            //             children: [
+                            //                 new Paragraph({
+                            //                     style: "TableRowContent",
+                            //                     children: [
+                            //                         new TextRun({
+                            //                             text: "3.5"
+                            //                         })
+                            //                     ]
+                            //                 })
+                            //             ]
+                            //         }),
+                            //         new TableCell({
+                            //             width: {
+                            //                 size: 5000,
+                            //                 WidthType: WidthType.DXA
+                            //             },
+                            //             children: [
+                            //                 new Paragraph({
+                            //                     style: "TableRowContent",
+                            //                     children: [
+                            //                         new TextRun({
+                            //                             text: "Architecture (attach circuit board diagram and Cell configuration structure )"
+                            //                         })
+                            //                     ]
+                            //                 })
+                            //             ]
+                            //         }),
+                            //         new TableCell({
+                            //             // // columnSpan: 5,
+                            //             width: {
+                            //                 size: 5000,
+                            //                 type: WidthType.DXA
+                            //             },
+                            //             children: [
+                            //                 new Paragraph({
+                            //                     style: "TableRowContent",
+                            //                     children: [
+                            //                         new TextRun({
+                            //                             text: bmsArchitectureRows
+                            //                         })
+                            //                     ]
+                            //                 })
+                            //             ]
+                            //         }),
+                            //     ]
+                            // }),
                             new TableRow({
                                 children: [
                                     new TableCell({
@@ -3033,59 +3491,6 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 children: [
                                                     new TextRun({
                                                         text: "3.5"
-                                                    })
-                                                ]
-                                            })
-                                        ]
-                                    }),
-                                    new TableCell({
-                                        width: {
-                                            size: 5000,
-                                            WidthType: WidthType.DXA
-                                        },
-                                        children: [
-                                            new Paragraph({
-                                                style: "TableRowContent",
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Architecture (attach circuit board diagram and Cell configuration structure )"
-                                                    })
-                                                ]
-                                            })
-                                        ]
-                                    }),
-                                    new TableCell({
-                                        // // columnSpan: 5,
-                                        width: {
-                                            size: 5000,
-                                            type: WidthType.DXA
-                                        },
-                                        children: [
-                                            new Paragraph({
-                                                style: "TableRowContent",
-                                                children: [
-                                                    new TextRun({
-                                                        text: bmsArchitectureRows
-                                                    })
-                                                ]
-                                            })
-                                        ]
-                                    }),
-                                ]
-                            }),
-                            new TableRow({
-                                children: [
-                                    new TableCell({
-                                        width: {
-                                            size: 5000,
-                                            WidthType: WidthType.DXA
-                                        },
-                                        children: [
-                                            new Paragraph({
-                                                style: "TableRowContent",
-                                                children: [
-                                                    new TextRun({
-                                                        text: "3.6"
                                                     })
                                                 ]
                                             })
@@ -3138,7 +3543,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "3.7"
+                                                        text: "3.6"
                                                     })
                                                 ]
                                             })
@@ -3245,7 +3650,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -3262,7 +3667,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: dcMakeRows
+                                                        text: updateddcMakeRows
                                                     })
                                                 ]
                                             })
@@ -3600,7 +4005,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -3617,7 +4022,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: dTrainMakeRows
+                                                        text: updateddTrainMakeRows
                                                     })
                                                 ]
                                             })
@@ -4237,6 +4642,60 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
+                                                        text: "Flexible range (where P > 90 percent of max. power)"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: " "
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.1.13.1"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
                                                         text: "Speed at the beginning of the range (min –1)"
                                                     })
                                                 ]
@@ -4256,6 +4715,59 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 children: [
                                                     new TextRun({
                                                         text: tractionBeginSpeedRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.1.13.2"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Speed at the end of the range (min –1 )"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: tractionEndSpeedRows
                                                     })
                                                 ]
                                             })
@@ -4396,7 +4908,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -4413,7 +4925,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: tractionMakeRows
+                                                        text: updatedtractionMakeRows
                                                     })
                                                 ]
                                             })
@@ -4980,7 +5492,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Make"
+                                                        text: "Make and manufacturer’s address"
                                                     })
                                                 ]
                                             })
@@ -4997,7 +5509,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: pcMakeRows
+                                                        text: updatedpcMakeRows
                                                     })
                                                 ]
                                             })
@@ -5405,6 +5917,271 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
+                                                        text: "Vehicle Control Unit"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: " "
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.4.1"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Make"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text:updatedvehMakeRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.4.2"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Model Number / Part number"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: vehModeRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.4.3"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Software Version / Calibration ID"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: vehSoftwareRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.4.4"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Hardware Version"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: vehHardwareRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "5.5"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
                                                         text: "Cooling System"
                                                     }),
                                                     new TextRun({
@@ -5454,7 +6231,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1"
+                                                        text: "5.5.1"
                                                     })
                                                 ]
                                             })
@@ -5507,7 +6284,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.1"
+                                                        text: "5.5.1.1"
                                                     })
                                                 ]
                                             })
@@ -5560,7 +6337,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.2"
+                                                        text: "5.5.1.2"
                                                     })
                                                 ]
                                             })
@@ -5613,7 +6390,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.3"
+                                                        text: "5.5.1.3"
                                                     })
                                                 ]
                                             })
@@ -5666,7 +6443,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.4"
+                                                        text: "5.5.1.4"
                                                     })
                                                 ]
                                             })
@@ -5719,7 +6496,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.5"
+                                                        text: "5.5.1.5"
                                                     })
                                                 ]
                                             })
@@ -5772,7 +6549,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.6"
+                                                        text: "5.5.1.6"
                                                     })
                                                 ]
                                             })
@@ -5825,7 +6602,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.1.7"
+                                                        text: "5.5.1.7"
                                                     })
                                                 ]
                                             })
@@ -5878,7 +6655,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2"
+                                                        text: "5.5.2"
                                                     })
                                                 ]
                                             })
@@ -5930,7 +6707,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2.1"
+                                                        text: "5.5.2.1"
                                                     })
                                                 ]
                                             })
@@ -5983,7 +6760,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2.2"
+                                                        text: "5.5.2.2"
                                                     })
                                                 ]
                                             })
@@ -6036,7 +6813,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2.3"
+                                                        text: "5.5.2.3"
                                                     })
                                                 ]
                                             })
@@ -6089,7 +6866,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2.4"
+                                                        text: "5.5.2.4"
                                                     })
                                                 ]
                                             })
@@ -6142,7 +6919,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.2.5"
+                                                        text: "5.5.2.5"
                                                     })
                                                 ]
                                             })
@@ -6195,7 +6972,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3"
+                                                        text: "5.5.3"
                                                     })
                                                 ]
                                             })
@@ -6248,7 +7025,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.1"
+                                                        text: "5.5.3.1"
                                                     })
                                                 ]
                                             })
@@ -6301,7 +7078,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.2"
+                                                        text: "5.5.3.2"
                                                     })
                                                 ]
                                             })
@@ -6354,7 +7131,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.3"
+                                                        text: "5.5.3.3"
                                                     })
                                                 ]
                                             })
@@ -6407,7 +7184,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.4"
+                                                        text: "5.5.3.4"
                                                     })
                                                 ]
                                             })
@@ -6460,7 +7237,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.5"
+                                                        text: "5.5.3.5"
                                                     })
                                                 ]
                                             })
@@ -6513,7 +7290,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.4.3.6"
+                                                        text: "5.5.3.6"
                                                     })
                                                 ]
                                             })
@@ -6566,7 +7343,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.5"
+                                                        text: "5.6"
                                                     })
                                                 ]
                                             })
@@ -6618,7 +7395,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.5.1"
+                                                        text: "5.6.1"
                                                     })
                                                 ]
                                             })
@@ -6671,7 +7448,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "5.6"
+                                                        text: "5.7"
                                                     })
                                                 ]
                                             })
@@ -6778,7 +7555,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Charger : on board / external "
+                                                        text: "Charger: On board / Portable"
                                                     })
                                                 ]
                                             })
@@ -6848,7 +7625,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: crChargerMakeRows
+                                                        text: updatedcrChargerMakeRows
                                                     })
                                                 ]
                                             })
@@ -7043,7 +7820,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Type (AC/DC, Slow /Fast)"
+                                                        text: "Type"
                                                     })
                                                 ]
                                             })
@@ -7096,7 +7873,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Standard Protocol (BEVC DC001(or) BEVC AC001(or) CCS (or) GB/T (or) CHAdeMO (or) SAE J1772  (or) if other specify)"
+                                                        text: "Standard Protocol"
                                                     })
                                                 ]
                                             })
@@ -7114,6 +7891,165 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                 children: [
                                                     new TextRun({
                                                         text: crStdProtocolRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "6.1.7"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Portable Residual Current Device (PRCD), if applicable"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: " "
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "6.1.7.1"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Make"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: updatedChargerPoartableMakeRows
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "6.1.7.2"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: {
+                                            size: 5000,
+                                            WidthType: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: "Model No"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        // // columnSpan: 5,
+                                        width: {
+                                            size: 5000,
+                                            type: WidthType.DXA
+                                        },
+                                        children: [
+                                            new Paragraph({
+                                                style: "TableRowContent",
+                                                children: [
+                                                    new TextRun({
+                                                        text: ChargerPoartableModelRows
                                                     })
                                                 ]
                                             })
@@ -9016,7 +9952,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Manufacturer :" + dataOfFooter.Manufacture_Name.value,
+                                                                text: "Manufacturer :" + manufacturer_Name,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
 
@@ -9131,7 +10067,8 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                // text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                text: "Name: " + homologation_Engg_Name,                                                                
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             }),
@@ -9155,7 +10092,7 @@ const vesExpoCondPartsRows = generateTableData(exposedConductivePartsModel);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Date : ",
+                                                                text: `Date : ${formattedDate}`,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             })

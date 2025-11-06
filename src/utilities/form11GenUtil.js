@@ -46,7 +46,22 @@ let docSealImage;
 //     }
 // }
 /////
-
+const prefixPattern = /^(M\/s\.?|m\/s\.?)\s*/i;
+function normalizeMsPrefix(rowString) {
+    return rowString
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();     
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        if (prefixPattern.test(trimmed)) {
+          const rest = trimmed.replace(prefixPattern, "").trim();
+          return `M/s. ${rest}`;
+        }
+  
+        return `M/s. ${trimmed}`;
+      })
+      .join(" | ");
+  }
 function generateTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim and join them into a single string
@@ -67,8 +82,10 @@ function generateTableData(dataList) {
 }
 async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
+    
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+    // const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; 
+    const imageUrl = `api/files/downloads/${fileName}`; 
 
     try {
         const response = await fetch(imageUrl);
@@ -110,6 +127,21 @@ async function generateForm11(form11Data, footerData) {
     console.log('form11Data:', form11Data);
     const dataOfFooter = footerData.footerData.footer.properties;
     const dataOfFooterr = footerData.footerData.SealSign.properties;
+
+    let homologation_Engg_Name = dataOfFooter.Homologation_Engineer_Name.value;
+    
+        // Capitalize first letter and prepend "Mr/Mrs"
+        if (typeof homologation_Engg_Name === 'string' && homologation_Engg_Name.trim().length > 0) {
+            let trimmedName = homologation_Engg_Name.trim();
+            homologation_Engg_Name = `Mr/Mrs. ${trimmedName[0].toUpperCase()}${trimmedName.slice(1)}`;
+          }
+                // Manufacturer Name
+let manufacturer_Name = dataOfFooter.Manufacture_Name.value;
+if (typeof manufacturer_Name === 'string' && manufacturer_Name.trim().length > 0) {
+    let trimmedManu = manufacturer_Name.trim();
+    manufacturer_Name = `M/s. ${trimmedManu[0].toUpperCase()}${trimmedManu.slice(1)}`;
+}
+
     // let imageUrl;
 
     // const fileName = dataOfFooterr.Upload_Seal.file_name;
@@ -147,11 +179,19 @@ async function generateForm11(form11Data, footerData) {
     const drawing1 = footerData.form11Data.diagrams.properties.Upload_drawing1.file_name;
     const drawing2 = footerData.form11Data.diagrams.properties.Upload_drawing2.file_name;
     const drawing3 = footerData.form11Data.diagrams.properties.Upload_drawing3.file_name;
-    const extractFileName = (fileName) => {
-        const parts = fileName.split('-');
-        return parts.slice(1).join('-');
-    };
+    // const extractFileName = (fileName) => {
+    //     const parts = fileName.split('-');
+    //     return parts.slice(1).join('-');
+    // };
 
+    const extractFileName = (fileName) => {
+        const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+        const parts = nameWithoutExt.split('-');
+        const name = parts.length > 1 ? parts.slice(1).join('-') : parts[0];
+        return name ? `ref: ${name}` : " ";
+      };
+      
+    
     let drawingList1 = [];
     let drawingList2 = [];
     let drawingList3 = [];
@@ -212,6 +252,7 @@ async function generateForm11(form11Data, footerData) {
     });
 
     const Manufacturer_name_and_address_Rows = generateTableData(Manufacturer_name_and_address_List);
+    const updatedManufacturer_name_and_address_Rows= normalizeMsPrefix(Manufacturer_name_and_address_Rows);
     const Basic_model_Rows = generateTableData(Basic_model_List);
     const variant_Rows = generateTableData(variant_List);
 
@@ -553,51 +594,51 @@ async function generateForm11(form11Data, footerData) {
             //         // Months
             January_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.January?.value,
+                value: vehDesc?.Month_of_Production?.properties?.January?.value,
             });
             February_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.February?.value,
+                value: vehDesc?.Month_of_Production?.properties?.February?.value,
             });
             March_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.March?.value,
+                value: vehDesc?.Month_of_Production?.properties?.March?.value,
             });
             April_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.April?.value,
+                value: vehDesc?.Month_of_Production?.properties?.April?.value,
             });
             May_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.May?.value,
+                value: vehDesc?.Month_of_Production?.properties?.May?.value,
             });
             June_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.June?.value,
+                value: vehDesc?.Month_of_Production?.properties?.June?.value,
             });
             July_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.July?.value,
+                value: vehDesc?.Month_of_Production?.properties?.July?.value,
             });
             August_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.August?.value,
+                value: vehDesc?.Month_of_Production?.properties?.August?.value,
             });
             September_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.September?.value,
+                value: vehDesc?.Month_of_Production?.properties?.September?.value,
             });
             October_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.October?.value,
+                value: vehDesc?.Month_of_Production?.properties?.October?.value,
             });
             November_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.November?.value,
+                value: vehDesc?.Month_of_Production?.properties?.November?.value,
             });
             December_List.push({
                 supplier: supplierName,
-                value: vehDesc?.Month_of_Production1?.properties?.December?.value,
+                value: vehDesc?.Month_of_Production?.properties?.December?.value,
             });
             firstyear_List.push({
                 supplier: supplierName,
@@ -1156,10 +1197,10 @@ console.log("First Month stored:", firstMonth);
 console.log("First Year stored:", firstYear);
 //////////////////////////////////////
 
-    const concatenatedResult = `${WMI_Code_List_Rows}${VDS_value_fourth_List_Rows}${VDS_value_fifth_List_Rows}${VDS_value_sixth_List_Rows}` +
+    const concatenatedResult = `#${WMI_Code_List_Rows}${VDS_value_fourth_List_Rows}${VDS_value_fifth_List_Rows}${VDS_value_sixth_List_Rows}` +
         `${VDS_value_seventh_List_Rows}${VDS_value_eighth_List_Rows}` +
         `${VDS_value_ninth_List_Rows}${VDS_value_tenth_List_Rows}${VDS_value_eleventh_List_Rows}` +
-        `${WMI_Extension_Code_List_Rows}${Serial_Number_List_Rows}`;
+        `${WMI_Extension_Code_List_Rows}${Serial_Number_List_Rows}#`;
     // console.log(concatenatedResult);
     concatenatedResult_List = concatenatedResult || " ";
     concatenatedResult_List_Rows = generateTableData(concatenatedResult_List);
@@ -2702,6 +2743,8 @@ console.log("First Year stored:", firstYear);
 
     const yearItems = generateYearProductionItems();
     const yearItemss = generateYearProductionItemss();
+         const today = new Date();
+const formattedDate = today.toLocaleDateString("en-GB");
     const form11Document = new Document({
         styles: {
             paragraphStyles: [
@@ -2814,7 +2857,7 @@ console.log("First Year stored:", firstYear);
                                                     style: "TableRowContent",
                                                     children: [
                                                         new TextRun({
-                                                            text: Manufacturer_name_and_address_Rows
+                                                            text: updatedManufacturer_name_and_address_Rows
                                                         })
                                                     ]
                                                 })
@@ -3425,7 +3468,7 @@ console.log("First Year stored:", firstYear);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Manufacturer :" + dataOfFooter.Manufacture_Name.value,
+                                                                text: "Manufacturer :" + manufacturer_Name,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
 
@@ -3540,7 +3583,8 @@ console.log("First Year stored:", firstYear);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                // text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                text: "Name: " + homologation_Engg_Name,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             }),
@@ -3564,7 +3608,7 @@ console.log("First Year stored:", firstYear);
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Date : ",
+                                                               text: `Date : ${formattedDate}`,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             })

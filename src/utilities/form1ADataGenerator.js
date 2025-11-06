@@ -1,185 +1,388 @@
 import { Table, TableRow, TableCell, WidthType, Paragraph, TextRun } from "docx";
-import { foot }from './form1AGenUtil.js';
+import { foot } from './form1AGenUtil.js';
 let tyresList;
 let allTablesData = [];
 let handholdStrap3wheeler_Rows;
 let dStrapRows;
-let twoWheeler;
+// let twoWheeler;
+let twoWheeler = false;
+let firstValue;
+console.log('initially firstValue is let twoWheeler :', firstValue)
+
+const prefixPattern = /^(M\/s\.?|m\/s\.?)\s*/i;
+function normalizeMsPrefix(rowString) {
+    return rowString
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();     
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        if (prefixPattern.test(trimmed)) {
+          const rest = trimmed.replace(prefixPattern, "").trim();
+          return `M/s. ${rest}`;
+        }
+  
+        return `M/s. ${trimmed}`;
+      })
+      .join(" | ");
+  }
+//   function extractTACNumbers(inputList) {
+//     return inputList.map(entry => {
+//       // Match TAC pattern strictly at the beginning: x/x/x (1–3 digits, slashes)
+//       const match = entry.match(/^\d{1,3}\/\d{1,2}\/\d{1,2}/);
+//       return match ? match[0] : ""; // Return only the TAC number or "" if not found
+//     });
+//   }
+
+
+
+
+
+// function extractTACNumbers(input) {
+//     let inputList = [];
+  
+//     // If input is a string, wrap it in an array
+//     if (typeof input === 'string') {
+//       inputList = [input];
+//     } else if (Array.isArray(input)) {
+//       inputList = input;
+//     } else {
+//       console.warn("extractTACNumbers: Unsupported input type", input);
+//       return '';
+//     }
+  
+//     for (const entry of inputList) {
+//       let value = entry;
+  
+//       // Handle object with 'value' key
+//       if (typeof value === 'object' && value !== null && 'value' in value) {
+//         value = value.value;
+//       }
+  
+//       if (typeof value !== 'string') {
+//         console.warn("Non-string entry in extractTACNumbers:", value);
+//         continue;
+//       }
+  
+//       const trimmed = value.trim();
+  
+//       // Match something like "abc123 12/12/2026"
+//       const datePattern = /^(.+?)\s+\d{1,2}\/\d{1,2}\/\d{4}$/;
+//       const match = trimmed.match(datePattern);
+//       return match ? match[1] : trimmed;
+//     }
+  
+//     return '';
+//   }
+  
+  
+  
+
+function extractTACNumbers(input) {
+    let inputList = [];
+  
+    // Normalize input to an array
+    if (typeof input === 'string') {
+      inputList = [input];
+    } else if (Array.isArray(input)) {
+      inputList = input;
+    } else {
+      inputList = [input]; // Treat object input as single-item array
+    }
+  
+    for (const entry of inputList) {
+      let value = entry;
+  
+      // If entry is an object with a 'value' key, extract it
+      if (typeof value === 'object' && value !== null && 'value' in value) {
+        value = value.value;
+      }
+  
+      // If still not a string, skip
+      if (typeof value !== 'string') {
+        console.warn("Non-string entry in extractTACNumbers:", value);
+        continue;
+      }
+  
+      const trimmed = value.trim();
+  
+      // Match something like "abc123 12/12/2026"
+      const datePattern = /^(.+?)\s+\d{1,2}\/\d{1,2}\/\d{4}$/;
+      const match = trimmed.match(datePattern);
+  
+      return match ? match[1] : trimmed;  // Return as string
+    }
+  
+    return '';
+  }
+  
+  
+  
+  function normalizeWithUnit(rowString, unit) {
+    return String(rowString)
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        return `${trimmed} ${unit}`;
+      })
+      .join(" | ");
+  }
+  
+
+  function normalizeWithTwoUnits(value, unit1, unit2) {
+    const trimmedValue = String(value).trim();
+    if (!trimmedValue || trimmedValue.toLowerCase() === "na") return trimmedValue;
+  
+    const separators = ["&", "-"];
+    const separator = separators.find(sep => trimmedValue.includes(sep));
+  
+    if (!separator) {
+      return `${trimmedValue} ${unit1}`;
+    }
+  
+    const parts = trimmedValue.split(separator).map(p => p.trim());
+  
+    if (parts.length === 2) {
+      const part1 = parts[0].toLowerCase() === "na" ? "NA" : `${parts[0]} ${unit1}`;
+      const part2 = parts[1].toLowerCase() === "na" ? "NA" : `${parts[1]} ${unit2}`;
+      return `${part1} ${separator} ${part2}`;
+    }
+  
+    return trimmedValue;
+  }
+  const SQ_CM_MM = 'Square cm/mm';
+  const KG = 'kg';
+  const INCH_MM = 'Inch/mm';
+  const KG_CM2_KPA_PSI = 'kg/cm² /kPa /psi';
+  const V = 'V';
+  const MM = 'mm';
+  const MM_SQ = 'mm Sq';
+  const CM_SQ = 'Cm Sq.';
+  const PERCENT_OR_DEGREE = '% OR °(Degree)';
+  const VOLTS = 'Volts';
+  const RPM = 'RPM';
+  const RPM_KM_H = 'RPM & Km/h';
+  const KW = 'Kw';
+  const KM = 'Km';
+  const KM_H = 'Km/h';
+  const AH = 'Ah';
+  const KWH = 'kWh';
+  const VOLTS_HERTZ = 'Volts & Hertz';
+  const VOLTS_AMPS = 'Volts & Amps';
+  const MINUTES_HOURS = 'Minutes/Hours';
+  const AMPS = 'Amps';
+  const MS = 'ms';
+  const W_H_KM = 'W-H/Km';
+  const DEGREES = 'Degrees';
+  const CyclesPerMin = 'Cycles/Min';
+
+  
 function populateMultiSupData(form1AData) {
-    console.log('form1AData:',form1AData);
-let footerData=foot;
-   // General_arrangement_vehicle
-const drawing1 = footerData.form1AData.General_arrangement_vehicle.properties.Upload_Drawing_Vehicle.file_name;
-const drawing2 = footerData.form1AData.General_arrangement_vehicle.properties.Upload_Drawing_complete_Vehicle.file_name;
+    console.log('form1AData:', form1AData);
+    let footerData = foot;
+    // General_arrangement_vehicle
+    const drawing1 = footerData.form1AData.General_arrangement_vehicle.properties.Upload_Drawing_Vehicle.file_name;
+    const drawing2 = footerData.form1AData.General_arrangement_vehicle.properties.Upload_Drawing_complete_Vehicle.file_name;
 
-// Transmission
-const drawingTransmission = footerData.form1AData.Transmission.properties.Drawing_transmission_arrangement.file_name;
+    // Transmission
+    const drawingTransmission = footerData.form1AData.Transmission.properties.Drawing_transmission_arrangement.file_name;
 
-// InstrumentClusterSchema
-const drawingInstrumentCluster = footerData.form1AData.InstrumentClusterSchema.properties.Drawing_showing_the_Complete_Instrument_Cluster.file_name;
+    // InstrumentClusterSchema
+    const drawingInstrumentCluster = footerData.form1AData.InstrumentClusterSchema.properties.Drawing_showing_the_Complete_Instrument_Cluster.file_name;
 
-// Suspension
-const drawingSuspension = footerData.form1AData.Suspension.properties.Upload_Drawing_Suspension.file_name;
+    // Suspension
+    const drawingSuspension = footerData.form1AData.Suspension.properties.Upload_Drawing_Suspension.file_name;
 
-// Brief_Brake_Information
-const drawingBrakingSystem = footerData.form1AData.Brief_Brake_Information.properties.Drawing_Braking_System.file_name;
+    // Brief_Brake_Information
+    const drawingBrakingSystem = footerData.form1AData.Brief_Brake_Information.properties.Drawing_Braking_System.file_name;
 
-// ABS
-const sensorDrawing = footerData.form1AData.ABS.properties.ID_SensorsHydraulic_Reservoir.file_name;
+    // ABS
+    const sensorDrawing = footerData.form1AData.ABS.properties.ID_SensorsHydraulic_Reservoir.file_name;
 
-// Make_of_modulator
-const modulatorDrawing = footerData.form1AData.Make_of_modulator.properties.ID_Modulator_Each_wheel.file_name;
-const parkingBrakeDrawing = footerData.form1AData.Make_of_modulator.properties.Drawing_parking_brake_and_mechanism.file_name;
+    // Make_of_modulator
+    const modulatorDrawing = footerData.form1AData.Make_of_modulator.properties.ID_Modulator_Each_wheel.file_name;
+    const parkingBrakeDrawing = footerData.form1AData.Make_of_modulator.properties.Drawing_parking_brake_and_mechanism.file_name;
 
-// Side_Hazard_Lamp
-const diagramLighting = footerData.form1AData.Side_Hazard_Lamp.properties.Diagram_location_lighting.file_name;
+    // Side_Hazard_Lamp
+    const diagramLighting = footerData.form1AData.Side_Hazard_Lamp.properties.Diagram_location_lighting.file_name;
 
-// Coupling_devices
-const couplingDeviceDrawing = footerData.form1AData.Coupling_devices.properties.Diagram_location_lighting.file_name;
-///////////
-// VINNumbering
-const vinPhoto = footerData.form1AData.VINNumbering.properties.Photo_location_VIN.file_name;
+    // Coupling_devices
+    const couplingDeviceDrawing = footerData.form1AData.Coupling_devices.properties.Diagram_location_lighting.file_name;
+    ///////////
+    // VINNumbering
+    const vinPhoto = footerData.form1AData.VINNumbering.properties.Photo_location_VIN.file_name;
 
-// Horn
-const hornDrawing = footerData.form1AData.Horn.properties.Drawing_showing_location.file_name;
+    // Horn
+    const hornDrawing = footerData.form1AData.Horn.properties.Drawing_showing_location.file_name;
 
-// Rear_View_Mirror
-const rearViewDrawing = footerData.form1AData.Rear_View_Mirror.properties.Drawing_Installation_Dimension.file_name;
+    // Rear_View_Mirror
+    const rearViewDrawing = footerData.form1AData.Rear_View_Mirror.properties.Drawing_Installation_Dimension.file_name;
 
-// Grab_handle_Straps
-const handholdDrawing = footerData.form1AData.Grab_handle_Straps.properties.Drawing_handhold_Strap.file_name;
+    // Grab_handle_Straps
+    const handholdDrawing = footerData.form1AData.Grab_handle_Straps.properties.Drawing_handhold_Strap.file_name;
 
-// Grab_handle_Straps_3_wheeler
-const handholdStrap3wheelerDrawing = footerData.form1AData.Grab_handle_Straps_3_wheeler.properties.Drawing_handhold_Strap.file_name;
+    // Strap and hand hold
+    const straphandlehold = footerData.form1AData.strap_and_HandelHold.properties.Drawing_handhold_Strap.file_name;
 
-// Spray_Suppression_Rear_Mud_Gaurd
-const spraySuppressionDrawing = footerData.form1AData.Spray_Suppression_Rear_Mud_Gaurd.properties.Diagram_spray_suppression.file_name;
+    // Grab_handle_Straps_3_wheeler
+    const handholdStrap3wheelerDrawing = footerData.form1AData.Grab_handle_Straps_3_wheeler.properties.Drawing_handhold_Strap.file_name;
 
-// Two_Wheeler_Stand
-const standsDrawing = footerData.form1AData.Two_Wheeler_Stand.properties.Diagram_Stands_installation.file_name;
-const footrestDrawing = footerData.form1AData.Two_Wheeler_Stand.properties.Drawing_Footrest_Floor_Boards.file_name;
+    // Spray_Suppression_Rear_Mud_Gaurd
+    const spraySuppressionDrawing = footerData.form1AData.Spray_Suppression_Rear_Mud_Gaurd.properties.Diagram_spray_suppression.file_name;
 
-// Fire_Fighting_System
-const fireFightingPhoto = footerData.form1AData.Fire_Fighting_System.properties.Photo_fire_fighting_system.file_name;
+    // Two_Wheeler_Stand
+    const standsDrawing = footerData.form1AData.Two_Wheeler_Stand.properties.Diagram_Stands_installation.file_name;
+    const footrestDrawing = footerData.form1AData.Two_Wheeler_Stand.properties.Drawing_Footrest_Floor_Boards.file_name;
 
-// Dimensions_and_weights
-const dimensionDrawing = footerData.form1AData.Dimensions_and_weights.properties.Dimensions_to_be_complied.file_name;
+    // Fire_Fighting_System
+    const fireFightingPhoto = footerData.form1AData.Fire_Fighting_System.properties.Photo_fire_fighting_system.file_name;
 
-// Windscreen_and_Wiping_System
-const windscreenDrawing = footerData.form1AData.Windscreen_and_Wiping_System.properties.Upload_Drawing.file_name;
+    // Dimensions_and_weights
+    const dimensionDrawing = footerData.form1AData.Dimensions_and_weights.properties.Dimensions_to_be_complied.file_name;
 
-// R_Point
-const rPointCoordinates = footerData.form1AData.R_Point.properties.Coordinates_of_drawing.file_name;
-const rPointGeneralLayout = footerData.form1AData.R_Point.properties.General_layout.file_name;
+    // Windscreen_and_Wiping_System
+    const windscreenDrawing = footerData.form1AData.Windscreen_and_Wiping_System.properties.Upload_Drawing.file_name;
 
-// Rear
-const rearCoordinates = footerData.form1AData.Rear.properties.Coordinates_of_drawing.file_name;
+    // R_Point
+    const rPointCoordinates = footerData.form1AData.R_Point.properties.Coordinates_of_drawing.file_name;
+    const rPointGeneralLayout = footerData.form1AData.R_Point.properties.General_layout.file_name;
 
-// Let lists
-let drawingList1 = [];
-let drawingList2 = [];
-let transmissionListt = [];
-let instrumentClusterList = [];
-let suspensionListt = [];
-let brakingSystemList = [];
-let sensorList = [];
-let modulatorList = [];
-let parkingBrakeList = [];
-let lightingListt = [];
-let couplingList = [];
-let vinList = [];
-let hornList = [];
-let rearViewList = [];
-let handholdList = [];
-let handholdStrap3wheelerList = [];
-let spraySuppressionList = [];
-let standsList = [];
-let footrestList = [];
-let fireFightingList = [];
-let dimensionList = [];
-let windscreenList = [];
-let rPointList = [];
-let rPointGeneralLayoutList = [];
-let rearCoordinatesList = [];
+    // Rear
+    const rearCoordinates = footerData.form1AData.Rear.properties.Coordinates_of_drawing.file_name;
 
-const extractFileName = (fileName) => {
-    const parts = fileName.split('-');
-    return parts.slice(1).join('-');
-};
+    // Device_to_protect_against_unauthorized_use
+    const DeviceUnauthorizedUse = footerData.form1AData.Device_to_protect_against_unauthorized_use.properties.Drawing_showing_installation.file_name;
+    // Let lists
+    let drawingList1 = [];
+    let drawingList2 = [];
+    let transmissionListt = [];
+    let instrumentClusterList = [];
+    let suspensionListt = [];
+    let brakingSystemList = [];
+    let sensorList = [];
+    let modulatorList = [];
+    let parkingBrakeList = [];
+    let lightingListt = [];
+    let couplingList = [];
+    let vinList = [];
+    let hornList = [];
+    let rearViewList = [];
+    let handholdList = [];
+    let handholdStrap3wheelerList = [];
+    let straphandleholdList=[];
+    let spraySuppressionList = [];
+    let standsList = [];
+    let footrestList = [];
+    let fireFightingList = [];
+    let dimensionList = [];
+    let windscreenList = [];
+    let rPointList = [];
+    let rPointGeneralLayoutList = [];
+    let rearCoordinatesList = [];
+    let DeviceUnauthorizedUseList = [];
 
-// Process the filenames using extractFileName function
- drawingList1 = [{ value: extractFileName(drawing1) }];
- drawingList2 = [{ value: extractFileName(drawing2) }];
- transmissionListt = [{ value: extractFileName(drawingTransmission) }];
- instrumentClusterList = [{ value: extractFileName(drawingInstrumentCluster) }];
- suspensionListt = [{ value: extractFileName(drawingSuspension) }];
- brakingSystemList = [{ value: extractFileName(drawingBrakingSystem) }];
- sensorList = [{ value: extractFileName(sensorDrawing) }];
- modulatorList = [{ value: extractFileName(modulatorDrawing) }];
- parkingBrakeList = [{ value: extractFileName(parkingBrakeDrawing) }];
- lightingListt = [{ value: extractFileName(diagramLighting) }];
- couplingList = [{ value: extractFileName(couplingDeviceDrawing) }];
- vinList = [{ value: extractFileName(vinPhoto) }];
- hornList = [{ value: extractFileName(hornDrawing) }];
- rearViewList = [{ value: extractFileName(rearViewDrawing) }];
- handholdList = [{ value: extractFileName(handholdDrawing) }];
- handholdStrap3wheelerList = [{ value: extractFileName(handholdStrap3wheelerDrawing) }];
- spraySuppressionList = [{ value: extractFileName(spraySuppressionDrawing) }];
- standsList = [{ value: extractFileName(standsDrawing) }];
- footrestList = [{ value: extractFileName(footrestDrawing) }];
- fireFightingList = [{ value: extractFileName(fireFightingPhoto) }];
- dimensionList = [{ value: extractFileName(dimensionDrawing) }];
- windscreenList = [{ value: extractFileName(windscreenDrawing) }];
- rPointList = [{ value: extractFileName(rPointCoordinates) }];
-//  rPointGeneralLayoutList = [{ value: extractFileName(rPointGeneralLayout) }];
- rPointGeneralLayoutList = [{ value: extractFileName(rPointGeneralLayout) || "NA" }];
-
- rearCoordinatesList = [{ value: extractFileName(rearCoordinates) }];
-
-// Rows generation
-let genVehPhotosRows = generateTableData(drawingList1);
-let genDrawingCompleteRows = generateTableData(drawingList2);
-let transmDiagramRows = generateTableData(transmissionListt);
-let ICDrawingRows = generateTableData(instrumentClusterList);
-let suspDrawingRows = generateTableData(suspensionListt);
-let brkDrawingRows = generateTableData(brakingSystemList);
-let sensor_Rows = generateTableData(sensorList);
-let brIDModulatorRows = generateTableData(modulatorList);
-let brDrawingParkingMechanismRows = generateTableData(parkingBrakeList);
-let hzlDiagramLocationRows = generateTableData(lightingListt);
-let coupling_Rows = generateTableData(couplingList);
-let plVinRows = generateTableData(vinList);
-let HornDrawingRows = generateTableData(hornList);
-let rvmDrawInstRows = generateTableData(rearViewList);
- dStrapRows = generateTableData(handholdList);
- handholdStrap3wheeler_Rows = generateTableData(handholdStrap3wheelerList);
-let ssDrawingRows = generateTableData(spraySuppressionList);
-let stDiagInstallRows = generateTableData(standsList);
-let twDrawingFootRows = generateTableData(footrestList);
-let FireFightingPhotoRows = generateTableData(fireFightingList);
-let dimension_Rows = generateTableData(dimensionList);
-let uDrawingRows = generateTableData(windscreenList);
-let coDrawingRows = generateTableData(rPointList);
-let rPointGeneralLayoutRows = generateTableData(rPointGeneralLayoutList);
-
-let rearCoordinates_Rows = generateTableData(rearCoordinatesList);
+    // const extractFileName = (fileName) => {
+    //     const parts = fileName.split('-');
+    //     return parts.slice(1).join('-');
+    // };
+    const extractFileName = (fileName) => {
+        const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+        const parts = nameWithoutExt.split('-');
+        const name = parts.length > 1 ? parts.slice(1).join('-') : parts[0];
+        return name ? `ref: ${name}` : " ";
+      };
+      
     
-allTablesData.push({
-    rowKey: "List2_812",
-    value: coupling_Rows
-});
-allTablesData.push({
-    rowKey: "List3_2331",
-    value: coDrawingRows
-});
-allTablesData.push({
-    rowKey: "List2_103",
-    value: handholdStrap3wheeler_Rows
-});
+
+    // Process the filenames using extractFileName function
+    drawingList1 = [{ value: extractFileName(drawing1) }];
+    drawingList2 = [{ value: extractFileName(drawing2) }];
+    transmissionListt = [{ value: extractFileName(drawingTransmission) }];
+    instrumentClusterList = [{ value: extractFileName(drawingInstrumentCluster) }];
+    suspensionListt = [{ value: extractFileName(drawingSuspension) }];
+    brakingSystemList = [{ value: extractFileName(drawingBrakingSystem) }];
+    sensorList = [{ value: extractFileName(sensorDrawing) }];
+    modulatorList = [{ value: extractFileName(modulatorDrawing) }];
+    parkingBrakeList = [{ value: extractFileName(parkingBrakeDrawing) }];
+    lightingListt = [{ value: extractFileName(diagramLighting) }];
+    // couplingList = [{ value: extractFileName(couplingDeviceDrawing) }];
+    couplingList = [{
+        value: couplingDeviceDrawing ? extractFileName(couplingDeviceDrawing) : "NA"
+      }];
+      
+    vinList = [{ value: extractFileName(vinPhoto) }];
+    hornList = [{ value: extractFileName(hornDrawing) }];
+    rearViewList = [{ value: extractFileName(rearViewDrawing) }];
+    handholdList = [{ value: extractFileName(handholdDrawing) }];
+    handholdStrap3wheelerList = [{ value: extractFileName(handholdStrap3wheelerDrawing) }];
+    straphandleholdList = [{ value: extractFileName(straphandlehold) }];
+    spraySuppressionList = [{ value: extractFileName(spraySuppressionDrawing) }];
+    standsList = [{ value: extractFileName(standsDrawing) }];
+    footrestList = [{ value: extractFileName(footrestDrawing) }];
+    fireFightingList = [{ value: extractFileName(fireFightingPhoto) }];
+    dimensionList = [{ value: extractFileName(dimensionDrawing) }];
+    windscreenList = [{ value: extractFileName(windscreenDrawing) }];
+    rPointList = [{ value: extractFileName(rPointCoordinates) }];
+    //  rPointGeneralLayoutList = [{ value: extractFileName(rPointGeneralLayout) }];
+    rPointGeneralLayoutList = [{ value: extractFileName(rPointGeneralLayout) }];
+
+    rearCoordinatesList = [{ value: extractFileName(rearCoordinates) }];
+    DeviceUnauthorizedUseList = [{ value: extractFileName(DeviceUnauthorizedUse) }];
+
+    // Rows generation
+    let genVehPhotosRows = generateTableData(drawingList1);
+    let genDrawingCompleteRows = generateTableData(drawingList2);
+    let transmDiagramRows = generateTableData(transmissionListt);
+    let ICDrawingRows = generateTableData(instrumentClusterList);
+    let suspDrawingRows = generateTableData(suspensionListt);
+    let brkDrawingRows = generateTableData(brakingSystemList);
+    let sensor_Rows = generateTableData(sensorList);
+    let brIDModulatorRows = generateTableData(modulatorList);
+    let brDrawingParkingMechanismRows = generateTableData(parkingBrakeList);
+    let hzlDiagramLocationRows = generateTableData(lightingListt);
+    let coupling_Rows = generateTableData(couplingList);
+    let plVinRows = generateTableData(vinList);
+    let HornDrawingRows = generateTableData(hornList);
+    let rvmDrawInstRows = generateTableData(rearViewList);
+    dStrapRows = generateTableData(handholdList);
+    handholdStrap3wheeler_Rows = generateTableData(handholdStrap3wheelerList);
+     let straphandleholdRows = generateTableData(straphandleholdList);
+    let ssDrawingRows = generateTableData(spraySuppressionList);
+    let stDiagInstallRows = generateTableData(standsList);
+    let twDrawingFootRows = generateTableData(footrestList);
+    let FireFightingPhotoRows = generateTableData(fireFightingList);
+    let dimension_Rows = generateTableData(dimensionList);
+    let uDrawingRows = generateTableData(windscreenList);
+    let coDrawingRows = generateTableData(rPointList);
+    // let rPointGeneralLayoutRows = generateTableData(rPointGeneralLayoutList);
+
+    let rPointGeneralLayoutRows = twoWheeler ? 'NA' : generateTableData(rPointGeneralLayoutList);
+
+
+    let DeviceUnauthorizedUseRows = generateTableData(DeviceUnauthorizedUseList);
+
+    let rearCoordinates_Rows = generateTableData(rearCoordinatesList);
+
+    allTablesData.push({
+        rowKey: "List2_812",
+        value: coupling_Rows
+    });
+    allTablesData.push({
+        rowKey: "List3_2931",
+        value: coDrawingRows
+    });
+    allTablesData.push({
+        rowKey: "List2_103",
+        value: handholdStrap3wheeler_Rows
+    });
+
+
+
 
     const vehicleGeneralInformationList = form1AData.Vehicle_General_Information.VehicleGeneralInformation;
     let vehMakeList = [];
     let vehModelVariantList = [];
+    let vehMeansOfIdentificationList = [];
     let vehVehicleCategoryList = [];
     let vehNameAddressManufList = [];
     let vehNameAddressAssemList = [];
@@ -199,6 +402,11 @@ allTablesData.push({
                 value: vehDesc?.Manufacturer_Details?.properties?.Basic_model_and_its_variant?.value
             }
             vehModelVariantList.push(vehModelVariant);
+            const vehMeansOfIdentification = {
+                supplier: supplierName,
+                value: vehDesc?.Manufacturer_Details?.properties?.Means_Of_Type_identification?.value
+            }
+            vehMeansOfIdentificationList.push(vehMeansOfIdentification);
             const vehVehicleCategory = {
                 supplier: supplierName,
                 value: vehDesc?.Manufacturer_Details?.properties?.Vehicle_category?.value
@@ -232,8 +440,14 @@ allTablesData.push({
         }
     });
     let vehMakeRows = generateTableData(vehMakeList);
+    const updatedvehMakeRows = normalizeMsPrefix(vehMakeRows);
     let vehModelVariantRows = generateTableData(vehModelVariantList);
+    let vehMeansOfIdentificationRows = generateTableData(vehMeansOfIdentificationList);
     let vehVehicleCategoryRows = generateTableData(vehVehicleCategoryList);
+    firstValue = vehVehicleCategoryRows;
+    if (firstValue === "L2" || firstValue === "L1") {
+        twoWheeler = true;        
+    }
     let vehNameAddressManufRows = generateTableData(vehNameAddressManufList);
     let vehNameAddressAssemRows = generateTableData(vehNameAddressAssemList);
     let vehNameAddressVehImpRows = generateTableData(vehNameAddressVehImpList);
@@ -241,11 +455,15 @@ allTablesData.push({
     let vehPositAffxRows = generateTableData(vehPositAffxList);
     allTablesData.push({
         rowKey: "List1_01",
-        value: vehMakeRows
+        value: updatedvehMakeRows
     });
     allTablesData.push({
         rowKey: "List1_02",
         value: vehModelVariantRows
+    });
+    allTablesData.push({
+        rowKey: "List1_03",
+        value: vehMeansOfIdentificationRows
     });
     allTablesData.push({
         rowKey: "List1_05",
@@ -271,6 +489,104 @@ allTablesData.push({
         rowKey: "List1_012",
         value: vehPositAffxRows
     });
+    
+    tyresList = form1AData.Tyres.TyresData;
+    let tyreLadenList = [];
+    let tyreUnladenDriverList = [];
+    let tyreWheelCombSizeList = [];
+    let tyreMinSpeedCategoryList = [];
+    let tyreMinLoadCapIndexList = [];
+    let tyreCategCompatibleList = [];
+    let vehTypeList = [];
+    let tyreMAxWisthList = [];
+    tyresList && tyresList.map(vehTyre => {
+        if (vehTyre?.supplier?.active === true) {
+            const supplierName = vehTyre.supplier.nameOfSupplier;
+            tyreLadenList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Laden?.value
+            });
+            tyreUnladenDriverList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Unladen_Driver?.value
+            });
+            tyreWheelCombSizeList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Tyre_wheel_combinations_Sizes?.value
+            });
+            tyreMinSpeedCategoryList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Minimum_speed_category_symbol?.value
+            });
+            tyreMinLoadCapIndexList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Minimum_load_capacity_index?.value
+            });
+            tyreCategCompatibleList.push({
+                supplier: supplierName,
+                value: vehTyre?.Tyre_Description?.properties?.Categories_compatible_for_vehicle?.value
+            });
+            vehTypeList.push({
+                supplier: supplierName,
+                value: vehTyre?.Front_Tyre?.properties?.tyre_vehicle_type?.value
+            });
+            tyreMAxWisthList.push({
+                supplier: supplierName,
+                value: vehTyre?.Rear_Tyre?.properties?.Tyre_max_Width?.value
+            });
+
+
+        }
+    });
+    let tyreLadenRows = generateTableData(tyreLadenList);
+    // let tyreLadenRows = normalizeWithUnit(tyreLadenRows1, KG_CM2_KPA_PSI);
+    let tyreUnladenDriverRows = generateTableData(tyreUnladenDriverList);
+    // let tyreUnladenDriverRows = normalizeWithUnit(tyreUnladenDriverRows1, KG_CM2_KPA_PSI);
+    let tyreWheelCombSizeRows = generateTableData(tyreWheelCombSizeList);
+    let tyreMinSpeedCategoryRows = generateTableData(tyreMinSpeedCategoryList);
+    let tyreMinLoadCapIndexRows = generateTableData(tyreMinLoadCapIndexList);
+    let tyreCategCompatibleRows = generateTableData(tyreCategCompatibleList);
+    let tyreMAxWisthRows1 = generateTableData(tyreMAxWisthList);
+    let tyreMAxWisthRows = normalizeWithUnit(tyreMAxWisthRows1, MM);
+    let vehTypeRows = generateTableData(vehTypeList);
+    console.log('vehTypeRows:', vehTypeRows);
+    // firstValue = vehTypeRows;
+    // if (firstValue === "2-Wheeler") {
+    //     twoWheeler = true;
+    //     console.log('true');
+    //     console.log('inside firstValue :', firstValue);
+    //     console.log('inside firstValue twoWheeler:', twoWheeler);
+    // }
+    allTablesData.push({
+        rowKey: "List2_4211",
+        value: tyreLadenRows
+    });
+    allTablesData.push({
+        rowKey: "List2_4212",
+        value: tyreUnladenDriverRows
+    });
+    allTablesData.push({
+        rowKey: "List2_422",
+        value: tyreWheelCombSizeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_423",
+        value: tyreMinSpeedCategoryRows
+    });
+    allTablesData.push({
+        rowKey: "List2_424",
+        value: tyreMinLoadCapIndexRows
+    });
+    allTablesData.push({
+        rowKey: "List2_425",
+        value: tyreCategCompatibleRows
+    });
+    allTablesData.push({
+        rowKey: "List2_112",
+        value: tyreMAxWisthRows
+    });
+
+  
     const generalArrangeOfVehicleList = form1AData.General_arrangement_vehicle.GeneralArrangementVehicle;
     let genVehPhotosList = [];
     let genDrawingCompleteList = [];
@@ -298,7 +614,7 @@ allTablesData.push({
                 supplier: supplierName,
                 value: arrOfVehicle?.General_arrangement_vehicle?.properties?.Number_of_seating_positions?.value
             });
-            
+
             genTypeOfFuelList.push({
                 supplier: supplierName,
                 value: arrOfVehicle?.General_arrangement_vehicle?.properties?.Type_possible_variants_and_versions?.value
@@ -319,7 +635,8 @@ allTablesData.push({
     let genNoOfSeatingPositionsRows = generateTableData(genNoOfSeatingPositionsList);
     let genTypeOfFuelRows = generateTableData(genTypeOfFuelList);
     let genCommericalRows = generateTableData(genCommericalList);
-    let genWheelBaseRows = generateTableData(genWheelBaseList);
+    let genWheelBaseRows1 = generateTableData(genWheelBaseList);
+    let genWheelBaseRows = normalizeWithUnit(genWheelBaseRows1, MM);
     allTablesData.push({
         rowKey: "List1_11",
         value: genVehPhotosRows
@@ -330,15 +647,23 @@ allTablesData.push({
     });
     allTablesData.push({
         rowKey: "List1_13",
-        value:  genWheelBaseRows
+        value: genWheelBaseRows
     });
     allTablesData.push({
         rowKey: "List1_14",
         value: genNoOfAxlesWheelsRows
     });
     allTablesData.push({
+        rowKey: "List1_15",
+        value: "NA"
+    });
+    allTablesData.push({
         rowKey: "List1_16",
         value: genNoOfSeatingPositionsRows
+    });
+    allTablesData.push({
+        rowKey: "List1_17",
+        value: "Electric Vehicle"
     });
     allTablesData.push({
         rowKey: "List1_2",
@@ -394,14 +719,24 @@ allTablesData.push({
             });
         }
     });
-    let kerbWeightRows = generateTableData(kerbWeightList);
-    let distrWeightRows = generateTableData(distrWeightList);
-    let refWeightRows = generateTableData(refWeightList);
-    let divOfWeightRows = generateTableData(divOfWeightList);
-    let divOfGWeightRows = generateTableData(divOfGWeightList);
-    let maxPermWeightRows = generateTableData(maxPermWeightList);
-    let weightFrontAxleRows = generateTableData(weightFrontAxleList);
-    let weightRearAxleRows = generateTableData(weightRearAxleList);
+    let kerbWeightRows1 = generateTableData(kerbWeightList);
+    let kerbWeightRows = normalizeWithUnit(kerbWeightRows1, KG);
+    let distrWeightRows1 = generateTableData(distrWeightList);
+    let distrWeightRows = normalizeWithTwoUnits(distrWeightRows1, KG,KG);
+    // let distrWeightRows = normalizeWithUnit(distrWeightRows1, KG);
+    let refWeightRows1 = generateTableData(refWeightList);
+    let refWeightRows = normalizeWithUnit(refWeightRows1, KG);
+    let divOfWeightRows1 = generateTableData(divOfWeightList);
+    let divOfWeightRows = normalizeWithTwoUnits(divOfWeightRows1, KG,KG);
+    // let divOfWeightRows = normalizeWithUnit(divOfWeightRows1, KG);
+    let divOfGWeightRows1 = generateTableData(divOfGWeightList);
+    let divOfGWeightRows = normalizeWithUnit(divOfGWeightRows1, KG);
+    let maxPermWeightRows1 = generateTableData(maxPermWeightList);
+    let maxPermWeightRows = normalizeWithUnit(maxPermWeightRows1, KG);
+    let weightFrontAxleRows1 = generateTableData(weightFrontAxleList);
+    let weightFrontAxleRows = normalizeWithUnit(weightFrontAxleRows1, KG);
+    let weightRearAxleRows1 = generateTableData(weightRearAxleList);
+    let weightRearAxleRows = normalizeWithUnit(weightRearAxleRows1, KG);
     allTablesData.push({
         rowKey: "List1_19",
         value: kerbWeightRows
@@ -434,6 +769,147 @@ allTablesData.push({
         rowKey: "List1_116",
         value: weightRearAxleRows
     });
+
+    
+    // const transmissionList = form1AData?.Drive_Train_System?.DriveTrainSystemData;
+    // let transmDiagramList = [];
+    // let transmTypeList = [];
+    // let transmGearBoxList = [];
+    // let transmPrimRatioList = [];
+    // let transmReverseGearList = [];
+    // let transmECUList = [];
+    // let transmMaxSpeedList = [];
+    // transmissionList && transmissionList.map(vehTransm => {
+    //     if (vehTransm.supplier.active === true) {
+    //         const supplierName = vehTransm?.supplier?.nameOfSupplier;
+    //         transmDiagramList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.Drawing_transmission_arrangement?.value
+    //         });
+    //         transmTypeList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.type_Transmission_arrangement?.value
+    //         });
+    //         transmGearBoxList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.Type_Gear_box_vehicle?.value
+    //         });
+    //         transmPrimRatioList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.Primary_ratio_transmission_system?.value
+    //         });
+    //         transmReverseGearList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.Reverse_gear_max_speed?.value
+    //         });
+    //         transmECUList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.ECUs_in_transmission?.value
+    //         });
+    //         transmMaxSpeedList.push({
+    //             supplier: supplierName,
+    //             value: vehTransm?.Transmission?.properties?.Max_Design_speed_of_vehicle?.value
+    //         });
+    //     }
+    // });
+    // // let transmDiagramRows = generateTableData(transmDiagramList);
+    // let transmTypeRows = generateTableData(transmTypeList);
+    // let transmGearBoxRows = generateTableData(transmGearBoxList);
+    // let transmPrimRatioRows = generateTableData(transmPrimRatioList);
+    // let transmReverseGearRows = generateTableData(transmReverseGearList);
+    // let transmECURows = generateTableData(transmECUList);
+    // let transmMaxSpeedRows1 = generateTableData(transmMaxSpeedList);
+    // let transmMaxSpeedRows = normalizeWithUnit(transmMaxSpeedRows1, KM_H);
+    // allTablesData.push({
+    //     rowKey: "List1_31",
+    //     value: transmDiagramRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_32",
+    //     value: transmTypeRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_341",
+    //     value: transmGearBoxRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3431",
+    //     value: transmPrimRatioRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3436",
+    //     value: transmReverseGearRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_35",
+    //     value: transmECURows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_36",
+    //     value: transmMaxSpeedRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_33",
+    //     value: "NA"
+    // });
+    // // allTablesData.push({
+    // //     rowKey: "List1_34",
+    // //     value: "NA"
+    // // });
+    // allTablesData.push({
+    //     rowKey: "List1_342",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3421",
+    //     value: "NA"
+    // });
+    // // allTablesData.push({
+    // //     rowKey: "List1_343",
+    // //     value: "NA"
+    // // });
+    // allTablesData.push({
+    //     rowKey: "List1_3432",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3433",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34331",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34332",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34333",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34334",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34335",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_34336",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3434",
+    //     value: "NA"
+    // });
+    // allTablesData.push({
+    //     rowKey: "List1_3435",
+    //     value: "NA"
+    // });
+
+
     const transmissionList = form1AData?.Drive_Train_System?.DriveTrainSystemData;
     let transmDiagramList = [];
     let transmTypeList = [];
@@ -442,6 +918,18 @@ allTablesData.push({
     let transmReverseGearList = [];
     let transmECUList = [];
     let transmMaxSpeedList = [];
+    let clutchTypeList=[];
+    let methodOfSelectionList = [];
+let gearShiftingPatternList = [];
+let secondaryRatioList = [];
+let individualAndOverallRatiosList = [];
+let firstGearRatioList = [];
+let secondGearRatioList = [];
+let thirdGearRatioList = [];
+let fourthGearRatioList = [];
+let fifthGearRatioList = [];
+let sixthGearRatioList = [];
+
     transmissionList && transmissionList.map(vehTransm => {
         if (vehTransm.supplier.active === true) {
             const supplierName = vehTransm?.supplier?.nameOfSupplier;
@@ -473,6 +961,60 @@ allTablesData.push({
                 supplier: supplierName,
                 value: vehTransm?.Transmission?.properties?.Max_Design_speed_of_vehicle?.value
             });
+            clutchTypeList.push({
+                supplier: supplierName,
+                value: vehTransm?.Clutch?.properties?.Type?.value
+            });
+            methodOfSelectionList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Method_of_selection?.value
+            });
+            
+            gearShiftingPatternList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Gear_shifting_pattern?.value
+            });
+            
+            secondaryRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Secondary_ratio?.value
+            });
+            
+            individualAndOverallRatiosList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Individual_and_Overall_ratios?.value
+            });
+            
+            firstGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.First_gear_ratio?.value
+            });
+            
+            secondGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Second_gear_ratio?.value
+            });
+            
+            thirdGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Third_gear_ratio?.value
+            });
+            
+            fourthGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Fourth_gear_ratio?.value
+            });
+            
+            fifthGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Fifth_gear_ratio?.value
+            });
+            
+            sixthGearRatioList.push({
+                supplier: supplierName,
+                value: vehTransm?.Transmission?.properties?.Sixth_gear_ratio?.value
+            });
+            
         }
     });
     // let transmDiagramRows = generateTableData(transmDiagramList);
@@ -481,7 +1023,21 @@ allTablesData.push({
     let transmPrimRatioRows = generateTableData(transmPrimRatioList);
     let transmReverseGearRows = generateTableData(transmReverseGearList);
     let transmECURows = generateTableData(transmECUList);
-    let transmMaxSpeedRows = generateTableData(transmMaxSpeedList);
+    let transmMaxSpeedRows1 = generateTableData(transmMaxSpeedList);
+    let transmMaxSpeedRows = normalizeWithUnit(transmMaxSpeedRows1, KM_H);
+    let methodOfSelectionRows = generateTableData(methodOfSelectionList);
+    let clutchTypeRows = generateTableData(clutchTypeList);    
+let gearShiftingPatternRows = generateTableData(gearShiftingPatternList);
+let secondaryRatioRows = generateTableData(secondaryRatioList);
+let individualAndOverallRatiosRows = generateTableData(individualAndOverallRatiosList);
+let firstGearRatioRows = generateTableData(firstGearRatioList);
+let secondGearRatioRows = generateTableData(secondGearRatioList);
+let thirdGearRatioRows = generateTableData(thirdGearRatioList);
+let fourthGearRatioRows = generateTableData(fourthGearRatioList);
+let fifthGearRatioRows = generateTableData(fifthGearRatioList);
+let sixthGearRatioRows = generateTableData(sixthGearRatioList);
+
+
     allTablesData.push({
         rowKey: "List1_31",
         value: transmDiagramRows
@@ -510,22 +1066,83 @@ allTablesData.push({
         rowKey: "List1_36",
         value: transmMaxSpeedRows
     });
+    allTablesData.push({
+        rowKey: "List1_33",
+        value: clutchTypeRows
+    });
+    // allTablesData.push({
+    //     rowKey: "List1_34",
+    //     value: "NA"
+    // });
+    allTablesData.push({
+        rowKey: "List1_342",
+        value:methodOfSelectionRows
+    });
+    allTablesData.push({
+        rowKey: "List1_3421",
+        value: gearShiftingPatternRows
+    });
+    // allTablesData.push({
+    //     rowKey: "List1_343",
+    //     value: "NA"
+    // });
+    allTablesData.push({
+        rowKey: "List1_3432",
+        value: secondaryRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_3433",
+        value: individualAndOverallRatiosRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34331",
+        value: firstGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34332",
+        value: secondGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34333",
+        value: thirdGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34334",
+        value: fourthGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34335",
+        value: fifthGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_34336",
+        value: sixthGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List1_3434",
+        value: "NA"
+    });
+    allTablesData.push({
+        rowKey: "List1_3435",
+        value: "NA"
+    });
+
     // const suspensionList = (form1AData?.Suspension?.SuspensionData && Object.keys(form1AData.Suspension.SuspensionData).length > 0)
     //     // ? form1AData.Suspension.SuspensionData
     //     ? form1AData.Handle_Lock_Anti_Theft_Device.HandleLock
     //     : form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
     const handleLockData = form1AData?.Suspension?.SuspensionData;
-const steeringData = form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
-console.log('handleLockData:',handleLockData);
-console.log('steeringData:',steeringData);
-const suspensionList = (
-  handleLockData && Object.keys(handleLockData).length > 0
-) ? handleLockData
-  : (steeringData && Object.keys(steeringData).length > 0 ? steeringData : {});
+    const steeringData = form1AData?.SteeringSuspensionAntiTheft?.SteeringSuspensionAntiTheftData;
+    console.log('handleLockData:', handleLockData);
+    console.log('steeringData:', steeringData);
+    const suspensionList = (
+        handleLockData && Object.keys(handleLockData).length > 0
+    ) ? handleLockData
+        : (steeringData && Object.keys(steeringData).length > 0 ? steeringData : {});
 
-  const handleLockDataa =form1AData.Handle_Lock_Anti_Theft_Device.HandleLock;
-  console.log('handleLockDataa:',handleLockDataa);
-console.log("suspensionList:",suspensionList);
+    const handleLockDataa = form1AData.Handle_Lock_Anti_Theft_Device.HandleLock;
+    console.log('handleLockDataa:', handleLockDataa);
+    console.log("suspensionList:", suspensionList);
     let suspDrawingList = [];
     let suspBriefDescOfECUsList = [];
     let suspSpringsFrontRearList = [];
@@ -594,11 +1211,11 @@ console.log("suspensionList:",suspensionList);
                 value: vehSusp?.Steering_System?.properties?.Brief_desc_ECUs_Steering?.value
             });
             thLockList.push({
-                
+
                 value: vehSusp?.Lock_Anti_theft_device?.properties?.Type_of_handle_Lock?.value
             });
             MatDeviceList.push({
-            
+
                 value: vehSusp?.Lock_Anti_theft_device?.properties?.Make_of_Anti_Theft_Device?.value
             });
         }
@@ -606,13 +1223,13 @@ console.log("suspensionList:",suspensionList);
 
     handleLockDataa && handleLockDataa.map(vehhand => {
         if (vehhand.supplier.active === true) {
-          
+
             thLockListt.push({
-               
+
                 value: vehhand?.Lock_Anti_theft_device?.properties?.Type_of_handle_Lock?.value
             });
             MatDeviceListt.push({
-              
+
                 value: vehhand?.Lock_Anti_theft_device?.properties?.Make_of_Anti_Theft_Device?.value
             });
         }
@@ -623,7 +1240,8 @@ console.log("suspensionList:",suspensionList);
     let suspAntiRollBarRows = generateTableData(suspAntiRollBarList);
     let suspSockAbsorbersRows = generateTableData(suspSockAbsorbersList);
     // let sControlProvidedRows = generateTableData(sControlProvidedList);
-    let sControlProvidedRows = twoWheeler ? 'handle bar' : generateTableData(sControlProvidedList);
+    let sControlProvidedRows = twoWheeler ? 'Handle Bar' : generateTableData(sControlProvidedList);
+
     // let sLocationRows = generateTableData(sLocationList);
     let sLocationRows = twoWheeler ? 'NA' : generateTableData(sLocationList);
 
@@ -632,59 +1250,86 @@ console.log("suspensionList:",suspensionList);
 
     // let sMakeRows = generateTableData(sMakeList);
     let sMakeRows = twoWheeler ? 'NA' : generateTableData(sMakeList);
-
+    const updatedsMakeRows = normalizeMsPrefix(sMakeRows);
     // let sGearRatioRows = generateTableData(sGearRatioList);
     let sGearRatioRows = twoWheeler ? 'NA' : generateTableData(sGearRatioList);
 
     // let sMaxWheelRows = generateTableData(sMaxWheelList);
     let sMaxWheelRows = twoWheeler ? 'NA' : generateTableData(sMaxWheelList);
 
-    // let sBreifRows = generateTableData(sBreifList);
-    let sBreifRows = twoWheeler ? 'NA' : generateTableData(sBreifList);
+    let sBreifRows = generateTableData(sBreifList);
+    // let sBreifRows = twoWheeler ? 'NA' : generateTableData(sBreifList);
     // let thLockRows = generateTableData(thLockList);
     // let MatDeviceRows = generateTableData(MatDeviceList);
     // let thLockRows = generateTableData(thLockList.length ? thLockList : thLockListt);
-    console.log('thLockListt:',thLockListt);
-    console.log('MatDeviceListt:',MatDeviceListt);
+
+
+
+    allTablesData.push({
+        rowKey: "List2_511",
+        value: sControlProvidedRows
+    });
+
+    allTablesData.push({
+        rowKey: "List2_512",
+        value: sLocationRows
+    });
+    allTablesData.push({
+        rowKey: "List2_5131",
+        value: updatedsMakeRows
+    });
+
+    allTablesData.push({
+        rowKey: "List2_5132",
+        value: sGearRatioRows
+    });
+    allTablesData.push({
+        rowKey: "List2_5133",
+        value: sMaxWheelRows
+    });
+    console.log('thLockListt:', thLockListt);
+    console.log('MatDeviceListt:', MatDeviceListt);
     console.log('thLockList length:', thLockList.length);
     console.log('thLockListt length:', thLockListt.length);
     const isValidList = (arr) =>
         Array.isArray(arr) &&
         arr.some(item =>
-          item &&
-          Object.values(item).some(v => v !== undefined && v !== null && v !== '')
+            item &&
+            Object.values(item).some(v => v !== undefined && v !== null && v !== '')
         );
-        const finalThLockList = isValidList(thLockList) ? thLockList : (isValidList(thLockListt) ? thLockListt : []);
-        console.log('finalThLockList used for generateTableData:', finalThLockList);
-        let thLockRows = generateTableData(finalThLockList);
+    const finalThLockList = isValidList(thLockList) ? thLockList : (isValidList(thLockListt) ? thLockListt : []);
+    console.log('finalThLockList used for generateTableData:', finalThLockList);
+    let thLockRows = generateTableData(finalThLockList);
     // For MatDeviceList
     const finalMatDeviceList = isValidList(MatDeviceList)
-    ? MatDeviceList
-    : (isValidList(MatDeviceListt) ? MatDeviceListt : []);
-  
-  console.log('finalMatDeviceList used for generateTableData:', finalMatDeviceList);
-  
-  let MatDeviceRows = generateTableData(finalMatDeviceList);
-// let MatDeviceRows = generateTableData(finalMatDeviceList);
-// let MatDeviceRows = generateTableData(MatDeviceList || MatDeviceListt);
-console.log('MatDeviceList:',MatDeviceList);
-console.log('thlockRows:',thLockRows);
-// let MatDeviceRows = generateTableData(MatDeviceList.length ? MatDeviceList : MatDeviceListt);
-console.log('MatDeviceList length:', MatDeviceList.length);
-console.log('MatDeviceListt length:', MatDeviceListt.length);
+        ? MatDeviceList
+        : (isValidList(MatDeviceListt) ? MatDeviceListt : []);
+
+    console.log('finalMatDeviceList used for generateTableData:', finalMatDeviceList);
+
+    let MatDeviceRows = generateTableData(finalMatDeviceList);
+    const updatedMatDeviceRows = normalizeMsPrefix(MatDeviceRows);
+    // let MatDeviceRows = generateTableData(finalMatDeviceList);
+    // let MatDeviceRows = generateTableData(MatDeviceList || MatDeviceListt);
+    console.log('MatDeviceList:', MatDeviceList);
+    console.log('thlockRows:', thLockRows);
+    // let MatDeviceRows = generateTableData(MatDeviceList.length ? MatDeviceList : MatDeviceListt);
+    console.log('MatDeviceList length:', MatDeviceList.length);
+    console.log('MatDeviceListt length:', MatDeviceListt.length);
     console.log('suspBriefDescOfECUsRows:', suspBriefDescOfECUsRows);
-console.log('suspSpringsFrontRearRows:', suspSpringsFrontRearRows);
-console.log('suspAntiRollBarRows:', suspAntiRollBarRows);
-console.log('suspSockAbsorbersRows:', suspSockAbsorbersRows);
-console.log('sControlProvidedRows:', sControlProvidedRows);
-console.log('sLocationRows:', sLocationRows);
-console.log('smechanismRows:', smechanismRows);
-console.log('sMakeRows:', sMakeRows);
-console.log('sGearRatioRows:', sGearRatioRows);
-console.log('sMaxWheelRows:', sMaxWheelRows);
-console.log('sBreifRows:', sBreifRows);
-console.log('thLockRows:', thLockRows);
-console.log('MatDeviceRows:', finalMatDeviceList);
+    console.log('suspSpringsFrontRearRows:', suspSpringsFrontRearRows);
+    console.log('suspAntiRollBarRows:', suspAntiRollBarRows);
+    console.log('suspSockAbsorbersRows:', suspSockAbsorbersRows);
+    console.log('sControlProvidedRows:', sControlProvidedRows);
+    console.log('sLocationRows:', sLocationRows);
+    console.log('smechanismRows:', smechanismRows);
+    console.log('sMakeRows:', sMakeRows);
+    console.log('sGearRatioRows:', sGearRatioRows);
+    console.log('sMaxWheelRows:', sMaxWheelRows);
+    console.log('sBreifRows:', sBreifRows);
+    console.log('thLockRows:', thLockRows);
+    console.log('MatDeviceRows:', finalMatDeviceList);
+    console.log('first value in steering Rows:', firstValue);
 
     allTablesData.push({
         rowKey: "List1_41",
@@ -706,30 +1351,31 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         rowKey: "List1_414",
         value: suspSockAbsorbersRows
     });
-    allTablesData.push({
-        rowKey: "List2_511",
-        value: sControlProvidedRows
-    });
-    allTablesData.push({
-        rowKey: "List2_512",
-        value: sLocationRows
-    });
+    // allTablesData.push({
+    //     rowKey: "List2_511",
+    //     value: sControlProvidedRows
+    // });
+
+    // allTablesData.push({
+    //     rowKey: "List2_512",
+    //     value: sLocationRows
+    // });
     allTablesData.push({
         rowKey: "List2_513",
         value: smechanismRows
     });
-    allTablesData.push({
-        rowKey: "List2_5131",
-        value: sMakeRows
-    });
-    allTablesData.push({
-        rowKey: "List2_5132",
-        value: sGearRatioRows
-    });
-    allTablesData.push({
-        rowKey: "List2_5133",
-        value: sMaxWheelRows
-    });
+    // allTablesData.push({
+    //     rowKey: "List2_5131",
+    //     value: sMakeRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_5132",
+    //     value: sGearRatioRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_5133",
+    //     value: sMaxWheelRows
+    // });
     allTablesData.push({
         rowKey: "List2_514",
         value: sBreifRows
@@ -740,91 +1386,97 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_8411",
-        value: MatDeviceRows
+        value: updatedMatDeviceRows
+    });
+    allTablesData.push({
+        rowKey: "List2_8412",
+        value: DeviceUnauthorizedUseRows
     });
 
 
     // Updated code: Mapping Tyre Description data and pushing to table
-    tyresList = form1AData.Tyres.TyresData;
-    let tyreLadenList = [];
-    let tyreUnladenDriverList = [];
-    let tyreWheelCombSizeList = [];
-    let tyreMinSpeedCategoryList = [];
-    let tyreMinLoadCapIndexList = [];
-    let tyreCategCompatibleList = [];
-    let vehTypeList=[];
-    tyresList && tyresList.map(vehTyre => {
-        if (vehTyre?.supplier?.active === true) {
-            const supplierName = vehTyre.supplier.nameOfSupplier;
-            tyreLadenList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Laden?.value
-            });
-            tyreUnladenDriverList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Unladen_Driver?.value
-            });
-            tyreWheelCombSizeList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Tyre_wheel_combinations_Sizes?.value
-            });
-            tyreMinSpeedCategoryList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Minimum_speed_category_symbol?.value
-            });
-            tyreMinLoadCapIndexList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Minimum_load_capacity_index?.value
-            });
-            tyreCategCompatibleList.push({
-                supplier: supplierName,
-                value: vehTyre?.Tyre_Description?.properties?.Categories_compatible_for_vehicle?.value
-            });
-            vehTypeList.push({
-                supplier: supplierName,
-                value: vehTyre?.Front_Tyre?.properties?.tyre_vehicle_type?.value
-            });
+    // tyresList = form1AData.Tyres.TyresData;
+    // let tyreLadenList = [];
+    // let tyreUnladenDriverList = [];
+    // let tyreWheelCombSizeList = [];
+    // let tyreMinSpeedCategoryList = [];
+    // let tyreMinLoadCapIndexList = [];
+    // let tyreCategCompatibleList = [];
+    // let vehTypeList=[];
+    // tyresList && tyresList.map(vehTyre => {
+    //     if (vehTyre?.supplier?.active === true) {
+    //         const supplierName = vehTyre.supplier.nameOfSupplier;
+    //         tyreLadenList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Laden?.value
+    //         });
+    //         tyreUnladenDriverList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Unladen_Driver?.value
+    //         });
+    //         tyreWheelCombSizeList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Tyre_wheel_combinations_Sizes?.value
+    //         });
+    //         tyreMinSpeedCategoryList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Minimum_speed_category_symbol?.value
+    //         });
+    //         tyreMinLoadCapIndexList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Minimum_load_capacity_index?.value
+    //         });
+    //         tyreCategCompatibleList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Tyre_Description?.properties?.Categories_compatible_for_vehicle?.value
+    //         });
+    //         vehTypeList.push({
+    //             supplier: supplierName,
+    //             value: vehTyre?.Front_Tyre?.properties?.tyre_vehicle_type?.value
+    //         });
 
 
-        }
-    });
-    let tyreLadenRows = generateTableData(tyreLadenList);
-    let tyreUnladenDriverRows = generateTableData(tyreUnladenDriverList);
-    let tyreWheelCombSizeRows = generateTableData(tyreWheelCombSizeList);
-    let tyreMinSpeedCategoryRows = generateTableData(tyreMinSpeedCategoryList);
-    let tyreMinLoadCapIndexRows = generateTableData(tyreMinLoadCapIndexList);
-    let tyreCategCompatibleRows = generateTableData(tyreCategCompatibleList);
-    let vehTypeRows = generateTableData(vehTypeList);
-    console.log('vehTypeRows:',vehTypeRows);
-    const firstValue=vehTypeRows;
-    if (firstValue === "2-Wheeler") {
-        twoWheeler = true;
-        console.log('true');
-    }
-    allTablesData.push({
-        rowKey: "List2_4211",
-        value: tyreLadenRows
-    });
-    allTablesData.push({
-        rowKey: "List2_4212",
-        value: tyreUnladenDriverRows
-    });
-    allTablesData.push({
-        rowKey: "List2_422",
-        value: tyreWheelCombSizeRows
-    });
-    allTablesData.push({
-        rowKey: "List2_423",
-        value: tyreMinSpeedCategoryRows
-    });
-    allTablesData.push({
-        rowKey: "List2_424",
-        value: tyreMinLoadCapIndexRows
-    });
-    allTablesData.push({
-        rowKey: "List2_425",
-        value: tyreCategCompatibleRows
-    });
+    //     }
+    // });
+    // let tyreLadenRows = generateTableData(tyreLadenList);
+    // let tyreUnladenDriverRows = generateTableData(tyreUnladenDriverList);
+    // let tyreWheelCombSizeRows = generateTableData(tyreWheelCombSizeList);
+    // let tyreMinSpeedCategoryRows = generateTableData(tyreMinSpeedCategoryList);
+    // let tyreMinLoadCapIndexRows = generateTableData(tyreMinLoadCapIndexList);
+    // let tyreCategCompatibleRows = generateTableData(tyreCategCompatibleList);
+    // let vehTypeRows = generateTableData(vehTypeList);
+    // console.log('vehTypeRows:',vehTypeRows);
+    //  firstValue=vehTypeRows;
+    // if (firstValue === "2-Wheeler") {
+    //     twoWheeler = true;
+    //     console.log('true');
+    //     console.log('inside firstValue :',firstValue);
+    //     console.log('inside firstValue twoWheeler:',twoWheeler);
+    // }
+    // allTablesData.push({
+    //     rowKey: "List2_4211",
+    //     value: tyreLadenRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_4212",
+    //     value: tyreUnladenDriverRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_422",
+    //     value: tyreWheelCombSizeRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_423",
+    //     value: tyreMinSpeedCategoryRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_424",
+    //     value: tyreMinLoadCapIndexRows
+    // });
+    // allTablesData.push({
+    //     rowKey: "List2_425",
+    //     value: tyreCategCompatibleRows
+    // });
 
     const wheelRimList = form1AData.Wheel_Rim.WheelRim;
     let fwMakeList = [];
@@ -883,53 +1535,63 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let fwMakeRows = generateTableData(fwMakeList);
-    let fwBISLicNumberRows = generateTableData(fwBISLicNumberList);
+    const updatedfwMakeRows= normalizeMsPrefix(fwMakeRows);
+    // const fwBISLicNumberListt= extractTACNumbers(fwBISLicNumberList);
+    // let fwBISLicNumberRows = generateTableData(fwBISLicNumberListt);
+    let fwBISLicNumberRows1 = generateTableData(fwBISLicNumberList);
+const fwBISLicNumberRows = extractTACNumbers(fwBISLicNumberRows1);
+console.log('fwBISLicNumberRows:',fwBISLicNumberRows);
     let fwPartNumberRows = generateTableData(fwPartNumberList);
     let fwSizeRows = generateTableData(fwSizeList);
+    // let fwSizeRows = normalizeWithUnit(fwSizeRows1, INCH_MM);
     let fwRimTypeRows = generateTableData(fwRimTypeList);
     let rwMakeRows = generateTableData(rwMakeList);
-    let rwBISLicNumberRows = generateTableData(rwBISLicNumberList);
+    const updatedrwMakeRows= normalizeMsPrefix(rwMakeRows);
+    let rwBISLicNumberRows1 = generateTableData(rwBISLicNumberList);
+    const rwBISLicNumberRows = extractTACNumbers(rwBISLicNumberRows1);
+    console.log('rwBISLicNumberRows:',rwBISLicNumberRows);
     let rwPartNumberRows = generateTableData(rwPartNumberList);
     let rwSizeRows = generateTableData(rwSizeList);
+    // let rwSizeRows = normalizeWithUnit(rwSizeRows1, INCH_MM);
     let rwRimTypeRows = generateTableData(rwRimTypeList);
     allTablesData.push({
-        rowKey: "List2_431",
-        value: fwMakeRows
+        rowKey: "List2_4311",
+        value: updatedfwMakeRows
     });
     allTablesData.push({
         rowKey: "List2_432",
         value: fwBISLicNumberRows
     });
     allTablesData.push({
-        rowKey: "List2_4320",
+        rowKey: "List2_4312",
         value: fwPartNumberRows
     });
     allTablesData.push({
-        rowKey: "List2_433",
+        rowKey: "List2_4313",
         value: fwSizeRows
     });
     allTablesData.push({
-        rowKey: "List2_434",
+        rowKey: "List2_4314",
         value: fwRimTypeRows
     });
     allTablesData.push({
-        rowKey: "List2_441",
-        value: rwMakeRows
+        rowKey: "List2_4321",
+        value: updatedrwMakeRows
     });
     allTablesData.push({
         rowKey: "List2_442",
         value: rwBISLicNumberRows
     });
     allTablesData.push({
-        rowKey: "List2_443",
+        rowKey: "List2_4322",
         value: rwPartNumberRows
     });
     allTablesData.push({
-        rowKey: "List2_444",
+        rowKey: "List2_4323",
         value: rwSizeRows
     });
     allTablesData.push({
-        rowKey: "List2_445",
+        rowKey: "List2_4324",
         value: rwRimTypeRows
     });
     // Updated code: Mapping ABS,Drawing,BrakeTypes,Service Brake Controls,Free Play and Ratio's ,Wheel Cylinder,Parking Brake data and pushing to table
@@ -937,7 +1599,8 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let brkDrawingList = [];
     let brkMakeList = [];
     let brkTypeList = [];
-    let brkSystemNumberList = [];
+    let brkSystemNumberFrontList = [];
+    let brkSystemNumberRearList = [];
     let brkSelectBreakingMediumList = [];
     let brkShoesDiscsMakeList = [];
     let brkLiningPadsList = [];
@@ -994,10 +1657,14 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: vehBrake?.Brief_Brake_Information.properties?.Type_of_Braking_System?.value
             });
-            brkSystemNumberList.push({
+            brkSystemNumberFrontList.push({
                 supplier: supplierName,
-                value: vehBrake?.Brief_Brake_Information?.properties?.Braking_System_Numbers?.value
+                value: vehBrake?.Brief_Brake_Information?.properties?.Braking_System_Numbers_Front?.value
             });
+            brkSystemNumberRearList.push({
+                supplier: supplierName,
+                value: vehBrake?.Brief_Brake_Information?.properties?.Braking_System_Numbers_Rear?.value
+            });            
             brkShoesDiscsMakeList.push({
                 supplier: supplierName,
                 value: vehBrake?.Brief_Brake_Information?.properties?.Make_of_Brake_Shoes_or_Discs?.value
@@ -1168,31 +1835,47 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     // let brkDrawingRows = generateTableData(brkDrawingList);
     let brkMakeRows = generateTableData(brkMakeList);
+    const updatedbrkMakeRows= normalizeMsPrefix(brkMakeRows);
     let brkTypeRows = generateTableData(brkTypeList);
-    let brkSystemNumberRows = generateTableData(brkSystemNumberList);
+    let brkSystemNumberFrontRows = generateTableData(brkSystemNumberFrontList);
+    let brkSystemNumberRearRows = generateTableData(brkSystemNumberRearList);
+
+    let brkSystemNumberCombined = `${brkSystemNumberFrontRows},${brkSystemNumberRearRows}`;
+console.log("Combined:", brkSystemNumberCombined);
     let brkShoesDiscsMakeRows = generateTableData(brkShoesDiscsMakeList);
+    const updatedbrkShoesDiscsMakeRows= normalizeMsPrefix(brkShoesDiscsMakeRows);
     let brkLiningPadsRows = generateTableData(brkLiningPadsList);
     let brkActuationMethodRows = generateTableData(brkActuationMethodList);
     let brkHydrReserRows = generateTableData(brkHydrReserList);
     let brkFrontRearPadsRows = generateTableData(brkFrontRearPadsList);
-    let brkFrontRearBrakeRows = generateTableData(brkFrontRearBrakeList);
-    let brkDiameterFrontRearDiscRows = generateTableData(brkDiameterFrontRearDiscList);
+    let brkFrontRearBrakeRows1 = generateTableData(brkFrontRearBrakeList);
+     let brkFrontRearBrakeRows = normalizeWithTwoUnits(brkFrontRearBrakeRows1, CM_SQ,CM_SQ);
+    // let brkFrontRearBrakeRows = normalizeWithUnit(brkFrontRearBrakeRows1, CM_SQ);
+    let brkDiameterFrontRearDiscRows1 = generateTableData(brkDiameterFrontRearDiscList);
+    let brkDiameterFrontRearDiscRows = normalizeWithTwoUnits(brkDiameterFrontRearDiscRows1, MM,MM);
+    // let brkDiameterFrontRearDiscRows = normalizeWithUnit(brkDiameterFrontRearDiscRows1, MM);
     let brkABSProvidedRows = generateTableData(brkABSProvidedList);
     let brkABSWheelsActingRows = generateTableData(brkABSWheelsActingList);
+    // const updatedbrkABSWheelsActingRows = normalizeMsPrefix(brkABSWheelsActingRows);
     let brkSensorsRows = generateTableData(brkSensorsList);
+    const updatedbrkSensorsRows = normalizeMsPrefix(brkSensorsRows);
     let brkIDModulatorRows = generateTableData(brkIDModulatorList);
     let brkMakeOfABSECURows = generateTableData(brkMakeOfABSECUList);
+    const updatedbbrkMakeOfABSECURows= normalizeMsPrefix(brkMakeOfABSECURows);
     let brkMakeOfControllerRows = generateTableData(brkMakeOfControllerList);
+    const updatedbbrkMakeOfControllerRows= normalizeMsPrefix(brkMakeOfControllerRows);
     let brkBriefDescOfECURows = generateTableData(brkBriefDescOfECUList);
     let brkFrontRatioRows = generateTableData(brkFrontRatioList);
     let brkRearRatioRows = generateTableData(brkRearRatioList);
     let brkCombinedRatioRows = generateTableData(brkCombinedRatioList);
     let brkPedalRatioRows = generateTableData(brkPedalRatioList);
-    let brkHandLeverRatioRows = generateTableData(brkHandLeverRatioList);  
+    let brkHandLeverRatioRows = generateTableData(brkHandLeverRatioList);
     let brkNomSizeMasterCylRows = generateTableData(brkNomSizeMasterCylList);
     let brkFrontWheelCylDiaRows = generateTableData(brkFrontWheelCylDiaList);
+    // const updatedbrkFrontWheelCylDiaRows = normalizeMsPrefix(brkFrontWheelCylDiaRows);
     let brkRearWheelCylDiaRows = generateTableData(brkRearWheelCylDiaList);
     let brkCylMakeRows = generateTableData(brkCylMakeList);
+    const updatedbbrkCylMakeRows = normalizeMsPrefix(brkCylMakeRows);
     let brkParkingBrakeTypeRows = generateTableData(brkRegenerativeBrakeTypeList);
     let brkSepControlReGenBrakingRows = generateTableData(brkSepControlReGenBrakingList);
     let brkOnWhichBrakingRows = generateTableData(brkOnWhichBrakingList);
@@ -1207,6 +1890,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let brServiceCombinedControlRows = generateTableData(brServiceCombinedControlList);
     // let brDrawingParkingMechanismRows = generateTableData(brDrawingParkingMechanismList);
     let brMakeOfModulatorRows = generateTableData(brMakeOfModulatorList);
+    const updatedbrMakeOfModulatorRows = normalizeMsPrefix(brMakeOfModulatorRows);
     // let brIDModulatorRows = generateTableData(brIDModulatorList);
     let brIDControllerRows = generateTableData(brIDControllerList);
     let brkSelectBreakingMediumRows = generateTableData(brkSelectBreakingMediumList);
@@ -1217,7 +1901,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_611",
-        value: brkMakeRows
+        value: updatedbrkMakeRows
     });
     allTablesData.push({
         rowKey: "List2_612",
@@ -1225,11 +1909,11 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_62",
-        value: brkSystemNumberRows
+        value: brkSystemNumberCombined
     });
     allTablesData.push({
         rowKey: "List2_621",
-        value: brkShoesDiscsMakeRows
+        value: updatedbrkShoesDiscsMakeRows
     });
     allTablesData.push({
         rowKey: "List2_631",
@@ -1269,20 +1953,20 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_6382",
-        value: brkSensorsRows
+        value: updatedbrkSensorsRows
     });
     allTablesData.push({
         rowKey: "List2_63821",
         // value: brkIDModulatorRows   
-        value: sensor_Rows  
+        value: sensor_Rows
     });
     allTablesData.push({
         rowKey: "List2_6384",
-        value: brkMakeOfABSECURows
+        value: updatedbbrkMakeOfABSECURows
     });
     allTablesData.push({
         rowKey: "List2_63841",
-        value: brkMakeOfControllerRows
+        value: updatedbbrkMakeOfControllerRows
     });
     allTablesData.push({
         rowKey: "List2_65",
@@ -1327,7 +2011,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_6143",
-        value: brkCylMakeRows   
+        value: updatedbbrkCylMakeRows
     });
     allTablesData.push({
         rowKey: "List2_6161",
@@ -1358,12 +2042,24 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         value: brkParkingLockingRows
     });
     allTablesData.push({
+        rowKey: "List2_681",
+        value: "NA"
+    });
+    allTablesData.push({
+        rowKey: "List2_682",
+        value: "NA"
+    });
+    allTablesData.push({
         rowKey: "List2_691",
         value: brFrictionFrontRows
     });
     allTablesData.push({
         rowKey: "List2_692",
         value: brFrictionRearRows
+    });
+    allTablesData.push({
+        rowKey: "List2_693",
+        value: "NA"
     });
     allTablesData.push({
         rowKey: "List2_6101",
@@ -1383,7 +2079,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_6383",
-        value: brMakeOfModulatorRows
+        value: updatedbrMakeOfModulatorRows
     });
     allTablesData.push({
         rowKey: "List2_63831",
@@ -1398,6 +2094,104 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         rowKey: "List2_622",
         value: brkSelectBreakingMediumRows
     });
+
+
+    const DaytimeRunningList = form1AData?.Daytime_Running_Lamp?.DaytimeRunningLamp;
+console.log('DaytimeRunningList:',DaytimeRunningList);
+    // Arrays for Daytime Running Lamp (regular)
+    let drlMakeList = [];
+    let drlTACNumberList = [];
+    let drlNumberColourList = [];
+    
+    // Arrays for Daytime Running Lamp LED
+    let drlLedMakeList = [];
+    let drlLedTACNumberList = [];
+    let drlLedNumberColourList = [];
+    
+    // Iterate over the DaytimeRunningList
+    DaytimeRunningList && DaytimeRunningList.map((vehDaytimeRunning) => {
+      if (vehDaytimeRunning.supplier.active === true) {
+        // For Daytime Running Lamp
+        drlMakeList.push({
+          
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp?.properties?.Make?.value,
+        });
+    
+        drlTACNumberList.push({
+        
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp?.properties?.TAC_Num_Reverse_lamp?.value,
+        });
+    
+        drlNumberColourList.push({
+         
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp?.properties?.Number_Colour_of_light?.value,
+        });
+    
+        // For Daytime Running Lamp LED
+        drlLedMakeList.push({
+        
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp_Led?.properties?.Make1?.value,
+        });
+    
+        drlLedTACNumberList.push({
+        
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp_Led?.properties?.TAC_Num_Reverse_lamp1?.value,
+        });
+    
+        drlLedNumberColourList.push({
+       
+          value:
+            vehDaytimeRunning?.Daytime_Running_Lamp_Led?.properties?.Number_Colour_of_light1?.value,
+        });
+      }
+    });
+    
+    // Generate table data
+    let drlMakeRows = generateTableData(drlMakeList);
+    let normalizedDrlMakeRows = normalizeMsPrefix(drlMakeRows);
+    console.log('normalizedDrlMakeRows:',normalizedDrlMakeRows)
+    let drlTACNumberRows = generateTableData(drlTACNumberList);
+    console.log('drlTACNumberRows:',drlTACNumberRows)
+    let drlNumberColourRows = generateTableData(drlNumberColourList);
+    console.log('drlNumberColourRows:',drlNumberColourRows)
+    let drlLedMakeRows = generateTableData(drlLedMakeList);
+    let normalizedDrlLedMakeRows = normalizeMsPrefix(drlLedMakeRows);
+    
+    let drlLedTACNumberRows = generateTableData(drlLedTACNumberList);
+    let drlLedNumberColourRows = generateTableData(drlLedNumberColourList);
+    console.log('drlLedNumberColourRows:',drlLedNumberColourRows)
+
+    allTablesData.push({
+        rowKey: "List2_71111",
+        value: normalizedDrlLedMakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_71112",
+        value: drlLedTACNumberRows
+    });
+    allTablesData.push({
+        rowKey: "List2_71113",
+        value: drlLedNumberColourRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75131",
+        value: normalizedDrlMakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75132",
+        value: drlTACNumberRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75133",
+        value: drlNumberColourRows
+    });
+
+
     const lightingList = form1AData?.Ligthing_Signaling?.LigthingSignaling;
     let alldevicesList = [];
     const headLampList = form1AData.Head_Lamp.HeadLamp;
@@ -1441,6 +2235,10 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let dbMakeList = [];
     let dbCategoryList = [];
     let dbTACNumberList = [];
+    let dbAdditionalList = [];
+    let dbBriefDescList = [];
+    let dbListOFBulbList = [];
+
     let fplBulbMakeList = [];
     let fplBulbCategoryList = [];
     let fplBulbTACNumberList = [];
@@ -1465,6 +2263,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let plBulbRearCategoryList = [];
     let plBulbRearTACNumberList = [];
 
+    let RPBulbRearMakeList = [];
+    let RPBulbRearCategoryList = [];
+    let RPBulbRearTACNumberList = [];
+
+ let plLedbRearMakeList = [];
+    let plLedRearCategoryList = [];
+    let plLedRearTACNumberList = [];
+    let RPLedbRearMakeList = [];
+    let RPLedRearCategoryList = [];
+    let RPLedRearTACNumberList = [];
     lightingList && lightingList.map(vehLighting => {
         if (vehLighting.supplier.active === true) {
             const supplierName = vehLighting?.supplier?.nameOfSupplier;
@@ -1532,6 +2340,18 @@ console.log('MatDeviceRows:', finalMatDeviceList);
             dbTACNumberList.push({
                 supplier: supplierName,
                 value: vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.TAC_Number?.value
+            });
+            dbAdditionalList.push({
+                supplier: supplierName,
+                value: vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.Additional_Req?.value
+            });
+            dbBriefDescList.push({
+                supplier: supplierName,
+                value: vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.Brief_Desc?.value
+            });
+            dbListOFBulbList.push({
+                supplier: supplierName,
+                value: vehHeadLamp?.Dipped_Beam_Headlamp_Filament_Type?.properties?.List_Of_All_Bulbs?.value
             });
         }
     });
@@ -1622,6 +2442,47 @@ console.log('MatDeviceRows:', finalMatDeviceList);
             plBulbRearTACNumberList.push({
                 supplier: supplierName,
                 value: vehPosLamp?.Parking_Lamp_Bulb_Rear?.properties?.TAC_Number?.value
+            });
+
+
+            RPBulbRearMakeList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_Bulb_Type?.properties?.Make_of_Rear_Position_Lamp?.value
+            });
+            RPBulbRearCategoryList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_Bulb_Type?.properties?.Category_as_per_AIS034?.value
+            });
+            RPBulbRearTACNumberList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_Bulb_Type?.properties?.TAC_Number_of_Rear_Position_Lamp?.value
+            });
+
+            plLedbRearMakeList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.Make_of_front_Position_lamp?.value
+            });
+            plLedRearCategoryList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.Category_as_per_AIS035?.value
+            });
+            plLedRearTACNumberList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.TAC_Number_of_Rear_Position_Lamp?.value
+            });
+
+
+            RPLedbRearMakeList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.Make_of_front_Position_lamp?.value
+            });
+            RPLedRearCategoryList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.Number_of_Rear_Position_lamps_and_Colour_of_light?.value
+            });
+            RPLedRearTACNumberList.push({
+                supplier: supplierName,
+                value: vehPosLamp?.Rear_Position_Lamp_LED_Type?.properties?.TAC_Number_of_Rear_Position_Lamp?.value
             });
         }
     });
@@ -1737,79 +2598,129 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     let alldevicesRows = generateTableData(alldevicesList);
     let hlMakeRows = generateTableData(hlMakeList);
+    const updatedhlMakeRows = normalizeMsPrefix(hlMakeRows);
+    console.log('updatedhlMakeRows 71111:',updatedhlMakeRows);
     let hlTypeOfLensRows = generateTableData(hlTypeOfLensList);
     let hlTACNumberRows = generateTableData(hlTACNumberList);
     let hlNumberColorOfLightRows = generateTableData(hlNumberColorOfLightList);
     let hlDippedBeamMakeRows = generateTableData(hlDippedBeamMakeList);
+    const updatedhlDippedBeamMakeRows = normalizeMsPrefix(hlDippedBeamMakeRows);
     let hlDippedBeamTypeRows = generateTableData(hlDippedBeamTypeList);
     let hlDippedBeamTACNumberRows = generateTableData(hlDippedBeamTACNumberList);
     let hlDippedBeamNumberColorOfLightRows = generateTableData(hlDippedBeamNumberColorOfLightList);
     let fpLampMakeRows = generateTableData(fpLampMakeList);
+    const updatedfpLampMakeRows = normalizeMsPrefix(fpLampMakeRows);
     let fpTACNumberRows = generateTableData(fpTACNumberList);
     let fpNumberColorOfLightRows = generateTableData(fpNumberColorOfLightList);
     let fplMakeRows = generateTableData(fplMakeList);
+    const updatedfplMakeRows = normalizeMsPrefix(fplMakeRows);
     let fplTACNumberRows = generateTableData(fplTACNumberList);
     let fplNumberColorOfLightRows = generateTableData(fplNumberColorOfLightList);
     let slMakeRows = generateTableData(slMakeList);
+    const updatedslMakeRows = normalizeMsPrefix(slMakeRows);
     let slTACNumberRows = generateTableData(slTACNumberList);
     let slNumberColorOfLightRows = generateTableData(slNumberColorOfLightList);
     let rrpMakeRows = generateTableData(rrpMakeList);
+    
+    const updatedRrpMakeRow = normalizeMsPrefix(rrpMakeRows);
+
     let rrpTACNumberRows = generateTableData(rrpTACNumberList);
     let rrpNumberColorofLightRows = generateTableData(rrpNumberColorofLightList);
     let fdlMakeRows = generateTableData(fdlMakeList);
+    const updatedfdlMakeRows = normalizeMsPrefix(fdlMakeRows);
     let fdlTACNumberRows = generateTableData(fdlTACNumberList);
     let fdlNumberColorOfLightRows = generateTableData(fdlNumberColorOfLightList);
     let rdlMakeRows = generateTableData(rdlMakeList);
+    const updatedrdlMakeRows = normalizeMsPrefix(rdlMakeRows);
     let rdlTACNumberRows = generateTableData(rdlTACNumberList);
     let rdlNumberColorOfLightRows = generateTableData(rdlNumberColorOfLightList);
     let sdlMakeRows = generateTableData(sdlMakeList);
+    const updatedsdlMakeRows = normalizeMsPrefix(sdlMakeRows);
     let sdlTACNumberRows = generateTableData(sdlTACNumberList);
     let sdlNumberColorOfLightRows = generateTableData(sdlNumberColorOfLightList);
     let sdlFlashedMakeRows = generateTableData(sdlFlashedMakeList);
+    const updatedsdlFlashedMakeRows = normalizeMsPrefix(sdlFlashedMakeRows);
     let sdlFashFreqRows = generateTableData(sdlFashFreqList);
     let hlBulbMakeRows = generateTableData(hlBulbMakeList);
+    const updatedhlBulbMakeRows = normalizeMsPrefix(hlBulbMakeRows);
     let hlBulbCategoryRows = generateTableData(hlBulbCategoryList);
     let hlBulbTACNumberRows = generateTableData(hlBulbTACNumberList);
     let dbMakeRows = generateTableData(dbMakeList);
+    const updateddbMakeRows = normalizeMsPrefix(dbMakeRows);
     let dbCategoryRows = generateTableData(dbCategoryList);
     let dbTACNumberRows = generateTableData(dbTACNumberList);
+    let dbAdditionalRows = generateTableData(dbAdditionalList);
+    let dbBriefDescRows = generateTableData(dbBriefDescList);
+    let dbListOFBulbRows = generateTableData(dbListOFBulbList);
     let fplBulbMakeRows = generateTableData(fplBulbMakeList);
+    const updatedfplBulbMakeRows = normalizeMsPrefix(fplBulbMakeRows);
     let fplBulbCategoryRows = generateTableData(fplBulbCategoryList);
     let fplBulbTACNumberRows = generateTableData(fplBulbTACNumberList);
     let slBulbMakeRows = generateTableData(slBulbMakeList);
+    const updatedfplBulbTACNumberRows = normalizeMsPrefix(slBulbMakeRows);
     let slBulbCategoryRows = generateTableData(slBulbCategoryList);
     let slBulbTACNumberRows = generateTableData(slBulbTACNumberList);
     let npBulbMakeRows = generateTableData(npBulbMakeList);
+    const updatednpBulbMakeRows = normalizeMsPrefix(npBulbMakeRows);
     let npBulbCategoryRows = generateTableData(npBulbCategoryList);
     let npBulbTACNumberRows = generateTableData(npBulbTACNumberList);
     let dilBulbFrontMakeRows = generateTableData(dilBulbFrontMakeList);
+    const updateddilBulbFrontMakeRows = normalizeMsPrefix(dilBulbFrontMakeRows);
     let dilBulbFrontCategoryRows = generateTableData(dilBulbFrontCategoryList);
     let dilBulbFrontTACNumberRows = generateTableData(dilBulbFrontTACNumberList);
     let dilBulbRearMakeRows = generateTableData(dilBulbRearMakeList);
+    const updateddilBulbRearMakeRows = normalizeMsPrefix(dilBulbRearMakeRows);
     let dilBulbRearCategoryRows = generateTableData(dilBulbRearCategoryList);
     let dilBulbRearTACNumberRows = generateTableData(dilBulbRearTACNumberList);
     let dilBulbRearFlashedDirRows = generateTableData(dilBulbRearFlashedDirList);
     let dilBulbRearFlashFreqRows = generateTableData(dilBulbRearFlashFreqList);
     let plBulbFrontMakeRows = generateTableData(plBulbFrontMakeList);
+    const updatedplBulbFrontMakeRows = normalizeMsPrefix(plBulbFrontMakeRows);
     let plBulbFrontCategoryRows = generateTableData(plBulbFrontCategoryList);
     let plBulbFrontTACNumberRows = generateTableData(plBulbFrontTACNumberList);
+
     let plBulbRearMakeRows = generateTableData(plBulbRearMakeList);
+    const updatedplBulbRearMakeRows = normalizeMsPrefix(plBulbRearMakeRows);
     let plBulbRearCategoryRows = generateTableData(plBulbRearCategoryList);
     let plBulbRearTACNumberRows = generateTableData(plBulbRearTACNumberList);
+
+
+    let RPBulbRearMakeRows = generateTableData(RPBulbRearMakeList);
+    const updatedRPBulbRearMakeRows = normalizeMsPrefix(RPBulbRearMakeRows);
+    let RPBulbRearCategoryRows = generateTableData(RPBulbRearCategoryList);
+    let RPBulbRearTACNumberRows = generateTableData(RPBulbRearTACNumberList);
+
+
+    // let plLedRearMakeRows = generateTableData(plLedbRearMakeList);
+    // const updatedpLedRearMakeRows = normalizeMsPrefix(plLedRearMakeRows);
+    // console.log('updatedpLedRearMakeRows 7110:',plLedRearMakeRows)
+    // let plLedRearCategoryRows = generateTableData(plLedRearCategoryList);
+    // console.log('plLedRearCategoryRows 7110:',plLedRearCategoryRows)
+    // let plLedRearTACNumberRows = generateTableData(plLedRearTACNumberList);
+
+
+
+    let RPLedRearMakeRows = generateTableData(RPLedbRearMakeList);
+    const updatedRPedRearMakeRows = normalizeMsPrefix(RPLedRearMakeRows);
+    
+    let RPLedRearCategoryRows = generateTableData(RPLedRearCategoryList);
+    
+    let RPLedRearTACNumberRows = generateTableData(RPLedRearTACNumberList);
+
     allTablesData.push({
         rowKey: "List2_71",
         value: alldevicesRows
     });
     allTablesData.push({
-        rowKey: "List2_71111",
-        value: hlMakeRows
+        rowKey: "List2_71111 ",
+        value: updatedhlMakeRows
     });
     allTablesData.push({
-        rowKey: "List2_71112",
+        rowKey: "List2_71112 ",
         value: hlTypeOfLensRows
     });
     allTablesData.push({
-        rowKey: "List2_71113",
+        rowKey: "List2_71113 ",
         value: hlTACNumberRows
     });
     allTablesData.push({
@@ -1818,7 +2729,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71121 ",
-        value: hlDippedBeamMakeRows
+        value: updatedhlDippedBeamMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71122 ",
@@ -1834,7 +2745,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71211",
-        value: fpLampMakeRows
+        value: updatedfpLampMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71212",
@@ -1846,7 +2757,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71221",
-        value: fplMakeRows
+        value: updatedfplMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71222",
@@ -1858,7 +2769,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7131",
-        value: slMakeRows
+        value: updatedslMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7132",
@@ -1870,7 +2781,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7141",
-        value: rrpMakeRows
+        value: updatedRrpMakeRow
     });
     allTablesData.push({
         rowKey: "List2_7142",
@@ -1882,7 +2793,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71511",
-        value: fdlMakeRows
+        value: updatedfdlMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71512",
@@ -1894,7 +2805,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71521",
-        value: rdlMakeRows
+        value: updatedrdlMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71522",
@@ -1906,19 +2817,20 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71531",
-        value: sdlMakeRows
+        value: updatedsdlMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71532",
         value: sdlTACNumberRows
     });
+    
     allTablesData.push({
         rowKey: "List2_71533",
         value: sdlNumberColorOfLightRows
     });
     allTablesData.push({
         rowKey: "List2_71534",
-        value: sdlFlashedMakeRows
+        value: updatedsdlFlashedMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71535",
@@ -1945,13 +2857,13 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let reflSideSurfAreaList = [];
     let reflSideShapeList = [];
 
-    let Reflective_Tape_Front_MakeList=[];
-    let Reflective_Tape_Front_WidthList=[];
-    let Reflective_Tape_TAC_NOList=[];
-    let Reflective_Tape_Rear_MakeList=[];
-    let Reflective_Tape_Rear_WidthList=[];
-    let Reflective_Tape_Rear_TAC_NOList=[];
-   
+    let Reflective_Tape_Front_MakeList = [];
+    let Reflective_Tape_Front_WidthList = [];
+    let Reflective_Tape_TAC_NOList = [];
+    let Reflective_Tape_Rear_MakeList = [];
+    let Reflective_Tape_Rear_WidthList = [];
+    let Reflective_Tape_Rear_TAC_NOList = [];
+
     reflectorsList && reflectorsList.map(vehRefl => {
         if (vehRefl.supplier.active === true) {
             const supplierName = vehRefl?.supplier?.nameOfSupplier;
@@ -2030,63 +2942,74 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
 
             Reflective_Tape_Front_MakeList.push({
-               
+
                 value: vehRefl?.Reflective_Tape?.properties?.Front_Make?.value
             });
             Reflective_Tape_Front_WidthList.push({
-               
+
                 value: vehRefl?.Reflective_Tape?.properties?.Front_Width?.value
             });
             Reflective_Tape_TAC_NOList.push({
-            
+
                 value: vehRefl?.Reflective_Tape?.properties?.TAC_NO_BIS_License_NO?.value
             });
             Reflective_Tape_Rear_MakeList.push({
-            
+
                 value: vehRefl?.Reflective_Tape?.properties?.Rear_Make?.value
             });
             Reflective_Tape_Rear_WidthList.push({
-              
+
                 value: vehRefl?.Reflective_Tape?.properties?.Rear_Width?.value
             });
             Reflective_Tape_Rear_TAC_NOList.push({
-              
+
                 value: vehRefl?.Reflective_Tape?.properties?.Rear_TAC_NO_BIS_License_NO?.value
             });
-         
+
 
         }
     });
     let reflFrontMakeRows = generateTableData(reflFrontMakeList);
+    const updatedreflFrontMakeRows = normalizeMsPrefix(reflFrontMakeRows);
     let reflFrontTypeRows = generateTableData(reflFrontTypeList);
     let reflFrontTACNumberRows = generateTableData(reflFrontTACNumberList);
     let reflFrontNumberColorOfLightRows = generateTableData(reflFrontNumberColorOfLightList);
     let reflFrontSurfAreaRows = generateTableData(reflFrontSurfAreaList);
+    // let reflFrontSurfAreaRows = normalizeWithUnit(reflFrontSurfAreaRows1, SQ_CM_MM);
     let reflFrontShapeRows = generateTableData(reflFrontShapeList);
     let reflRearMakeRows = generateTableData(reflRearMakeList);
+    const updatedreflRearMakeRows = normalizeMsPrefix(reflRearMakeRows);
     let reflRearTypeRows = generateTableData(reflRearTypeList);
     let reflRearTACNumberRows = generateTableData(reflRearTACNumberList);
     let reflRearNumberColorOfLightRows = generateTableData(reflRearNumberColorOfLightList);
     let reflRearSurfAreaRows = generateTableData(reflRearSurfAreaList);
+    // let reflRearSurfAreaRows = normalizeWithUnit(reflRearSurfAreaRows1, SQ_CM_MM);
     let reflRearShapeRows = generateTableData(reflRearShapeList);
     let reflSideMakeRows = generateTableData(reflSideMakeList);
+    const updatedreflSideMakeRows = normalizeMsPrefix(reflSideMakeRows);
     let reflSideTypeRows = generateTableData(reflSideTypeList);
     let reflSideTACNumberRows = generateTableData(reflSideTACNumberList);
     let reflSideNumberColorOfLightRows = generateTableData(reflSideNumberColorOfLightList);
     let reflSideSurfAreaRows = generateTableData(reflSideSurfAreaList);
+    // let reflSideSurfAreaRows = normalizeWithUnit(reflSideSurfAreaRows1, SQ_CM_MM);
     let reflSideShapeRows = generateTableData(reflSideShapeList);
 
 
     let Reflective_Tape_Front_MakeRows = generateTableData(Reflective_Tape_Front_MakeList);
-    let Reflective_Tape_Front_WidthRows = generateTableData(Reflective_Tape_Front_WidthList);
-    let Reflective_Tape_TAC_NORows = generateTableData(Reflective_Tape_TAC_NOList);
+    const updatedReflective_Tape_Front_MakeRows = normalizeMsPrefix(Reflective_Tape_Front_MakeRows);
+    let Reflective_Tape_Front_WidthRows1 = generateTableData(Reflective_Tape_Front_WidthList);
+    let Reflective_Tape_Front_WidthRows = normalizeWithUnit(Reflective_Tape_Front_WidthRows1, MM);
+    let Reflective_Tape_TAC_NORows1 = generateTableData(Reflective_Tape_TAC_NOList);
+    const Reflective_Tape_TAC_NORows = extractTACNumbers(Reflective_Tape_TAC_NORows1);
     let Reflective_Tape_Rear_MakeRows = generateTableData(Reflective_Tape_Rear_MakeList);
-    let Reflective_Tape_Rear_WidthRows = generateTableData(Reflective_Tape_Rear_WidthList);
+
+    let Reflective_Tape_Rear_WidthRows1 = generateTableData(Reflective_Tape_Rear_WidthList);
+    let Reflective_Tape_Rear_WidthRows = normalizeWithUnit(Reflective_Tape_Rear_WidthRows1, MM);
     let Reflective_Tape_Rear_TAC_NORows = generateTableData(Reflective_Tape_Rear_TAC_NOList);
-   
+
     allTablesData.push({
         rowKey: "List2_71711",
-        value: reflFrontMakeRows
+        value: updatedreflFrontMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71712",
@@ -2110,7 +3033,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71721",
-        value: reflRearMakeRows
+        value: updatedreflRearMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71722",
@@ -2134,7 +3057,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71731",
-        value: reflSideMakeRows
+        value: updatedreflSideMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71732",
@@ -2162,7 +3085,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
     allTablesData.push({
         rowKey: "List3_1011",
-        value: Reflective_Tape_Front_MakeRows
+        value: updatedReflective_Tape_Front_MakeRows
     });
     allTablesData.push({
         rowKey: "List3_1012",
@@ -2265,22 +3188,26 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let hzlFrontMakeRows = generateTableData(hzlFrontMakeList);
+    const updatedhzlFrontMakeRows = normalizeMsPrefix(hzlFrontMakeRows);
     let hzlFrontTACNumberRows = generateTableData(hzlFrontTACNumberList);
     let hzlFrontNumberColorOfLightRows = generateTableData(hzlFrontNumberColorOfLightList);
     let hzlRearMakeRows = generateTableData(hzlRearMakeList);
+    const updatedhzlRearMakeRows = normalizeMsPrefix(hzlRearMakeRows);
     let hzlRearTACNumberRows = generateTableData(hzlRearTACNumberList);
     let hzlRearNumberColorOfLightRows = generateTableData(hzlRearNumberColorOfLightList);
     let hzlSideMakeRows = generateTableData(hzlSideMakeList);
+    const updatedhzlSideMakeRows = normalizeMsPrefix(hzlSideMakeRows);
     let hzlSideTACNumberRows = generateTableData(hzlSideTACNumberList);
     let hzlSideNumberColorOfLightRows = generateTableData(hzlSideNumberColorOfLightList);
     let hzlMaxIntensityRows = generateTableData(hzlMaxIntensityList);
     // let hzlDiagramLocationRows = generateTableData(hzlDiagramLocationList);
     let hwBulbMakeRows = generateTableData(hwBulbMakeList);
+    const updatedhwBulbMakeRows = normalizeMsPrefix(hwBulbMakeRows);
     let hwBulbCategoryRows = generateTableData(hwBulbCategoryList);
     let hwBulbTACNumberRows = generateTableData(hwBulbTACNumberList);
     allTablesData.push({
         rowKey: "List2_71811",
-        value: hzlFrontMakeRows
+        value: updatedhzlFrontMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71812",
@@ -2292,7 +3219,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71821",
-        value: hzlRearMakeRows
+        value: updatedhzlRearMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71822",
@@ -2304,7 +3231,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_71831",
-        value: hzlSideMakeRows
+        value: updatedhzlSideMakeRows
     });
     allTablesData.push({
         rowKey: "List2_71832",
@@ -2324,7 +3251,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7511",
-        value: hlBulbMakeRows
+        value: updatedhlBulbMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7512",
@@ -2336,7 +3263,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7521",
-        value: dbMakeRows
+        value: updateddbMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7522",
@@ -2347,8 +3274,20 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         value: dbTACNumberRows
     });
     allTablesData.push({
+        rowKey: "List2_73",
+        value: dbAdditionalRows
+    });
+    allTablesData.push({
+        rowKey: "List2_74",
+        value: dbBriefDescRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75",
+        value: dbListOFBulbRows
+    });
+    allTablesData.push({
         rowKey: "List2_7531",
-        value: fplBulbMakeRows
+        value: updatedfplBulbMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7532",
@@ -2360,7 +3299,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7541",
-        value: slBulbMakeRows
+        value: updatedfplBulbTACNumberRows
     });
     allTablesData.push({
         rowKey: "List2_7542",
@@ -2372,7 +3311,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7551 ",
-        value: npBulbMakeRows
+        value: updatednpBulbMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7552 ",
@@ -2384,7 +3323,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7561",
-        value: dilBulbFrontMakeRows
+        value: updateddilBulbFrontMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7562",
@@ -2396,7 +3335,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7571",
-        value: dilBulbRearMakeRows
+        value: updateddilBulbRearMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7572",
@@ -2416,7 +3355,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7581",
-        value: plBulbFrontMakeRows
+        value: updatedplBulbFrontMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7582",
@@ -2428,7 +3367,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_7591",
-        value: plBulbRearMakeRows
+        value: updatedplBulbRearMakeRows
     });
     allTablesData.push({
         rowKey: "List2_7592",
@@ -2438,9 +3377,34 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         rowKey: "List2_7593",
         value: plBulbRearTACNumberRows
     });
+
+    allTablesData.push({
+        rowKey: "List2_75121",
+        value: updatedRPBulbRearMakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75122",
+        value: RPBulbRearCategoryRows
+    });
+    allTablesData.push({
+        rowKey: "List2_75123",
+        value: RPBulbRearTACNumberRows
+    });
+    allTablesData.push({
+        rowKey: "List2_71101",
+        value: updatedRPedRearMakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_71102",
+        value: RPLedRearTACNumberRows
+    });
+    allTablesData.push({
+        rowKey: "List2_71103",
+        value: RPLedRearCategoryRows
+    });
     allTablesData.push({
         rowKey: "List2_75111",
-        value: hwBulbMakeRows
+        value: updatedhwBulbMakeRows
     });
     allTablesData.push({
         rowKey: "List2_75112",
@@ -2461,7 +3425,14 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let ttPosLampList = [];
     let ttMasterLampList = [];
     let ttParkingLampList = [];
+    let ttFuelIndicatorList = [];
+    let ttEngineCoolantTempList = [];
+    let ttElectricalChargingList = [];
+    let ttEngineOilList = [];
+    let ttAntiLockBrakeList = [];
+    let ttMalfunctionIndLampList = [];
     let ttOtherList = [];
+    let ttNeutralList = [];
     tellTalesList && tellTalesList.map(vehtellTale => {
         if (vehtellTale.supplier.active === true) {
             const supplierName = vehtellTale?.supplier?.nameOfSupplier;
@@ -2505,6 +3476,35 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: vehtellTale?.Tell_Tales?.properties?.Other_tell_tale?.value
             });
+
+            ttFuelIndicatorList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Fuel_Indicator?.value
+            });
+            ttEngineCoolantTempList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Engine_coolant_temperature?.value
+            });
+            ttElectricalChargingList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Electrical_Charging?.value
+            });
+            ttEngineOilList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Engine_Oil?.value
+            });
+            ttAntiLockBrakeList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Anti_Lock_Brake?.value
+            });
+            ttMalfunctionIndLampList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Malfunction_Ind_Lamp?.value
+            });
+            ttNeutralList.push({
+                supplier: supplierName,
+                value: vehtellTale?.Tell_Tales?.properties?.Neutral?.value
+            });
         }
     });
     let ttHeadLampDrivingBeamRows = generateTableData(ttHeadLampDrivingBeamList);
@@ -2517,6 +3517,28 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let ttMasterLampRows = generateTableData(ttMasterLampList);
     let ttParkingLampRows = generateTableData(ttParkingLampList);
     let ttOtherRows = generateTableData(ttOtherList);
+
+    let ttFuelIndicatorRows = generateTableData(ttFuelIndicatorList);
+    let ttEngineCoolantTempRows = generateTableData(ttEngineCoolantTempList);
+    let ttElectricalChargingRows = generateTableData(ttElectricalChargingList);
+    let ttEngineOilRows = generateTableData(ttEngineOilList);
+    let ttAntiLockBrakeRows = generateTableData(ttAntiLockBrakeList);
+    let ttMalfunctionIndLampRows = generateTableData(ttMalfunctionIndLampList);
+    let ttNeutralRows = generateTableData(ttNeutralList);
+    // let ttFuelIndicatorRows = twoWheeler ? 'NA' : generateTableData(ttFuelIndicatorList);
+    // let ttEngineCoolantTempRows = twoWheeler ? 'NA' : generateTableData(ttEngineCoolantTempList);
+    // let ttElectricalChargingRows = twoWheeler ? 'NA' : generateTableData(ttElectricalChargingList);
+    // let ttEngineOilRows = twoWheeler ? 'NA' : generateTableData(ttEngineOilList);
+    // let ttAntiLockBrakeRows = twoWheeler ? 'NA' : generateTableData(ttAntiLockBrakeList);
+    // let ttMalfunctionIndLampRows = twoWheeler ? 'NA' : generateTableData(ttMalfunctionIndLampList);
+    allTablesData.push({
+        rowKey: "List2_82251",
+        value: "NA"
+    });
+    allTablesData.push({
+        rowKey: "List2_82252",
+        value: ttNeutralRows
+    });
     allTablesData.push({
         rowKey: "List2_82253",
         value: ttHeadLampDrivingBeamRows
@@ -2556,6 +3578,31 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     allTablesData.push({
         rowKey: "List2_822518",
         value: ttOtherRows
+    });
+    /////
+    allTablesData.push({
+        rowKey: "List2_822512",
+        value: ttFuelIndicatorRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822513",
+        value: ttEngineCoolantTempRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822514",
+        value: ttElectricalChargingRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822515",
+        value: ttEngineOilRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822516",
+        value: ttAntiLockBrakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_822517",
+        value: ttMalfunctionIndLampRows
     });
 
     const indicatorsList = form1AData?.Indicators?.IndicatorsData;
@@ -2657,13 +3704,15 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let rvmMakeRows = generateTableData(rvmMakeList);
-    let rvmTACNumberRows = generateTableData(rvmTACNumberList);
+    const updatedrvmMakeRows = normalizeMsPrefix(rvmMakeRows);
+    let rvmTACNumberRows1 = generateTableData(rvmTACNumberList);
+    const rvmTACNumberRows = extractTACNumbers(rvmTACNumberRows1);
     let rvmMirrorClassRows = generateTableData(rvmMirrorClassList);
     // let rvmDrawInstRows = generateTableData(rvmDrawInstList);
     let rvmPrecInfoRows = generateTableData(rvmPrecInfoList);
     allTablesData.push({
         rowKey: "List2_91",
-        value: rvmMakeRows
+        value: updatedrvmMakeRows
     });
     allTablesData.push({
         rowKey: "List2_911",
@@ -2734,7 +3783,9 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let eleDeviceNameRows = generateTableData(eleDeviceNameList);
     let eleCompDeviceNameRows = generateTableData(eleCompDeviceNameList);
     let eleMakeRows = generateTableData(eleMakeList);
+    const updatedeleMakeRows = normalizeMsPrefix(eleMakeRows);
     let eleCompMakeRows = generateTableData(eleCompMakeList);
+    const updatedeleCompMakeRows = normalizeMsPrefix(eleCompMakeRows);
     let eleIdNumberRows = generateTableData(eleIdNumberList);
     let eleCompIdNumberRows = generateTableData(eleCompIdNumberList);
     let eleCompRows = generateTableData(eleCompList);
@@ -2748,7 +3799,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_1212",
-        value: eleMakeRows
+        value: updatedeleMakeRows
     });
     allTablesData.push({
         rowKey: "List2_1213",
@@ -2764,7 +3815,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_1222",
-        value: eleCompMakeRows
+        value: updatedeleCompMakeRows
     });
     allTablesData.push({
         rowKey: "List2_1223",
@@ -2803,11 +3854,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let reUploadRows = generateTableData(reUploadList);
-    let reHeightRows = generateTableData(reHeightList);
-    let reWidthRows = generateTableData(reWidthList);
-    let reDepthRows = generateTableData(reDepthList);
-    let reProtectiveEdgeRows = generateTableData(reProtectiveEdgeList);
+    let reUploadRows1 = generateTableData(reUploadList);
+    let reUploadRows = normalizeWithUnit(reUploadRows1, MM);
+    let reHeightRows1 = generateTableData(reHeightList);
+    let reHeightRows = normalizeWithUnit(reHeightRows1, MM);
+    let reWidthRows1 = generateTableData(reWidthList);
+    let reWidthRows = normalizeWithUnit(reWidthRows1, MM);
+    let reDepthRows1 = generateTableData(reDepthList);
+    let reDepthRows = normalizeWithUnit(reDepthRows1, MM);
+    let reProtectiveEdgeRows1 = generateTableData(reProtectiveEdgeList);
+    let reProtectiveEdgeRows = normalizeWithUnit(reProtectiveEdgeRows1, MM);
 
     allTablesData.push({
         rowKey: "List3_91",
@@ -2868,12 +3924,18 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let seDriverRows = generateTableData(seDriverList);
-    let sePassengerRows = generateTableData(sePassengerList);
-    let shDriverRows = generateTableData(shDriverList);
-    let shPassengerRows = generateTableData(shPassengerList);
-    let fhDriverRows = generateTableData(fhDriverList);
-    let fhPassengerRows = generateTableData(fhPassengerList);
+    let seDriverRows1 = generateTableData(seDriverList);
+    let seDriverRows = normalizeWithUnit(seDriverRows1, MM);
+    let sePassengerRows1 = generateTableData(sePassengerList);
+    let sePassengerRows = normalizeWithUnit(sePassengerRows1, MM);
+    let shDriverRows1 = generateTableData(shDriverList);
+    let shDriverRows = normalizeWithUnit(shDriverRows1, MM);
+    let shPassengerRows1 = generateTableData(shPassengerList);
+    let shPassengerRows = normalizeWithUnit(shPassengerRows1, MM);
+    let fhDriverRows1 = generateTableData(fhDriverList);
+    let fhDriverRows = normalizeWithUnit(fhDriverRows1, MM);
+    let fhPassengerRows1 = generateTableData(fhPassengerList);
+    let fhPassengerRows = normalizeWithUnit(fhPassengerRows1, MM);
 
     allTablesData.push({
         rowKey: "List3_711",
@@ -2962,16 +4024,24 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let wFrontRearRows = generateTableData(wFrontRearList);
-    let wMMRows = generateTableData(wMMList);
+    let wFrontRearRows1 = generateTableData(wFrontRearList);
+    let wFrontRearRows = normalizeWithUnit(wFrontRearRows1, MM);
+    let wMMRows1 = generateTableData(wMMList);
+    let wMMRows = normalizeWithUnit(wMMRows1, MM);
     let stPassengerRows = generateTableData(stPassengerList);
-    let psWidthRows = generateTableData(psWidthList);
-    let psDepthRows = generateTableData(psDepthList);
-    let plDimensionRows = generateTableData(plDimensionList);
+    let psWidthRows1 = generateTableData(psWidthList);
+    let psWidthRows = normalizeWithUnit(psWidthRows1, MM);
+    let psDepthRows1 = generateTableData(psDepthList);
+    let psDepthRows = normalizeWithUnit(psDepthRows1, MM);
+    let plDimensionRows1 = generateTableData(plDimensionList);
+    let plDimensionRows = normalizeWithUnit(plDimensionRows1, MM);
     let flHeadLampRows = generateTableData(flHeadLampList);
-    let sbhDriverRows = generateTableData(sbhDriverList);
-    let sbhPassengerRows = generateTableData(sbhPassengerList);
-    let iiDrivingSeatRows = generateTableData(iiDrivingSeatList);
+    let sbhDriverRows1 = generateTableData(sbhDriverList);
+    let sbhDriverRows = normalizeWithUnit(sbhDriverRows1, MM);
+    let sbhPassengerRows1 = generateTableData(sbhPassengerList);
+    let sbhPassengerRows = normalizeWithUnit(sbhPassengerRows1, MM);
+    let iiDrivingSeatRows1 = generateTableData(iiDrivingSeatList);
+    let iiDrivingSeatRows = normalizeWithUnit(iiDrivingSeatRows1, DEGREES);
     allTablesData.push({
         rowKey: "List3_311",
         value: wFrontRearRows
@@ -3013,7 +4083,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         value: sbhPassengerRows
     });
     allTablesData.push({
-        rowKey: "List3_2341",
+        rowKey: "List3_2941",
         value: iiDrivingSeatRows
     });
     // Updated code: Mapping R Point data and pushing to table
@@ -3045,6 +4115,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     // });
     // Updated code: Mapping Seating Arrangement data and pushing to table
     const sArrangementList = form1AData?.Seating_Arrangement?.SeatingArrangementData;
+    console.log('sArrangementList:',sArrangementList)
     let noSeatsList = [];
     let loSeatsList = [];
     sArrangementList && sArrangementList.map(sArrangement => {
@@ -3063,21 +4134,55 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let noSeatsRows = generateTableData(noSeatsList);
     let loSeatsRows = generateTableData(loSeatsList);
     allTablesData.push({
-        rowKey: "List3_231",
+        rowKey: "List3_291",
         value: noSeatsRows
     });
     allTablesData.push({
-        rowKey: "List3_232",
+        rowKey: "List3_292",
         value: loSeatsRows
     });
 
     // Updated code: Mapping Windscreen and Wiping System data and pushing to table
     const wswSystemList = form1AData?.Windscreen_and_Wiping_System?.WindscreenAndWipingSystem;
+    console.log('wswSystemList:',wswSystemList);
     let moWindScreemList = [];
     let biswList = [];
     let mMaterialList = [];
+    let thickness1List = [];
+    let partNumberList = [];
+    let typeList = [];
+    let thickness2List = [];
     let bisList = [];
     let uDrawingList = [];
+    let thicknessList = [];
+    let rakeAngleList = [];
+    let partNoList = [];
+    let identificationList = [];
+    let typeDescriptionList = [];
+
+    let wswTypeList =[];
+    let wswNumber_Of_WipersLisy =[];
+    
+    let wswMakeList =[];
+    let wswType_DuplicateList =[];
+    let wswIdentification_MarkList =[];
+    let wswRated_VoltageList =[];
+    let wswSweep_FrequencyList =[];
+    let wswHighest_Sweep_FrequencyList =[];
+    let wswLowest_Sweep_FrequencyList =[];
+    let waWiper_Arm_LengthList =[];
+    let waWiper_Arm_MakeList =[];
+    let wbWiper_Blade_LengthList =[];
+    let wbWiper_Blade_MakeList =[];
+    let wtWasher_Tank_TypeList =[];
+    let wtWasher_Tank_MakeList =[];
+    let wtWasher_Tank_Identification_NoList =[];
+    let wtWasher_Tank_CapacityList =[];
+    let wtWasher_Tank_MaterialList =[];
+    let wtmWasher_Pump_MakeList =[];
+    let wtmNumber_Of_NozzlesList =[];
+
+    console.log('wswSystemList:',wswSystemList);
     wswSystemList && wswSystemList.map(wswSystem => {
         if (wswSystem.supplier.active === true) {
             const supplierName = wswSystem?.supplier?.nameOfSupplier;
@@ -3089,6 +4194,30 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: wswSystem?.Windscreen_and_Wiping_System?.properties?.BIS_License_Number_of_Windscreen?.value
             });
+
+            thicknessList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Thickness_mm?.value
+              });
+
+              rakeAngleList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Rake_Angle?.value
+              });
+              partNoList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Part_No_If_Applicable?.value
+              });
+
+              identificationList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Identification?.value
+              });
+
+              typeDescriptionList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Type_Description?.value
+              });
             mMaterialList.push({
                 supplier: supplierName,
                 value: wswSystem?.Other_Glazing?.properties?.Make_and_Materials_used?.value
@@ -3097,6 +4226,119 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: wswSystem?.Other_Glazing?.properties?.BIS_license_number?.value
             });
+            thickness1List.push({
+                supplier: supplierName,
+                value: wswSystem?.Other_Glazing?.properties?.Thickness_mm_1?.value
+              });
+              partNumberList.push({
+                supplier: supplierName,
+                value: wswSystem?.Other_Glazing?.properties?.Part_No_If_Applicable?.value
+              });
+              typeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Other_Glazing?.properties?.Type_Toughened_Laminated?.value
+              });
+              thickness2List.push({
+                supplier: supplierName,
+                value: wswSystem?.Other_Glazing?.properties?.Thickness_mm_2?.value
+              });
+
+
+              wswTypeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_wiper?.properties?.Type?.value
+              });
+              wswNumber_Of_WipersLisy.push({
+                supplier: supplierName,
+                value: wswSystem?.Windscreen_wiper?.properties?.Number_Of_Wipers?.value
+              });
+
+
+              wswMakeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Make?.value
+              });
+              wswType_DuplicateList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Type_Duplicate?.value
+              });
+              wswIdentification_MarkList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Identification_Mark?.value
+              });
+              wswRated_VoltageList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Rated_Voltage?.value
+              });
+              wswSweep_FrequencyList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Sweep_Frequency?.value
+              });
+              wswHighest_Sweep_FrequencyList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Highest_Sweep_Frequency?.value
+              });
+              wswLowest_Sweep_FrequencyList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Motor?.properties?.Lowest_Sweep_Frequency?.value
+              });
+
+              waWiper_Arm_LengthList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_arm?.properties?.Wiper_Arm_Length?.value
+              });
+              waWiper_Arm_MakeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_arm?.properties?.Wiper_Arm_Make?.value
+              });
+
+              wbWiper_Blade_LengthList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Blade?.properties?.Wiper_Blade_Length?.value
+              });
+              wbWiper_Blade_MakeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Wiper_Blade?.properties?.Wiper_Blade_Make?.value
+              });
+              
+
+
+
+
+
+              wtWasher_Tank_TypeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_Tank?.properties?.Washer_Tank_Type?.value
+              });
+              wtWasher_Tank_MakeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_Tank?.properties?.Washer_Tank_Make?.value
+              });
+              wtWasher_Tank_Identification_NoList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_Tank?.properties?.Washer_Tank_Identification_No?.value
+              });
+              wtWasher_Tank_CapacityList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_Tank?.properties?.Washer_Tank_Capacity?.value
+              });
+              wtWasher_Tank_MaterialList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_Tank?.properties?.Washer_Tank_Material?.value
+              });
+              wtmWasher_Pump_MakeList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_tank_motor_or_Washer_Pump_if_provided?.properties?.Washer_Pump_Make?.value
+              });
+              wtmNumber_Of_NozzlesList.push({
+                supplier: supplierName,
+                value: wswSystem?.Washer_tank_motor_or_Washer_Pump_if_provided?.properties?.Number_Of_Nozzles?.value
+              });
+
+
+
+
+
             uDrawingList.push({
                 supplier: supplierName,
                 value: wswSystem?.Windscreen_and_Wiping_System?.properties?.Upload_Drawing?.value
@@ -3105,29 +4347,241 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let moWindScreemRows = generateTableData(moWindScreemList);
-    let biswRows = generateTableData(biswList);
+    const updatedmoWindScreemRows= normalizeMsPrefix(moWindScreemRows);
+    let biswRows = generateTableData(biswList);   
+    let thicknessRows1 = twoWheeler ? 'NA' : generateTableData(thicknessList);
+    let thicknessRows = normalizeWithUnit(thicknessRows1, MM);
+let rakeAngleRows1 = twoWheeler ? 'NA' : generateTableData(rakeAngleList);
+let rakeAngleRows = normalizeWithUnit(rakeAngleRows1, DEGREES);
+let partNoRows = twoWheeler ? 'NA' : generateTableData(partNoList);
+let identificationRows = twoWheeler ? 'NA' : generateTableData(identificationList);
+let typeDescriptionRows = twoWheeler ? 'NA' : generateTableData(typeDescriptionList);
+
     let mMaterialRows = generateTableData(mMaterialList);
-    let bisRows = generateTableData(bisList);
-    // let uDrawingRows = generateTableData(uDrawingList);
+    const updatedmMaterialRows = normalizeMsPrefix(mMaterialRows);
+    let bisRows = generateTableData(bisList);  
+    let thickness1Rows1 = twoWheeler ? 'NA' : generateTableData(thickness1List);
+    let thickness1Rows = normalizeWithUnit(thickness1Rows1, MM);    
+    let partNumberRows = twoWheeler ? 'NA' : generateTableData(partNumberList);    
+    let typeRows = twoWheeler ? 'NA' : generateTableData(typeList);    
+    let thickness2Rows1 = twoWheeler ? 'NA' : generateTableData(thickness2List);
+    let thickness2Rows = normalizeWithUnit(thickness2Rows1, MM);
+    
+
+
+    let wswTypeRows = twoWheeler ? 'NA' : generateTableData(wswTypeList);
+    let wswNumber_Of_WipersRows = twoWheeler ? 'NA' : generateTableData(wswNumber_Of_WipersLisy);
+    let wswMakeRows = twoWheeler ? 'NA' : generateTableData(wswMakeList);
+    const updatedwswMakeRows = twoWheeler ? 'NA' : normalizeMsPrefix(wswMakeRows);
+    let wswType_DuplicateRows = twoWheeler ? 'NA' : generateTableData(wswType_DuplicateList);
+    let wswIdentification_MarkRows = twoWheeler ? 'NA' : generateTableData(wswIdentification_MarkList);
+    let wswRated_VoltageRows1 = twoWheeler ? 'NA' : generateTableData(wswRated_VoltageList);
+    let wswRated_VoltageRows = normalizeWithUnit(wswRated_VoltageRows1, V);
+    let wswSweep_FrequencyRows1 = twoWheeler ? 'NA' : generateTableData(wswSweep_FrequencyList);
+    let wswSweep_FrequencyRows = normalizeWithUnit(wswSweep_FrequencyRows1, CyclesPerMin);
+
+    let wswHighest_Sweep_FrequencyRows1 = twoWheeler ? 'NA' : generateTableData(wswHighest_Sweep_FrequencyList);
+    let wswHighest_Sweep_FrequencyRows = normalizeWithUnit(wswHighest_Sweep_FrequencyRows1, CyclesPerMin);
+
+    let wswLowest_Sweep_FrequencyRows1 = twoWheeler ? 'NA' : generateTableData(wswLowest_Sweep_FrequencyList);
+    let wswLowest_Sweep_FrequencyRows = normalizeWithUnit(wswLowest_Sweep_FrequencyRows1, CyclesPerMin);
+
+    let waWiper_Arm_LengthRows1 = twoWheeler ? 'NA' : generateTableData(waWiper_Arm_LengthList);
+    let waWiper_Arm_LengthRows = normalizeWithUnit(waWiper_Arm_LengthRows1, MM);
+    let waWiper_Arm_MakeRows = twoWheeler ? 'NA' : generateTableData(waWiper_Arm_MakeList);
+    const updatedwaWiper_Arm_MakeRows = twoWheeler ? 'NA' : normalizeMsPrefix(waWiper_Arm_MakeRows);
+    let wbWiper_Blade_LengthRows1 = twoWheeler ? 'NA' : generateTableData(wbWiper_Blade_LengthList);
+    let wbWiper_Blade_LengthRows = normalizeWithUnit(wbWiper_Blade_LengthRows1, MM);
+    let wbWiper_Blade_MakeRows = twoWheeler ? 'NA' : generateTableData(wbWiper_Blade_MakeList);
+    const updatedwbWiper_Blade_MakeRows = twoWheeler ? 'NA' : normalizeMsPrefix(wbWiper_Blade_MakeRows);
+    let wtWasher_Tank_TypeRows = twoWheeler ? 'NA' : generateTableData(wtWasher_Tank_TypeList);
+    let wtWasher_Tank_MakeRows = twoWheeler ? 'NA' : generateTableData(wtWasher_Tank_MakeList);
+    const updatedwtWasher_Tank_MakeRows = twoWheeler ? 'NA' : normalizeMsPrefix(wtWasher_Tank_MakeRows);
+    let wtWasher_Tank_Identification_NoRows = twoWheeler ? 'NA' : generateTableData(wtWasher_Tank_Identification_NoList);
+    let wtWasher_Tank_CapacityRows = twoWheeler ? 'NA' : generateTableData(wtWasher_Tank_CapacityList);
+    let wtWasher_Tank_MaterialRows = twoWheeler ? 'NA' : generateTableData(wtWasher_Tank_MaterialList);
+    let wtmWasher_Pump_MakeRows = twoWheeler ? 'NA' : generateTableData(wtmWasher_Pump_MakeList);
+    const updatedwtmWasher_Pump_MakeRows = twoWheeler ? 'NA' : normalizeMsPrefix(wtmWasher_Pump_MakeRows);
+    let wtmNumber_Of_NozzlesRows = twoWheeler ? 'NA' : generateTableData(wtmNumber_Of_NozzlesList);
+    
+
 
     allTablesData.push({
         rowKey: "List3_2111",
-        value: moWindScreemRows
+        value: updatedmoWindScreemRows
     });
     allTablesData.push({
         rowKey: "List3_2112",
         value: biswRows
     });
     allTablesData.push({
+        rowKey: "List3_2113",
+        value: thicknessRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2114",
+        value: rakeAngleRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2115",
+        value: partNoRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2116",
+        value: identificationRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2117",
+        value: typeDescriptionRows
+    });
+    allTablesData.push({
         rowKey: "List3_2121",
-        value: mMaterialRows
+        value: updatedmMaterialRows
     });
     allTablesData.push({
         rowKey: "List3_2122",
         value: bisRows
     });
+
+    allTablesData.push({
+        rowKey: "List3_2123",
+        value: thickness1Rows
+    });
+    allTablesData.push({
+        rowKey: "List3_2124",
+        value: partNumberRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2125",
+        value: typeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_2126",
+        value: thickness2Rows
+    });
+
+
+
+
+
     allTablesData.push({
         rowKey: "List3_221",
+        value: wswTypeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_222",
+        value: wswNumber_Of_WipersRows
+    });
+    allTablesData.push({
+        rowKey: "List3_231",
+        value: updatedwswMakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_232",
+        value: wswType_DuplicateRows
+    });
+    allTablesData.push({
+        rowKey: "List3_233",
+        value: wswIdentification_MarkRows
+    });
+    allTablesData.push({
+        rowKey: "List3_234",
+        value: wswRated_VoltageRows
+    });
+    allTablesData.push({
+        rowKey: "List3_235",
+        value: wswSweep_FrequencyRows
+    });
+    allTablesData.push({
+        rowKey: "List3_236",
+        value: wswHighest_Sweep_FrequencyRows
+    });
+    allTablesData.push({
+        rowKey: "List3_237",
+        value: wswLowest_Sweep_FrequencyRows
+    });
+    allTablesData.push({
+        rowKey: "List3_241",
+        value: waWiper_Arm_LengthRows
+    });
+    allTablesData.push({
+        rowKey: "List3_242",
+        value: updatedwaWiper_Arm_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_251",
+        value: wbWiper_Blade_LengthRows
+    });
+    allTablesData.push({
+        rowKey: "List3_252",
+        value: updatedwbWiper_Blade_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_261",
+        value: wtWasher_Tank_TypeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_262",
+        value: updatedwtWasher_Tank_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_263",
+        value: wtWasher_Tank_Identification_NoRows
+    });
+    allTablesData.push({
+        rowKey: "List3_264",
+        value: wtWasher_Tank_CapacityRows
+    });
+    allTablesData.push({
+        rowKey: "List3_265",
+        value: wtWasher_Tank_MaterialRows
+    });
+
+
+    allTablesData.push({
+        rowKey: "List3_271",
+        value: updatedwtmWasher_Pump_MakeRows
+    });
+    allTablesData.push({
+        rowKey: "List3_272",
+        value: wtmNumber_Of_NozzlesRows
+    });
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    allTablesData.push({
+        rowKey: "List3_28",
         value: uDrawingRows
     });
 
@@ -3145,14 +4599,13 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let mLoadRows = generateTableData(mLoadList);
-
+    let mLoadRows1 = generateTableData(mLoadList);
+    let mLoadRows = normalizeWithUnit(mLoadRows1, KG);
     allTablesData.push({
         rowKey: "List3_121",
         value: mLoadRows
     });
-
-
+    
     // Updated code: Mapping Dimension data and pushing to table
     const DimensionList = form1AData?.Dimension?.DimensionData;
     let oLengthList = [];
@@ -3186,11 +4639,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let oLengthRows = generateTableData(oLengthList);
-    let oWidthRows = generateTableData(oWidthList);
-    let uWidthRows = generateTableData(uWidthList);
-    let fOverhangRows = generateTableData(fOverhangList);
-    let rOverhangRows = generateTableData(rOverhangList);
+    let oLengthRows1 = generateTableData(oLengthList);
+    let oLengthRows = normalizeWithUnit(oLengthRows1, MM);
+    let oWidthRows1 = generateTableData(oWidthList);
+    let oWidthRows = normalizeWithUnit(oWidthRows1, MM);
+    let uWidthRows1 = generateTableData(uWidthList);
+    let uWidthRows = normalizeWithUnit(uWidthRows1, KG);
+    let fOverhangRows1 = generateTableData(fOverhangList);
+    let fOverhangRows = normalizeWithUnit(fOverhangRows1, MM);
+    let rOverhangRows1 = generateTableData(rOverhangList);
+    let rOverhangRows = normalizeWithUnit(rOverhangRows1, MM);
     allTablesData.push({
         rowKey: "List3_11",
         value: dimension_Rows
@@ -3255,7 +4713,8 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let mivChasisRows = generateTableData(mivChasisList);
     let sntypeRows = generateTableData(sntypeList);
     // let plVinRows = generateTableData(plVinList);
-    let HeightVinRows = generateTableData(HeightVinList);
+    let HeightVinRows1 = generateTableData(HeightVinList);
+    let HeightVinRows = normalizeWithUnit(HeightVinRows1, MM);
     allTablesData.push({
         rowKey: "List1_04",
         value: lvChasisRows
@@ -3292,12 +4751,13 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let ParkingBrakeList = [];
     let anyOtherControlList = [];
 
+    let MasterLampList = [];
     let SupplementalEngList = [];
     let IgnitionSwitchList = [];
     let ElectricStarterList = [];
     let ManualChokeList = [];
     let FuelShutoffValveList = [];
- 
+
     VehicleControlsLocationList && VehicleControlsLocationList.map(VehicleControlsLocation => {
         if (VehicleControlsLocation.supplier.active === true) {
             const supplierName = VehicleControlsLocation?.supplier?.nameOfSupplier;
@@ -3360,6 +4820,10 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Supplemental_engine_stop?.value
             });
+            MasterLampList.push({
+                supplier: supplierName,
+                value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Master_Lamp?.value
+            });
             IgnitionSwitchList.push({
                 supplier: supplierName,
                 value: VehicleControlsLocation?.Vehicle_Controls?.properties?.Ignition_Switch?.value
@@ -3395,6 +4859,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let anyOtherControlRows = generateTableData(anyOtherControlList);
 
     let SupplementalEngRows = generateTableData(SupplementalEngList);
+    let MasterLampRows = generateTableData(MasterLampList);
     let IgnitionSwitchRows = generateTableData(IgnitionSwitchList);
     let ElectricStarterRows = generateTableData(ElectricStarterList);
     let ManualChokeRows = generateTableData(ManualChokeList);
@@ -3407,6 +4872,10 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     allTablesData.push({
         rowKey: "List2_827",
         value: HeadLampSwitchRows
+    });
+    allTablesData.push({
+        rowKey: "List2_828",
+        value: "NA"
     });
     allTablesData.push({
         rowKey: "List2_829",
@@ -3429,8 +4898,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         value: PositionLampRows
     });
     allTablesData.push({
+        rowKey: "List2_8214",
+        value: MasterLampRows
+    });
+    allTablesData.push({
         rowKey: "List2_8215",
         value: ParkingLampRows
+    });
+    allTablesData.push({
+        rowKey: "List2_8216",
+        value: "NA"
     });
     allTablesData.push({
         rowKey: "List2_8217",
@@ -3447,6 +4924,14 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     allTablesData.push({
         rowKey: "List2_8220",
         value: ParkingBrakeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_8221",
+        value: "NA"
+    });
+    allTablesData.push({
+        rowKey: "List2_8222",
+        value: "NA"
     });
     allTablesData.push({
         rowKey: "List2_8224",
@@ -3511,14 +4996,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let rLampRows = generateTableData(rLampList);
+    const updatedrLampRows = normalizeMsPrefix(rLampRows);
     let trLampRows = generateTableData(trLampList);
     let ncLightRows = generateTableData(ncLightList);
     let rBulbRows = generateTableData(rBulbList);
+    const updatedrBulbRows= normalizeMsPrefix(rBulbRows);
     let categoryBulbRows = generateTableData(categoryBulbList);
     let trBulbRows = generateTableData(trBulbList);
     allTablesData.push({
         rowKey: "List2_7161",
-        value: rLampRows
+        value: updatedrLampRows
     });
     allTablesData.push({
         rowKey: "List2_7162",
@@ -3530,7 +5017,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_75101",
-        value: rBulbRows
+        value: updatedrBulbRows
     });
     allTablesData.push({
         rowKey: "List2_75102",
@@ -3545,15 +5032,16 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     // const GrabHandleList = form1AData?.Grab_handle?.GrabHandle;
     const twoWheelerData = form1AData?.Two_Wheeler_Aggregates?.TwoWheelerAggregatesData;
     const grabHandleData = form1AData?.Grab_handle?.GrabHandle;
-    
+
     const TwoWheelerAggregatesListt = (
-      twoWheelerData && Object.keys(twoWheelerData).length > 0
+        twoWheelerData && Object.keys(twoWheelerData).length > 0
     ) ? twoWheelerData
-      : (grabHandleData && Object.keys(grabHandleData).length > 0 ? grabHandleData : {});
-    
+        : (grabHandleData && Object.keys(grabHandleData).length > 0 ? grabHandleData : {});
+
     let dStrapList = [];
     let hTwoWheelerList = [];
     let hWheelerList = [];
+    let hHTypeList = [];
     let typeHWheelerList = [];
     TwoWheelerAggregatesListt && TwoWheelerAggregatesListt.map(GrabHandle => {
         if (GrabHandle.supplier.active === true) {
@@ -3570,6 +5058,10 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: GrabHandle?.Grab_handle_Straps?.properties?.Handholds_passenger_3_wheeler?.value
             });
+            hHTypeList.push({
+                supplier: supplierName,
+                value: GrabHandle?.Grab_handle_Straps?.properties?.Handholds_passenger_Type?.value
+            });
             typeHWheelerList.push({
                 supplier: supplierName,
                 value: GrabHandle?.Grab_handle_Straps?.properties?.Type_Handhold_Pillion_rider?.value
@@ -3578,6 +5070,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     // let dStrapRows = generateTableData(dStrapList);
     let hWheelerRows = generateTableData(hWheelerList);
+    let hHTypeRows = generateTableData(hHTypeList);
     let hTwoWheelerRows = generateTableData(hTwoWheelerList);
     let typeHWheelerListRows = generateTableData(typeHWheelerList);
     allTablesData.push({
@@ -3595,6 +5088,14 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     allTablesData.push({
         rowKey: "List2_1013",
         value: hWheelerRows
+    });
+    allTablesData.push({
+        rowKey: "List2_1014",
+        value: hHTypeRows
+    });
+    allTablesData.push({
+        rowKey: "List2_1015",
+        value: straphandleholdRows
     });
 
     // Updated code: Mapping Fire Fighting System data and pushing to table
@@ -3633,18 +5134,24 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 
         }
     });
-    let FireFightingMakeRows = generateTableData(FireFightingMakeList);
-    let FireFightingWeightRows = generateTableData(FireFightingWeightList);
-    let FireFightingPosistionRows = generateTableData(FireFightingPosistionList);
-    let FireFightingAlertationsRows = generateTableData(FireFightingAlertationsList);
+    // let FireFightingMakeRows = generateTableData(FireFightingMakeList);
+    let FireFightingMakeRows1 = twoWheeler ? 'NA' : generateTableData(FireFightingMakeList);
+    const updatedFireFightingMakeRows= normalizeMsPrefix(FireFightingMakeRows1);
+    // let FireFightingWeightRows1 = generateTableData(FireFightingWeightList);
+    let FireFightingWeightRows1 = twoWheeler ? 'NA' : generateTableData(FireFightingWeightList);
+    let FireFightingWeightRows = normalizeWithUnit(FireFightingWeightRows1, KG);
+    // let FireFightingPosistionRows = generateTableData(FireFightingPosistionList);
+    let FireFightingPosistionRows = twoWheeler ? 'NA' : generateTableData(FireFightingPosistionList);
+    // let FireFightingAlertationsRows = generateTableData(FireFightingAlertationsList);
+    let FireFightingAlertationsRows = twoWheeler ? 'NA' : generateTableData(FireFightingAlertationsList);
     // let FireFightingPhotoRows = generateTableData(FireFightingPhotoList);
 
-
+  
 
 
     allTablesData.push({
         rowKey: "List2_181",
-        value: FireFightingMakeRows
+        value: updatedFireFightingMakeRows
     });
     allTablesData.push({
         rowKey: "List2_182",
@@ -3709,19 +5216,20 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let HornMakeRows = generateTableData(HornMakeList);
+    const updatedHornMakeRows = normalizeMsPrefix(HornMakeRows);
     let HornSelectRows = generateTableData(HornSelectList);
-    let HornOperatingRows = generateTableData(HornOperatingList);
+    let HornOperatingRows1 = generateTableData(HornOperatingList);
+    let HornOperatingRows = normalizeWithUnit(HornOperatingRows1, V);
     let HornNumberRows = generateTableData(HornNumberList);
-    let HornTacRows = generateTableData(HornTacList);
+    let HornTacRows1 = generateTableData(HornTacList);
+    const HornTacRows = extractTACNumbers(HornTacRows1);
     // let HornDrawingRows = generateTableData(HornDrawingList);
     let HornDimensionalRows = generateTableData(HornDimensionalList);
 
 
-
-
     allTablesData.push({
         rowKey: "List2_851",
-        value: HornMakeRows
+        value: updatedHornMakeRows
     });
     allTablesData.push({
         rowKey: "List2_852",
@@ -3808,6 +5316,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let ICMakeRows = generateTableData(ICMakeList);
+    const updatedICMakeRows= normalizeMsPrefix(ICMakeRows);
     let ICTypeRows = generateTableData(ICTypeList);
     let ICRangeRows = generateTableData(ICRangeList);
     let ICMajorGraduationRows = generateTableData(ICMajorGraduationList);
@@ -3819,7 +5328,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     // let ICDrawingRows = generateTableData(ICDrawingList);
     allTablesData.push({
         rowKey: "List1_371",
-        value: ICMakeRows
+        value: updatedICMakeRows
     });
     allTablesData.push({
         rowKey: "List1_372",
@@ -3860,7 +5369,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     // Updated code: Mapping Vehicle Performance data and pushing to table
     const VehiclePerformanceList = form1AData?.VehiclePerformance?.VehiclePerformanceData;
     let vehMaxHillAbilityList = [];
-
+    let vehAnyOthFeatureList = [];
     VehiclePerformanceList && VehiclePerformanceList.map(VehiclePerformance => {
         if (VehiclePerformance.supplier.active === true) {
             const supplierName = VehiclePerformance?.supplier?.nameOfSupplier;
@@ -3868,16 +5377,24 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: VehiclePerformance?.Vehicle_Performance?.properties?.Max_hill_star_ability?.value
             });
+            vehAnyOthFeatureList.push({
+                supplier: supplierName,
+                value: VehiclePerformance?.Vehicle_Performance?.properties?.Any_Other_Feature_Manf_Desire?.value
+            });
 
         }
     });
-    let vehMaxHillAbilityRows = generateTableData(vehMaxHillAbilityList);
-
+    let vehMaxHillAbilityRows1 = generateTableData(vehMaxHillAbilityList);
+    let vehMaxHillAbilityRows = normalizeWithUnit(vehMaxHillAbilityRows1, DEGREES);
+    let vehAnyOthFeatureRows = generateTableData(vehAnyOthFeatureList);
     allTablesData.push({
         rowKey: "List1_117",
         value: vehMaxHillAbilityRows
     });
-
+    allTablesData.push({
+        rowKey: "List2_19",
+        value: vehAnyOthFeatureRows
+    });
     // Updated code: Mapping Hydraulic Brake Hose data and pushing to tables
     const HydraulicBrakeHoseList = form1AData?.Hydraulic_Brake_Hose?.HydraulicBrakeHose;
     let hyMakeList = [];
@@ -3896,10 +5413,11 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let hyMakeRows = generateTableData(hyMakeList);
+    const updatedhyMakeRows = normalizeMsPrefix(hyMakeRows);
     let hyTACRows = generateTableData(hyTACList);
     allTablesData.push({
         rowKey: "List2_66",
-        value: hyMakeRows
+        value: updatedhyMakeRows
     });
     allTablesData.push({
         rowKey: "List2_661",
@@ -3957,6 +5475,8 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         rowKey: "List2_1532",
         value: twWidthRows
     });
+
+    
     // Updated code: Mapping Two Wheeler Aggregates data and pushing to tables
     const TwoWheelerAggregatesList = form1AData?.Two_Wheeler_Aggregates?.TwoWheelerAggregatesData;
     let twNumberOfFootRestList = [];
@@ -3973,7 +5493,7 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     let ssSpringMaterialList = [];
     let stDiagInstallList = [];
     let ssDrawingList = [];
-    let ssTyreMaxWidthList = [];
+    // let ssTyreMaxWidthList = [];
 
     TwoWheelerAggregatesList && TwoWheelerAggregatesList.map(TwoWheelerAggregates => {
         if (TwoWheelerAggregates.supplier.active === true) {
@@ -4034,27 +5554,50 @@ console.log('MatDeviceRows:', finalMatDeviceList);
                 supplier: supplierName,
                 value: TwoWheelerAggregates?.Spray_Suppression_Rear_Mud_Gaurd?.properties?.Diagram_spray_suppression?.value
             });
-            ssTyreMaxWidthList.push({
-                supplier: supplierName,
-                value: TwoWheelerAggregates?.Spray_Suppression_Rear_Mud_Gaurd?.properties?.Tyre_max_Width?.value
-            });
+            // ssTyreMaxWidthList.push({
+            //     supplier: supplierName,
+            //     value: TwoWheelerAggregates?.Spray_Suppression_Rear_Mud_Gaurd?.properties?.Tyre_max_Width?.value
+            // });
         }
     });
-    let twNumberOfFootRows = generateTableData(twNumberOfFootRestList);
+    // let twNumberOfFootRows = generateTableData(twNumberOfFootRestList);
+    let twNumberOfFootRows = twoWheeler ? generateTableData(twNumberOfFootRestList) : 'NA';
+
     // let twDrawingFootRows = generateTableData(twDrawingFootRestList);
-    let stNoOfStandsRows = generateTableData(stNoOfStandsList);
-    let stTypeOfStandRows = generateTableData(stTypeOfStandList);
-    let stRetSysRows = generateTableData(stRetSysList);
-    let stSpringStandRows = generateTableData(stSpringStandList);
-    let stWireDiamRows = generateTableData(stWireDiamList);
-    let stFreeLengthRows = generateTableData(stFreeLengthList);
-    let stOuterCoilDiamRows = generateTableData(stOuterCoilDiamList);
-    let ssAssLengthRows = generateTableData(ssAssLengthList);
-    let ssAssLengthNotInUseRows = generateTableData(ssAssLengthNotInUseList);
-    let ssSpringMaterialRows = generateTableData(ssSpringMaterialList);
+    // let stNoOfStandsRows = generateTableData(stNoOfStandsList);
+    let stNoOfStandsRows = twoWheeler ? generateTableData(stNoOfStandsList) : 'NA';
+
+    // let stTypeOfStandRows = generateTableData(stTypeOfStandList);
+    let stTypeOfStandRows = twoWheeler ? generateTableData(stTypeOfStandList) : 'NA';
+    // let stRetSysRows = generateTableData(stRetSysList);
+    let stRetSysRows = twoWheeler ? generateTableData(stRetSysList) : 'NA';
+
+    // let stSpringStandRows = generateTableData(stSpringStandList);
+    let stSpringStandRows = twoWheeler ? generateTableData(stSpringStandList) : 'NA';
+
+    // let stWireDiamRows = generateTableData(stWireDiamList);
+    // let stFreeLengthRows = generateTableData(stFreeLengthList);
+    // let stOuterCoilDiamRows = generateTableData(stOuterCoilDiamList);
+    // let ssAssLengthRows = generateTableData(ssAssLengthList);
+    // let ssAssLengthNotInUseRows = generateTableData(ssAssLengthNotInUseList);
+    // let ssSpringMaterialRows = generateTableData(ssSpringMaterialList);
+
+    let stWireDiamRows1 = twoWheeler ? generateTableData(stWireDiamList) : 'NA';
+    let stWireDiamRows = normalizeWithUnit(stWireDiamRows1, MM);
+    let stFreeLengthRows1 = twoWheeler ? generateTableData(stFreeLengthList) : 'NA';
+    let stFreeLengthRows = normalizeWithUnit(stFreeLengthRows1, MM);
+    let stOuterCoilDiamRows1 = twoWheeler ? generateTableData(stOuterCoilDiamList) : 'NA';
+    let stOuterCoilDiamRows = normalizeWithUnit(stOuterCoilDiamRows1, MM);
+    let ssAssLengthRows1 = twoWheeler ? generateTableData(ssAssLengthList) : 'NA';
+    let ssAssLengthRows = normalizeWithUnit(ssAssLengthRows1, MM);
+    let ssAssLengthNotInUseRows1 = twoWheeler ? generateTableData(ssAssLengthNotInUseList) : 'NA';
+    let ssAssLengthNotInUseRows = normalizeWithUnit(ssAssLengthNotInUseRows1, MM);
+    let ssSpringMaterialRows = twoWheeler ? generateTableData(ssSpringMaterialList) : 'NA';
+    
+
     // let stDiagInstallRows = generateTableData(stDiagInstallList);
     // let ssDrawingRows = generateTableData(ssDrawingList);
-    let ssTyreMaxWidthRows = generateTableData(ssTyreMaxWidthList);
+    // let ssTyreMaxWidthRows = generateTableData(ssTyreMaxWidthList);
     allTablesData.push({
         rowKey: "List2_16",
         value: twNumberOfFootRows
@@ -4069,14 +5612,14 @@ console.log('MatDeviceRows:', finalMatDeviceList);
     });
     allTablesData.push({
         rowKey: "List2_131",
-        value: stNoOfStandsRows
+        value: stNoOfStandsRows 
     });
     allTablesData.push({
         rowKey: "List2_132",
-        value: stRetSysRows
+        value: stRetSysRows 
     });
     allTablesData.push({
-        rowKey: "List2_133",
+        rowKey: "List2_133", 
         value: stSpringStandRows
     });
     allTablesData.push({
@@ -4111,12 +5654,13 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         rowKey: "List2_111",
         value: ssDrawingRows
     });
-    allTablesData.push({
-        rowKey: "List2_112",
-        value: ssTyreMaxWidthRows
-    });
+    // allTablesData.push({
+    //     rowKey: "List2_112",
+    //     value: ssTyreMaxWidthRows
+    // });
     // Updated code: Mapping Brake Fluid data and pushing to table
     const BrakeFluidList = form1AData?.Brake_Fluid?.BrakeFluid;
+
     let brMakeList = [];
     let brTypeList = [];
     BrakeFluidList && BrakeFluidList.map(BrakeFluid => {
@@ -4134,10 +5678,12 @@ console.log('MatDeviceRows:', finalMatDeviceList);
         }
     });
     let brMakeRows = generateTableData(brMakeList);
+    const updatedbrMakeRows= normalizeMsPrefix(brMakeRows);
     let brTypeRows = generateTableData(brTypeList);
+
     allTablesData.push({
         rowKey: "List2_671",
-        value: brMakeRows
+        value: updatedbrMakeRows
     });
     allTablesData.push({
         rowKey: "List2_672",
@@ -4196,12 +5742,12 @@ console.log('MatDeviceRows:', finalMatDeviceList);
 function generateTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim
-        const values = dataList.map(wheelRim => 
-            wheelRim?.Wheel_Rim_Size?.properties?.Wheel_rim_size?.value || 
-            wheelRim?.value || 
+        const values = dataList.map(wheelRim =>
+            wheelRim?.Wheel_Rim_Size?.properties?.Wheel_rim_size?.value ||
+            wheelRim?.value ||
             ""
         );
-        
+
         // If there's more than one value, join them with a hyphen
         if (values.length > 1) {
             return values.join(" | ");
@@ -4218,4 +5764,13 @@ function generateTableData(dataList) {
    Exporting `populateMultiSupData` and `tyresList` for use in other modules.
    This allows for the processing of multiple supplier data and tyre-related information.
 */
-export { populateMultiSupData, tyresList,dStrapRows,handholdStrap3wheeler_Rows};
+export { populateMultiSupData, tyresList, dStrapRows, handholdStrap3wheeler_Rows };
+
+
+
+
+
+
+
+
+

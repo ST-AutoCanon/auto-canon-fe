@@ -21,4 +21,9 @@ const AuthGaurd: FC = () => {
   return <Outlet />
 }
 
+
+
+
+
+
 export default AuthGaurd;
