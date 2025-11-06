@@ -8,7 +8,58 @@ let form1ATable1RowsList = [];
 let form1ATable2RowsList = [];
 let form1ATable3RowsList = [];
 let docSealImage;
-
+const prefixPattern = /^(M\/s\.?|m\/s\.?)\s*/i;
+function normalizeMsPrefix(rowString) {
+    return rowString
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+  
+        if (prefixPattern.test(trimmed)) {
+          const rest = trimmed.replace(prefixPattern, "").trim();
+          return `M/s. ${rest}`;
+        }
+  
+        return `M/s. ${trimmed}`;
+      })
+      .join(" | ");
+  }
+  function normalizeWithUnit(rowString, unit) {
+    return String(rowString)
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        return `${trimmed} ${unit}`;
+      })
+      .join(" | ");
+  }
+  
+  const SQ_CM_MM = 'Square cm/mm';
+  const KG = 'kg';
+  const INCH_MM = 'Inch/mm';
+  const KG_CM2_KPA_PSI = 'kg/cm² /kPa /psi';
+  const V = 'V';
+  const MM = 'mm';
+  const MM_SQ = 'mm Sq';
+  const CM_SQ = 'Cm Sq.';
+  const PERCENT_OR_DEGREE = '% OR °(Degree)';
+  const VOLTS = 'Volts';
+  const RPM = 'RPM';
+  const RPM_KM_H = 'RPM & Km/h';
+  const KW = 'Kw';
+  const KM = 'Km';
+  const KM_H = 'Km/h';
+  const AH = 'Ah';
+  const KWH = 'kWh';
+  const VOLTS_HERTZ = 'Volts & Hertz';
+  const VOLTS_AMPS = 'Volts & Amps';
+  const MINUTES_HOURS = 'Minutes/Hours';
+  const AMPS = 'Amps';
+  const MS = 'ms';
+  const W_H_KM = 'W-H/Km';
+  const DEGREES = 'Degrees';
 function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
 
     // if (dStrapRows) {
@@ -18,8 +69,8 @@ function readList(itemsListName, form1Adata, footerData, tableNo = 1) {
     //     vehicle_Type = 3;
     //     console.log('false it is three wheeler', handholdStrap3wheeler_Rows)
     // }
-    const isTwoWheeler = !!dStrapRows;  // Truthy check for Two-Wheeler
-const isThreeWheeler = !!handholdStrap3wheeler_Rows;  // Truthy check for Three-Wheeler
+   const isTwoWheeler = dStrapRows && dStrapRows.toString().trim() !== "";
+const isThreeWheeler = handholdStrap3wheeler_Rows && handholdStrap3wheeler_Rows.toString().trim() !== "";
 
 if (isTwoWheeler && isThreeWheeler) {
     vehicle_Type = 3;  // If both are present, create table
@@ -32,7 +83,7 @@ if (isTwoWheeler && isThreeWheeler) {
     let imageUrl;
 
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`;  // Use the correct backend port
     // console.log("Image loaded successfully:", fileName);
 ////
 
@@ -206,23 +257,32 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
     let frontTyreLadenRows = generateTableData(frontTyreLadenList);
     let frontTyreUnladenDriverRows = generateTableData(frontTyreUnladenDriverList);
     let frontTyreWheelCombSizeRows = generateTableData(frontTyreWheelCombSizeList);
+    // let frontTyreWheelCombSizeRows = normalizeWithUnit(frontTyreWheelCombSizeRows1, INCH_MM);
     let frontTyreMinSpeedCategoryRows = generateTableData(frontTyreMinSpeedCategoryList);
+    const updatedfrontTyreMinSpeedCategoryRows = normalizeMsPrefix(frontTyreMinSpeedCategoryRows);
     let frontTyreMinLoadCapIndexRows = generateTableData(frontTyreMinLoadCapIndexList);
-    let frontTyreCategCompatibleRows = generateTableData(frontTyreCategCompatibleList);
+    let frontTyreCategCompatibleRows1 = generateTableData(frontTyreCategCompatibleList);
+    let frontTyreCategCompatibleRows = normalizeWithUnit(frontTyreCategCompatibleRows1, MM);
 
     let rearTyreLadenRows = generateTableData(rearTyreLadenList);
     let rearTyreUnladenDriverRows = generateTableData(rearTyreUnladenDriverList);
     let rearTyreWheelCombSizeRows = generateTableData(rearTyreWheelCombSizeList);
+    // let rearTyreWheelCombSizeRows = normalizeWithUnit(rearTyreWheelCombSizeRows1, INCH_MM);
     let rearTyreMinSpeedCategoryRows = generateTableData(rearTyreMinSpeedCategoryList);
+    const updatedrearTyreMinSpeedCategoryRows = normalizeMsPrefix(rearTyreMinSpeedCategoryRows);
     let rearTyreMinLoadCapIndexRows = generateTableData(rearTyreMinLoadCapIndexList);
-    let rearTyreCategCompatibleRows = generateTableData(rearTyreCategCompatibleList);
+    let rearTyreCategCompatibleRows1 = generateTableData(rearTyreCategCompatibleList);
+    let rearTyreCategCompatibleRows = normalizeWithUnit(rearTyreCategCompatibleRows1, MM);
 
     let anyOtherTyreLadenRows = generateTableData(anyOtherTyreLadenList);
     let anyOtherTyreUnladenDriverRows = generateTableData(anyOtherTyreUnladenDriverList);
     let anyOtherTyreWheelCombSizeRows = generateTableData(anyOtherTyreWheelCombSizeList);
+    // let anyOtherTyreWheelCombSizeRows = normalizeWithUnit(anyOtherTyreWheelCombSizeRows1, INCH_MM);
     let anyOtherTyreMinSpeedCategoryRows = generateTableData(anyOtherTyreMinSpeedCategoryList);
+    const updatedanyOtherTyreMinSpeedCategoryRows = normalizeMsPrefix(anyOtherTyreMinSpeedCategoryRows);
     let anyOtherTyreMinLoadCapIndexRows = generateTableData(anyOtherTyreMinLoadCapIndexList);
-    let anyOtherTyreCategCompatibleRows = generateTableData(anyOtherTyreCategCompatibleList);
+    let anyOtherTyreCategCompatibleRows1 = generateTableData(anyOtherTyreCategCompatibleList);
+    let anyOtherTyreCategCompatibleRows = normalizeWithUnit(anyOtherTyreCategCompatibleRows1, MM);
 
     let styleName = "table1Header";
     if (itemsListName.indexOf("List2") > 0) {
@@ -459,7 +519,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                             style: "TableRowContent",
                             children: [
                                 new TextRun({
-                                    text: frontTyreMinSpeedCategoryRows
+                                    text: updatedfrontTyreMinSpeedCategoryRows
                                 })
                             ]
                         })
@@ -677,7 +737,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                             style: "TableRowContent",
                             children: [
                                 new TextRun({
-                                    text: rearTyreMinSpeedCategoryRows
+                                    text: updatedrearTyreMinSpeedCategoryRows
                                 })
                             ]
                         })
@@ -895,7 +955,7 @@ function generateRows(lines, tableNo = 1, itemsListName = "List", form1Adata) {
                             style: "TableRowContent",
                             children: [
                                 new TextRun({
-                                    text: anyOtherTyreMinSpeedCategoryRows
+                                    text: updatedanyOtherTyreMinSpeedCategoryRows
                                 })
                             ]
                         })
@@ -2102,7 +2162,7 @@ function generateForm1A(form1Adata, footerData) {
                                 style: "paragrapgBold",
                                 children: [
                                     new TextRun({
-                                        text: "INFORMATION RELATING JOINTLY TO L1, L2, L5 and L7 CATEGORY BATTERY OPERATED VEHICLES",
+                                        text: "COMMON INFORMATION RELATED TO L1, L2, L5 and L7 CATEGORY BATTERY OPERATED VEHICLES",
                                     }),
                                     new TextRun({
                                         break: 1,
@@ -2190,6 +2250,19 @@ function generateForm1A(form1Adata, footerData) {
 
 function fillAndDownload(form1Adata, footerData) {
     const dataOfFooter = footerData.footerData.footer.properties;
+    let homologation_Engg_Name = dataOfFooter.Homologation_Engineer_Name.value;
+    if (typeof homologation_Engg_Name === 'string' && homologation_Engg_Name.trim().length > 0) {
+        let trimmedName = homologation_Engg_Name.trim();
+        homologation_Engg_Name = `Mr/Mrs. ${trimmedName[0].toUpperCase()}${trimmedName.slice(1)}`;
+      }
+      // Manufacturer Name
+let manufacturer_Name = dataOfFooter.Manufacture_Name.value;
+if (typeof manufacturer_Name === 'string' && manufacturer_Name.trim().length > 0) {
+    let trimmedManu = manufacturer_Name.trim();
+    manufacturer_Name = `M/s. ${trimmedManu[0].toUpperCase()}${trimmedManu.slice(1)}`;
+}
+const today = new Date();
+const formattedDate = today.toLocaleDateString("en-GB");
     const form1ADocument = new Document({
         styles: {
             paragraphStyles: [
@@ -2296,13 +2369,22 @@ function fillAndDownload(form1Adata, footerData) {
                         }
                     ),
                     new Paragraph("\n\n"),
-                    new Table(
-                        {
-                            columnWidths: [7000, 3000],
-                            rows: form1ATable2RowsList,
-                            size: "12pt"
-                        }
-                    ),
+                    // new Table(
+                    //     {
+                    //         columnWidths: [7000, 3000],
+                    //         rows: form1ATable2RowsList,
+                    //         size: "12pt"
+                    //     }
+                    // ),
+                     ...(vehicle_Type === 3
+                        ? [
+                            new Table({
+                                columnWidths: [7000, 3000],
+                                rows: form1ATable2RowsList,
+                                size: "12pt",
+                            }),
+                        ]
+                        : []),
                     new Paragraph("\n\n"),
                     new Paragraph({
                         children: [
@@ -2451,15 +2533,15 @@ function fillAndDownload(form1Adata, footerData) {
                     //     ]
                     //     : []),
 
-                    ...(vehicle_Type === 3
-                        ? [
-                            new Table({
-                                columnWidths: [7000, 3000],
-                                rows: form1ATable3RowsList,
-                                size: "12pt",
-                            }),
-                        ]
-                        : [])
+                    // ...(vehicle_Type === 3
+                    //     ? [
+                    //         new Table({
+                    //             columnWidths: [7000, 3000],
+                    //             rows: form1ATable3RowsList,
+                    //             size: "12pt",
+                    //         }),
+                    //     ]
+                    //     : [])
 
                     // new Paragraph("\n\n"),
                     // new Table(
@@ -2727,7 +2809,7 @@ function fillAndDownload(form1Adata, footerData) {
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Manufacturer :" + dataOfFooter.Manufacture_Name.value,
+                                                                text: "Manufacturer :" + manufacturer_Name,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
 
@@ -2842,7 +2924,8 @@ function fillAndDownload(form1Adata, footerData) {
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                // text: "Name: " + dataOfFooter.Homologation_Engineer_Name.value,
+                                                                text: "Name: " + homologation_Engg_Name,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             }),
@@ -2866,7 +2949,7 @@ function fillAndDownload(form1Adata, footerData) {
                                                         style: "redColorText",
                                                         children: [
                                                             new TextRun({
-                                                                text: "Date : ",
+                                                               text: `Date : ${formattedDate}`,
                                                                 font: "Times New Roman",
                                                                 color: "#B22222" // Light Red color
                                                             })

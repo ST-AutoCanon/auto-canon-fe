@@ -20,8 +20,10 @@ import {
     ModalBody,
     ModalCloseButton,
     useDisclosure,
-    Image
+    Image,
+    HStack
 } from '@chakra-ui/react';
+import { CopyIcon as CloneIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 
 import { EditIcon, AddIcon, ArrowDownIcon } from '@chakra-ui/icons'
@@ -29,7 +31,7 @@ import Newhomologation from "../homologation/NewHomologation";
 import { setRequestId, setHomologationDatas, setCategory } from '../../features/homologation/homologationSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from "../../app/store";
-import { Get } from "../../utilities/service";
+import { Get,Post } from "../../utilities/service";
 import { useState, useEffect } from "react";
 import { Table, createColumn } from "react-chakra-pagination";
 import { typeOfVehicle } from "../../constant/homologation";
@@ -47,7 +49,7 @@ import chat from '../../assets/images/socialIcons/chat.png'
 import cancel from '../../assets/images/cancel.png';
 import { Id } from '@reduxjs/toolkit/dist/tsHelpers';
 import axios from 'axios';
-
+import { useToast } from '@chakra-ui/react';
 
 
 interface homologation {
@@ -87,6 +89,7 @@ const Dashboard: FC = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [visible, setVisible] = useState<boolean>(false);
     const [socialIcon, setSocialIcon] = useState<boolean>(false);
+    const toast = useToast();
     let res = [];
     let arr: any = [];
     let removedDuplicateValue = []
@@ -139,6 +142,94 @@ const Dashboard: FC = () => {
         navigate('/Homologation')
 
     };
+    const cloneApiURL = "homologationRequest/cloneHomologationRequest/";
+    const handleCloneRequest = async (sourceRequestId: string) => {
+        try {
+          const res = await Post(`${cloneApiURL}${sourceRequestId}`, {}, config);
+      
+          if (res?.data?.status === "success") {
+            toast({
+              duration: 3000,
+              isClosable: true,
+              position: "top",
+              render: () => (
+                <Box
+                  border="1px solid #7FBF28"
+                  backgroundColor="#7FBF28"
+                  color="#fff"
+                  p={3}
+                  borderRadius="md"
+                >
+                  Cloned successfully
+                </Box>
+              ),
+            });
+      
+            getHomologationData();
+          } else {
+            const errorMessage =
+              res?.data?.body || res?.data?.message || "Failed to clone";
+      
+            const isAlreadyCloned = errorMessage
+              ?.toLowerCase()
+              .includes("already been cloned");
+      
+            toast({
+              title: "Clone failed",
+              description: errorMessage,
+            //   status: "error",
+              isClosable: true,
+              duration: 4000,
+              position: "top",
+              containerStyle: isAlreadyCloned
+                ? {
+                    border: "1px solid #3182CE", // Blue
+                    backgroundColor: "#EBF8FF",
+                    color: "#2B6CB0",
+                    borderRadius: "8px",
+                  }
+                : {
+                    border: "1px solid #E53E3E", // Red
+                    backgroundColor: "#FFF5F5",
+                    color: "#9B2C2C",
+                    borderRadius: "8px",
+                  },
+            });
+          }
+        } catch (err: any) {
+          const errorMessage =
+            err?.response?.data?.body ||
+            err?.response?.data?.message ||
+            "Unexpected error";
+      
+          const isAlreadyCloned = errorMessage
+            ?.toLowerCase()
+            .includes("already been cloned");
+      
+          toast({
+            title: "Clone failed",
+            description: errorMessage,
+            // status: "error",
+            isClosable: true,
+            duration: 4000,
+            position: "top",
+            containerStyle: isAlreadyCloned
+              ? {
+                  border: "1px solid #3182CE",
+                  backgroundColor: "#EBF8FF",
+                  color: "#2B6CB0",
+                  borderRadius: "8px",
+                }
+              : {
+                  border: "1px solid #E53E3E",
+                  backgroundColor: "#FFF5F5",
+                  color: "#9B2C2C",
+                  borderRadius: "8px",
+                },
+          });
+        }
+      };
+
     const getAllFormsData = async (requestId: string) => {
         const formDataApiURL = `${'forms/'}${requestId}`;
 
@@ -286,12 +377,29 @@ const Dashboard: FC = () => {
                 </Text>
 
             ),
+            version: homoData.version ?? 0,
             passRequestId: (
                 <Text>
                     <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
                 </Text>
 
             ),
+            // passRequestId: (
+            //     <HStack spacing={3}>
+            //       <EditIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => homologationRequestId(homoData._id, homoData)} 
+            //       />
+            //       <CloneIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => handleCloneRequest(homoData._id)} 
+            //       />
+            //     </HStack>
+            //   ),
         }));
 
         // Need pass type of `tableDate` for ts autocomplete
@@ -314,6 +422,10 @@ const Dashboard: FC = () => {
                 cell: (info: any) => info.getValue(),
                 header: "Vehicle Type"
             }),
+            // twoColumnHelper.accessor("version", {
+            //     cell: (info: any) => `v${info.getValue() ?? 0}`,
+            //     header: "version"
+            //   }),
             twoColumnHelper.accessor("passRequestId", {
                 cell: (info: any) => info.getValue(),
                 header: "Action"
@@ -357,12 +469,29 @@ const Dashboard: FC = () => {
                 </Text>
 
             ),
+            version: homoData.version ?? 0,
             passRequestId: (
                 <Text>
                     <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
                 </Text>
 
             ),
+            // passRequestId: (
+            //     <HStack spacing={3}>
+            //       <EditIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => homologationRequestId(homoData._id, homoData)} 
+            //       />
+            //       <CloneIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => handleCloneRequest(homoData._id)} 
+            //       />
+            //     </HStack>
+            //   ),
         }));
 
         // Need pass type of `tableDate` for ts autocomplete
@@ -385,6 +514,10 @@ const Dashboard: FC = () => {
                 cell: (info: any) => info.getValue(),
                 header: "Vehicle Type"
             }),
+            // threeColumnHelper.accessor("version", {
+            //     cell: (info: any) => `v${info.getValue() ?? 0}`,
+            //     header: "version"
+            //   }),
             threeColumnHelper.accessor("passRequestId", {
                 cell: (info: any) => info.getValue(),
                 header: "Action"
@@ -532,24 +665,39 @@ const Dashboard: FC = () => {
                                                     if (checkDownLoad === 'true') {
                                                         percentageFilled = 100;
                                                     }
-                                                    if (item === 'form1AData' && percentageFilled>70 ) {
-                                                        percentageFilled = 100;
-                                                        // percentageFilled +=28;   
-                                                        // console.log('form1AData:',item);
+                                                    // if (item === 'form1AData' && percentageFilled>70 ) {
+                                                    //     percentageFilled = 100;
+                                                    //     // percentageFilled +=28;   
+                                                    //     // console.log('form1AData:',item);
+                                                    // }
+                                                    if (item === 'form1AData') {
+                                                        percentageFilled = percentageFilled >= 70 ? 100 : Math.round((percentageFilled / 70) * 100);
+                                                        // console.log('form1AData:', item);
                                                     }
+                                                    
                                                     // if (item === 'form13Data' && percentageFilled>50 ) {
                                                     //     percentageFilled += 6;   
                                                     // }
-                                                    if (item === 'form7Data' && percentageFilled>76 ) {
-                                                        percentageFilled = 100;
-                                                        // percentageFilled += 23;     
-                                                        // console.log('form7Data:',item)
+                                                    // if (item === 'form7Data' && percentageFilled>74 ) {
+                                                    //     percentageFilled = 100;
+                                                    //     // percentageFilled += 23;     
+                                                    //     // console.log('form7Data:',item)
+                                                    // }
+                                                    if (item === 'form7Data') {
+                                                        percentageFilled = percentageFilled >= 74 ? 100 : Math.round((percentageFilled / 74) * 100);
+                                                        // console.log('form7Data:', item);
                                                     }
-                                                    if (item === 'form8Data' && percentageFilled>70 ) {
-                                                        percentageFilled = 100;
-                                                        // percentageFilled += 22;  
-                                                        // console.log('form8Data:',item)   
+                                                    
+                                                    // if (item === 'form8Data' && percentageFilled>70 ) {
+                                                    //     percentageFilled = 100;
+                                                    //     // percentageFilled += 22;  
+                                                    //     // console.log('form8Data:',item)   
+                                                    // }
+                                                    if (item === 'form8Data') {
+                                                        percentageFilled = percentageFilled >= 70 ? 100 : Math.round((percentageFilled / 70) * 100);
+                                                        // console.log('form8Data:', item);
                                                     }
+                                                    
                                                     let filledValue: any = percentageFilled;
                                                     let integer: number = 0;
                                                     let decimal: number = 0;
@@ -778,25 +926,40 @@ const Dashboard: FC = () => {
                                                     if (checkDownLoad === 'true') {
                                                         percentageFilled = 100;
                                                     }
-                                                    if (item === 'form1AData' && percentageFilled>90 ) {
-                                                        percentageFilled = 100;
-                                                        // percentageFilled += 10;                                                 
-                                                    //   console.log('form1AData:',item);
+                                                    // if (item === 'form1AData' && percentageFilled>89 ) {
+                                                    //     percentageFilled = 100;
+                                                    //     // percentageFilled += 10;                                                 
+                                                    // //   console.log('form1AData:',item);
                                                         
+                                                    // }
+                                                    if (item === 'form1AData') {
+                                                        percentageFilled = percentageFilled >= 89 ? 100 : Math.round((percentageFilled / 89) * 100);
+                                                        // console.log('form1AData:', item);
                                                     }
-                                                    if (item === 'form7Data' && percentageFilled>84 ) {
-                                                        percentageFilled = 100;
-                                                        // percentageFilled += 16;     
-                                                        // console.log('form7Data:',item);
+                                                    
+                                                    // if (item === 'form7Data' && percentageFilled>78 ) {
+                                                    //     percentageFilled = 100;
+                                                    //     // percentageFilled += 16;     
+                                                    //     // console.log('form7Data:',item);
+                                                    // }
+                                                    if (item === 'form7Data') {
+                                                        percentageFilled = percentageFilled >= 78 ? 100 : Math.round((percentageFilled / 78) * 100);
+                                                        // console.log('form7Data:', item);
                                                     }
+                                                    
                                                     // if (item === 'form8Data' && percentageFilled>50 ) {
                                                     //     percentageFilled +=5;     
                                                     // }
-                                                    if (item === 'form8Data' && percentageFilled>93 ) {                                                       
-                                                            percentageFilled=100;
-                                                            // console.log('form8Data:',item);
+                                                    // if (item === 'form8Data' && percentageFilled>84 ) {                                                       
+                                                    //         percentageFilled=100;
+                                                    //         // console.log('form8Data:',item);
                                                        
+                                                    // }
+                                                    if (item === 'form8Data') {
+                                                        percentageFilled = percentageFilled >= 84 ? 100 : Math.round((percentageFilled / 84) * 100);
+                                                        // console.log('form8Data:', item);
                                                     }
+                                                    
                                                     let filledValue: any = percentageFilled;
                                                     let integer: number = 0;
                                                     let decimal: number = 0;

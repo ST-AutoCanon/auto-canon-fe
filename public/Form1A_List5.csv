@@ -2,7 +2,7 @@
 6.1,Doors
 6.1.1,No. of doors
 6.1.2,Position and type of door
-6.1.3,Detailed drawing of the door including location of the door strengthening bars Dimensions of door reinforcements from door lower edge, cross section of the bars material specification of the bar and door sheet metal number of reinforcements and details of welding / bolting etc.( for side door impact test ),
+6.1.3,Detailed drawing of the door including location of the door strengthening bars Dimensions of door reinforcements from door lower edge cross section of the bars material specification of the bar and door sheet metal number of reinforcements and details of welding / bolting etc.( for side door impact test ),
 6.1.4,Dimension from the top edge of the doors to adjacent seat base top surface;
 6.2,Door lock / latch
 6.2.1,Front
@@ -87,9 +87,9 @@
 12.1.1,Make
 12.1.2 ,Type (Mechanical/hydraulic/air/air assisted/vacuum assisted/others)
 12.1.3 ,Control system & braking wheel
-12.1.4 ,"Schematic layout indicating method of split of brake system, location of valves, reservoirs, ABS components etc. (Attach drawing and indicate the drawing number)"
+12.1.4 ,Schematic layout indicating method of split of brake system location of valves reservoirs ABS components etc. (Attach drawing and indicate the drawing number),
 12.2.,Brake lining or pad  
-12.2.1,"Nominal Dimensions, (mm)   (Length x Width x thickness) "
+12.2.1,Nominal Dimensions (mm)   (Length x Width x thickness),
 12.2.1.1,Front wheel
 12.2.1.2 ,Rear wheel 
 12.2.1.3,Others
@@ -132,7 +132,7 @@
 12.5.2.4,Make of wheel cylinder / slave cylinder 
 12.6.,Failure Warning device for braking  
 12.6..1 ,Type (Visual display/ audible/others) 
-12.6..2 ,Operation pressure (kg/cm2) or (bar) or kPa) 
+12.6..2 ,Operation pressure (kg/cm²) or (bar) or kPa) 
 12.6..3 ,Type of safety device 
 12.7.0 ,Parking brake 
 12.7.1,Make 
@@ -142,7 +142,7 @@
 12.7.5,Lining/pad 
 12.7.6 ,Name of producer 
 12.7.7 ,Dimension (mm)
-12.7.8 ,Area (cm2) 
+12.7.8 ,Area (cm²) 
 12.7.9 ,Material 
 12.7.10 ,Diameter of brake drum/disc  (mm) 
 12.8. ,Secondary  brake  

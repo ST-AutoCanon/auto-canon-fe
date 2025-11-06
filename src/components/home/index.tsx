@@ -173,16 +173,16 @@ const Home: FC = () => {
 
 
                             <Text fontSize='18' pt={10} color={'color.400'} maxW={'1142'}>
-                                To Explore Bv-Reg, team of passionate automotive professionals here to
+                                To Explore Auto-Canon, team of passionate automotive professionals here to
                                 make the application process of product certification as per the government
                                 rules and regulations much simpler and easy to handle by any team member
                                 from organisation with our software platform
                             </Text>
                             <Text>
-                                Bv-Reg Member,
+                                Auto-Canon Member,
                                 please continue with  <Text as="span"  color={'color.200'}>Getin (Login)&nbsp;</Text>
                                 using your register email and password. </Text> <Text>
-                                New to Bv-Reg, please continue with <Text as="span" color={'color.200'}>GetStarted to sign-up new user</Text>.
+                                New to Auto-Canon, please continue with <Text as="span" color={'color.200'}>GetStarted to sign-up new user</Text>.
                             </Text>
                             {username === undefined && status !== 'inactive' || userData.role === 'admin' ?
                                 <ButtonGroup gap='4' pt={'40px'}>
@@ -233,7 +233,7 @@ const Home: FC = () => {
                         >
 
                             <Heading as='h4' color={'color.100'}>
-                                About Bv-Reg
+                                About Auto-Canon
                             </Heading>
                             <Text fontSize='18' mt={6} color={'color.400'} maxW={'1142'} pr={["5px", "25px", "25px", "25px"]}>
                                 Is built by a team of passionate automotive professionals with extensive CMVR Certification Process experience. We have worked on ICE vehicles as well as Electric Vehicle homologation starting from two-wheelers to commercial vehicles. We have exposure and experience in the end-to-end process of CMVR certification with all the testing agencies in India.
