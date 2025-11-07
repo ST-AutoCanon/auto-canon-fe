@@ -533,6 +533,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setHomologationDatas, setRequestId, setCategory } from '../../features/homologation/homologationSlice';
 import { RootState } from "../../app/store";
 import { Post } from "../../utilities/service";
+
+// import { RootState } from "../../app/store";
+// import { Post } from "../../utilities/service";
 import {
     typeOfVehicle,
     fuelType,

@@ -19,12 +19,6 @@ import BusBodyBuilderAccreditation from '../../assets/images/BusBodyBuilderAccre
 import { useLocation } from 'react-router-dom';
 
 
-// import wmiRegistration from '../../assets/images/wmiRegistration.png';
-// import fameSubsidy from '../../assets/images/fameSubsidy.png';
-// import BusBodyBuilderAccreditation from '../../assets/images/BusBodyBuilderAccreditation.png';
-// import { useLocation } from 'react-router-dom';
-
-
 
 const About: FC = () => {
     const location = useLocation();

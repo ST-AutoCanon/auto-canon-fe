@@ -9,14 +9,6 @@ import bikeBanner from '../../assets/images/bike-banner.png';
 import auto from '../../assets/images/auto.png';
 import bike from '../../assets/images/bike.png';
 import car from '../../assets/images/car.png';
-
-//import auto from '../../assets/images/auto.png';
-//import bike from '../../assets/images/bike.png';
-//import car from '../../assets/images/car.png';
-
-
-
-
 import cycle from '../../assets/images/cycle.png';
 import banner_aboutabout_baner from '../../assets/images/banner_aboutabout_baner.png';
 
