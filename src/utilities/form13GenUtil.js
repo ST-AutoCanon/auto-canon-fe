@@ -144,7 +144,7 @@ function normalizeWithTwoUnits(value, unit1, unit2) {
   const KM = 'Km';
   const KM_H = 'Km/h';
   const AH = 'AH';
-  const KWH = 'kWh';
+  const KWH = 'KWh';
   const HERTZ = 'Hz';
   const VOLTS_AMPS = 'Volts & Amps';
   const MINUTES_HOURS = 'Minutes/Hours';
@@ -179,7 +179,7 @@ async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
 
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; // Use the correct backend port
+    const imageUrl = `http://localhost:3006/api/files/downloads/${fileName}`; // Use the correct backend port
   
     try {
       const response = await fetch(imageUrl);
@@ -2145,7 +2145,7 @@ const formattedDate = today.toLocaleDateString("en-GB");
                                                 style: "TableRowContent",
                                                 children: [
                                                     new TextRun({
-                                                        text: "Battery Energy (kWh)"
+                                                        text: "Battery Energy (KWh)"
                                                     })
                                                 ]
                                             })
