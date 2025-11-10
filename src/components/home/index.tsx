@@ -375,7 +375,7 @@ const Home: FC = () => {
                                 2) A dedicated allocation of ₹2,000 crore for public EV charging infrastructure installation (approx 72,000 charging stations) under the scheme.
                                 Press Information Bureau
 
-                                3) Emphasis on localisation of EV manufacturing and testing agency upgradation within India’s EV ecosystem.                            </Text>
+                                3) Emphasis on localisation of EV manufacturing and testing agency upgradation within India’s EV ecosystem.                           </Text>
                             <Button mt={6} bg='color.200' color='color.500' _hover={{ bg: 'color.200', borderColor: 'color.300' }}>
                                 <Link to='/About#fame-body'>Learn more</Link>
                             </Button>
