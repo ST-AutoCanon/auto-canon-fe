@@ -517,9 +517,9 @@ if (typeof manufacturer_Name === 'string' && manufacturer_Name.trim().length > 0
     let nominalVolCellLevelRows = normalizeWithUnit(nominalVolCellLevelRows1, V);
     const noOfCellsRows = generateTableData(noOfCellsList);
     const batteryEnergyRows1 = generateTableData(batteryEnergyList);
-    let batteryEnergyRows = normalizeWithUnit(batteryEnergyRows1, AH);
+    let batteryEnergyRows = normalizeWithUnit(batteryEnergyRows1,KWH);
     const batteryCapacityRows1 = generateTableData(batteryCapacityList);
-    let batteryCapacityRows = normalizeWithUnit(batteryCapacityRows1, KWH);
+    let batteryCapacityRows = normalizeWithUnit(batteryCapacityRows1,AH);
     const endOfDischargeRows1 = generateTableData(endOfDischargeList);
     let endOfDischargeRows = normalizeWithUnit(endOfDischargeRows1, V);
     const provOfVentRows = generateTableData(provOfVentList);
