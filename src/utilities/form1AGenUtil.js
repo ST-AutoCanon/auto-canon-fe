@@ -93,7 +93,7 @@ if (isTwoWheeler && isThreeWheeler) {
 
     //updated once
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `http://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
+    imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`;  // Use the correct backend port
     // console.log("Image loaded successfully:", fileName);
 ////
 
