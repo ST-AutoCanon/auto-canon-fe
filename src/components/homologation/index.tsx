@@ -378,28 +378,28 @@ const Dashboard: FC = () => {
 
             ),
             version: homoData.version ?? 0,
-            // passRequestId: (
-            //     <Text>
-            //         <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
-            //     </Text>
-
-            // ),
             passRequestId: (
-                <HStack spacing={3}>
-                  <EditIcon 
-                    cursor="pointer" 
-                    w={4} 
-                    h={4} 
-                    onClick={() => homologationRequestId(homoData._id, homoData)} 
-                  />
-                  <CloneIcon 
-                    cursor="pointer" 
-                    w={4} 
-                    h={4} 
-                    onClick={() => handleCloneRequest(homoData._id)} 
-                  />
-                </HStack>
-              ),
+                <Text>
+                    <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
+                </Text>
+
+            ),
+            // passRequestId: (
+            //     <HStack spacing={3}>
+            //       <EditIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => homologationRequestId(homoData._id, homoData)} 
+            //       />
+            //       <CloneIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => handleCloneRequest(homoData._id)} 
+            //       />
+            //     </HStack>
+            //   ),
         }));
 
         // Need pass type of `tableDate` for ts autocomplete
@@ -422,10 +422,10 @@ const Dashboard: FC = () => {
                 cell: (info: any) => info.getValue(),
                 header: "Vehicle Type"
             }),
-            twoColumnHelper.accessor("version", {
-                cell: (info: any) => `v${info.getValue() ?? 0}`,
-                header: "version"
-              }),
+            // twoColumnHelper.accessor("version", {
+            //     cell: (info: any) => `v${info.getValue() ?? 0}`,
+            //     header: "version"
+            //   }),
             twoColumnHelper.accessor("passRequestId", {
                 cell: (info: any) => info.getValue(),
                 header: "Action"
@@ -470,28 +470,28 @@ const Dashboard: FC = () => {
 
             ),
             version: homoData.version ?? 0,
-            // passRequestId: (
-            //     <Text>
-            //         <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
-            //     </Text>
-
-            // ),
             passRequestId: (
-                <HStack spacing={3}>
-                  <EditIcon 
-                    cursor="pointer" 
-                    w={4} 
-                    h={4} 
-                    onClick={() => homologationRequestId(homoData._id, homoData)} 
-                  />
-                  <CloneIcon 
-                    cursor="pointer" 
-                    w={4} 
-                    h={4} 
-                    onClick={() => handleCloneRequest(homoData._id)} 
-                  />
-                </HStack>
-              ),
+                <Text>
+                    <EditIcon cursor={'pointer'} w={4} h={4} onClick={() => homologationRequestId(homoData._id, homoData)} />
+                </Text>
+
+            ),
+            // passRequestId: (
+            //     <HStack spacing={3}>
+            //       <EditIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => homologationRequestId(homoData._id, homoData)} 
+            //       />
+            //       <CloneIcon 
+            //         cursor="pointer" 
+            //         w={4} 
+            //         h={4} 
+            //         onClick={() => handleCloneRequest(homoData._id)} 
+            //       />
+            //     </HStack>
+            //   ),
         }));
 
         // Need pass type of `tableDate` for ts autocomplete
@@ -514,10 +514,10 @@ const Dashboard: FC = () => {
                 cell: (info: any) => info.getValue(),
                 header: "Vehicle Type"
             }),
-            threeColumnHelper.accessor("version", {
-                cell: (info: any) => `v${info.getValue() ?? 0}`,
-                header: "version"
-              }),
+            // threeColumnHelper.accessor("version", {
+            //     cell: (info: any) => `v${info.getValue() ?? 0}`,
+            //     header: "version"
+            //   }),
             threeColumnHelper.accessor("passRequestId", {
                 cell: (info: any) => info.getValue(),
                 header: "Action"

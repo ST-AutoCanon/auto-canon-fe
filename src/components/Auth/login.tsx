@@ -340,8 +340,8 @@ const Login: FC = () => {
                 if (resp.data.status === 'failure') {
                     setError(resp.data.body);
                 } else if (resp.data.status === 'success') {
-// console.log('login success')
-// console.log('Vehicle Type:', resp.data.vehicleType); // ✅ log here
+console.log('login success')
+console.log('Vehicle Type:', resp.data.vehicleType); // ✅ log here
 
                     dispatch(setToken(resp.data.accessToken));
                     const decoded: any = jwt_decode(resp.data.accessToken);
