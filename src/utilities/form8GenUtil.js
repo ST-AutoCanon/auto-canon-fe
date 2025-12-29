@@ -58,7 +58,9 @@ const mainData = function () {
 async function fetchAndProcessImage(footerData) {
   const dataOfFooterr = footerData.footerData.SealSign.properties;
   const fileName = dataOfFooterr.Upload_Seal.file_name;
-  const imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`; 
+  // const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; 
+    const imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`; 
+
 // const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   //   const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   try {

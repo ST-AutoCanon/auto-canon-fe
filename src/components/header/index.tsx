@@ -33,7 +33,7 @@
 //   const {username, role} = userData;
 //   const dispatch = useDispatch();
 //   Title({
-//     title: 'auto-canon'
+//     title: 'bv-reg'
 //   });
 //   const userLogout = () => {
 //     dispatch(logout())
@@ -551,7 +551,7 @@ const Header: FC = () => {
   };
   // Set the title
   // Title({ title: "Auto Canon" });
-  Title({ title: "auto-canon" });
+  Title({ title: "Auto-Canon" });
 
   // User logout function
   const userLogout = () => {

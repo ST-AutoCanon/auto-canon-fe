@@ -76,7 +76,7 @@ const About: FC = () => {
                     >
 
                         <Heading as='h4' color={'color.100'} mt={'30px'} mb={'20px'}>
-                            About Auto-canon
+                            About Auto-Canon
                         </Heading>
                         <Text as={'div'} fontSize='13px' mt={'10px'} color={'color.400'} maxW={'1142'} pr={["5px", "25px", "25px", "25px"]}>
                             Is built by a team of passionate automotive professionals with extensive CMVR Certification Process experience. We have worked on ICE vehicles as well as Electric Vehicle homologation starting from two-wheelers to commercial vehicles. We have exposure and experience in the end-to-end process of CMVR certification with all the testing agencies in India.
@@ -102,10 +102,10 @@ const About: FC = () => {
                             First kind of software platform for the CMVR Certification process in India. It will reduce preparation and documentation time without any dependency. We aim to bring awareness of the product with a visual representation of the data to be filled without having any ambiguity to end users.
                         </Text>
                         <Text as={'div'} fontSize='13px' mt={'10px'} color={'color.400'} maxW={'1142'} pr={["5px", "25px", "25px", "25px"]}>
-                            Most importantly with this intelligent software application, we eliminate the possibility of error being made and submit an incomplete application form. All the applications will be saved in the end user's account and can retrieve the previous data if required. Auto-canon gives total control over the documentation and application process to the organizations.
+                            Most importantly with this intelligent software application, we eliminate the possibility of error being made and submit an incomplete application form. All the applications will be saved in the end user's account and can retrieve the previous data if required. Auto-Canon gives total control over the documentation and application process to the organizations.
                         </Text>
                         <Text as={'div'} fontSize='13px' mt={'10px'} color={'color.400'} maxW={'1142'} pr={["5px", "25px", "25px", "25px"]}>
-                            Explore Auto-canon!
+                            Explore Auto-Canon!
                         </Text>
 
                     </Box>
