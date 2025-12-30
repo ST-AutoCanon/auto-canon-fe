@@ -324,7 +324,7 @@ const Login: FC = () => {
             }
         })
         .catch((error: string) => {
-            console.log('error');
+            // console.log('error');
         });
     }   
 
@@ -364,7 +364,7 @@ console.log('Vehicle Type:', resp.data.vehicleType); // ✅ log here
                 }
             })
             .catch((error: string) => {
-                console.log('error');
+                // console.log('error');
             });
     };
     const userLogin = () => {

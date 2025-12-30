@@ -107,7 +107,7 @@ const Dashboard: FC = () => {
             .then(resp => {
                 if (resp.data.status === 'success') {
                     setHomologationData(resp.data.body);
-                    console.log('resp.data.bodyresp.data.bodyresp.data.body', resp.data.body)
+                    // console.log('resp.data.bodyresp.data.bodyresp.data.body', resp.data.body)
 
                     res = resp.data.body.filter((el: any) => {
                         return typeOfVehicle.find(element => {
@@ -131,7 +131,7 @@ const Dashboard: FC = () => {
 
             })
             .catch((error) => {
-                console.log(error)
+                // console.log(error)
             })
     };
     const homologationRequestId = (requestId: string, homoData: any) => {
@@ -270,7 +270,7 @@ const Dashboard: FC = () => {
                     }
                 })
 
-                console.log("formsData", formsData)
+                // console.log("formsData", formsData)
                 setFileData(formsData)
 
             });
@@ -291,7 +291,7 @@ const Dashboard: FC = () => {
                 headers: config.headers  // Pass any necessary headers
             });
 
-            console.log(response.data); // Inspect the response data
+            // console.log(response.data); // Inspect the response data
 
             // Create a Blob from the response data
             const blob = new Blob([response.data], { type: 'application/pdf' });
