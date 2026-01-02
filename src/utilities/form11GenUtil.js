@@ -42,7 +42,7 @@ async function fetchAndProcessImage(footerData) {
     
     const fileName = dataOfFooterr.Upload_Seal.file_name;
     // const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; 
-    const imageUrl = `https:/auto-canon.in/api/files/downloads/${fileName}`; 
+    const imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`; 
 
     
 
