@@ -21164,11 +21164,12 @@ const Homologation: FC = () => {
                                                         allowedDigits.test(key);
 
                                                       // Allow one "."
-                                                      if (
-                                                        key === "." &&
-                                                        !value.includes(".")
-                                                      )
+                                                      if (key === ".") {
+                                                        const dotCount = (value.match(/\./g) || []).length;
+                                                        if (dotCount < 3) return;
+                                                        e.preventDefault();
                                                         return;
+                                                      }
 
                                                       // Allow one "&", not at the beginning
                                                       if (
