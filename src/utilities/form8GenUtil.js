@@ -58,7 +58,7 @@ const mainData = function () {
 async function fetchAndProcessImage(footerData) {
   const dataOfFooterr = footerData.footerData.SealSign.properties;
   const fileName = dataOfFooterr.Upload_Seal.file_name;
-  const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; 
+  const imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`; 
 // const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   //   const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   try {
@@ -95,6 +95,23 @@ async function fetchAndProcessImage(footerData) {
     throw error; // If the image fails to load, throw an error
   }
 }
+const createParagraphsFromText = (text) => {
+  return text
+    .split(/\n|\./)   // split by newline OR dot
+    .map(t => t.trim())
+    .filter(t => t.length > 0)
+    .map(t =>
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: t,
+            size: "12pt",
+          }),
+        ],
+      })
+    );
+};
+
 
 // // Universal function inside the same file
 // function parseAndCheckTACValidity(tacValueRaw) {
