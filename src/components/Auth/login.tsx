@@ -263,12 +263,13 @@ import {
     FormLabel,
     Input,
     Text,
-    Link,   
+    Link,
+    InputGroup, InputRightElement, IconButton    
 } from "@chakra-ui/react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import logo from '../../assets/images/logo-lg.png';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import logo from '../../assets/images/sukalpa_logo.png';
+import { ArrowBackIcon,ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { Post } from "../../utilities/service";
 import { useDispatch,useSelector } from 'react-redux'
 import { setUserData, setToken,setFirstTimeLogin ,setVehicleType } from "../../features/login/loginSlice";
@@ -282,6 +283,7 @@ const Login: FC = () => {
     const [formdata, setFormdata] = React.useState({});
     const [emailId, setEmailId] = React.useState({});
     const [changePassowrd, setchangePassowrd] = useState<string>("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useDispatch()
@@ -409,15 +411,27 @@ console.log('Vehicle Type:', resp.data.vehicleType); // ✅ log here
                                 placeholder='Enter your username' />
                         </FormControl>
 
-                        <FormControl mt={4} isRequired>
-                            <FormLabel>Password</FormLabel>
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                onChange={changeHandler}
-                                placeholder='Enter password' />
-                        </FormControl>
+    <FormControl mt={4} isRequired>
+      <FormLabel>Password</FormLabel>
+      <InputGroup>
+        <Input
+          id="password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          onChange={changeHandler}
+          placeholder="Enter password"
+        />
+        <InputRightElement>
+          <IconButton
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+            onClick={() => setShowPassword(!showPassword)}
+            size="sm"
+            variant="ghost"
+          />
+        </InputRightElement>
+      </InputGroup>
+    </FormControl>
                         {error !== "" ?
                             <FormControl>
                                 <Text p="5px 0px" fontSize={"14px"} color={"red"}> {error}</Text>
