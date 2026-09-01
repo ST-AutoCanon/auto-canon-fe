@@ -62,6 +62,42 @@ function normalizeMsPrefix(rowString) {
       })
       .join(" | ");
   }
+
+  function normalizeWithUnit(rowString, unit) {
+    return String(rowString)
+      .split("|")
+      .map(part => {
+        let trimmed = part.trim();
+        if (!trimmed || trimmed.toLowerCase() === "na") return trimmed;
+        return `${trimmed} ${unit}`;
+      })
+      .join(" | ");
+  }
+  const SQ_CM_MM = 'Square cm/mm';
+  const KG = 'kg';
+  const INCH_MM = 'Inch/mm';
+  const KG_CM2_KPA_PSI = 'kg/cm² /kPa /psi';
+  const V = 'V';
+  const MM = 'mm';
+  const MM_SQ = 'mm Sq';
+  const CM_SQ = 'Cm Sq.';
+  const PERCENT_OR_DEGREE = '% OR °(Degree)';
+  const VOLTS = 'Volts';
+  const RPM = 'RPM';
+  const RPM_KM_H = 'RPM & Km/h';
+  const KW = 'Kw';
+  const KM = 'Km';
+  const KM_H = 'Km/h';
+  const AH = 'Ah';
+  const KWH = 'kWh';
+  const VOLTS_HERTZ = 'Volts & Hertz';
+  const VOLTS_AMPS = 'Volts & Amps';
+  const MINUTES_HOURS = 'Minutes/Hours';
+  const AMPS = 'Amps';
+  const MS = 'ms';
+  const W_H_KM = 'W-H/Km';
+  const DEGREES = 'Degrees';
+
 function generateTableData(dataList) {
     if (Array.isArray(dataList) && dataList.length > 0) {
         // Extract 'Wheel_rim_size' or 'value' from each wheelRim and join them into a single string
@@ -84,7 +120,7 @@ async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
     const fileName = dataOfFooterr.Upload_Seal.file_name;
     // const imageUrl = `https://bv-reg.com/api/files/downloads/${fileName}`; 
-    const imageUrl = `api/files/downloads/${fileName}`; 
+    const imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`; 
 
     try {
         const response = await fetch(imageUrl);
@@ -299,7 +335,11 @@ if (typeof manufacturer_Name === 'string' && manufacturer_Name.trim().length > 0
     const Specify_the_Location_of_VIN_on_Chassis_Rows = generateTableData(Specify_the_Location_of_VIN_on_Chassis_List);
     const Position_of_the_code_for_month_in_the_Chassis_number_Rows = generateTableData(Position_of_the_code_for_month_in_the_Chassis_number_List);
     const Position_of_the_code_for_year_in_the_Chassis_number_Rows = generateTableData(Position_of_the_code_for_year_in_the_Chassis_number_List);
-    const Height_of_VIN_characters_Rows = generateTableData(Height_of_VIN_characters_List);
+    // const Height_of_VIN_characters_Rows = generateTableData(Height_of_VIN_characters_List);
+    const Height_of_VIN_characters_Rows1 = generateTableData(
+    Height_of_VIN_characters_List
+  );
+  let Height_of_VIN_characters_Rows  = normalizeWithUnit(Height_of_VIN_characters_Rows1,MM);
     const Example_of_Engine_Motor_No_Rows = generateTableData(Example_of_Engine_Motor_No_List);
     const Example_of_Chassis_No_with_Month_Year_of_Manufacture_Rows = generateTableData(Example_of_Chassis_No_with_Month_Year_of_Manufacture_List);
 

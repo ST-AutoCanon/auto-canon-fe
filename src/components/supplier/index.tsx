@@ -21164,11 +21164,12 @@ const Homologation: FC = () => {
                                                         allowedDigits.test(key);
 
                                                       // Allow one "."
-                                                      if (
-                                                        key === "." &&
-                                                        !value.includes(".")
-                                                      )
+                                                      if (key === ".") {
+                                                        const dotCount = (value.match(/\./g) || []).length;
+                                                        if (dotCount < 3) return;
+                                                        e.preventDefault();
                                                         return;
+                                                      }
 
                                                       // Allow one "&", not at the beginning
                                                       if (
@@ -21723,6 +21724,7 @@ if (key === ":" && value.length > 0 && !value.includes(":")) return;
                                     {Object.keys(
                                       value.formsData[formValue].properties
                                     ).map(function (feildValue: any, key: any) {
+                                      
                                       return (
                                         <FormControl
                                           mt={"8px"}

@@ -803,7 +803,7 @@ async function generateForm7(form7Data, footerData) {
     getWheelRimsTableData(
       Upload_drawing_showing_the_seating_layout_of_the_vehicle_List
     );
-  // Updated code: Mapping Steering System data and pushing to table
+   // Updated code: Mapping Steering System data and pushing to table
   let Type_of_Shock_absorbers_provided_at_the_front_and_Rear_list = [];
   let Type_of_springs_provided_at_front_and_Rear_list = [];
   let Antiroll_bar_if_provided_list = [];
@@ -824,7 +824,7 @@ async function generateForm7(form7Data, footerData) {
   let Specify_steering_gear_ratio_list = [];
   let Steering_wheel_diameter_list = [];
 
-  suspensionList.map((vehDesc) => {
+   suspensionList.map((vehDesc) => {
     if (vehDesc.supplier.active === true) {
       const supplierName = vehDesc.supplier.nameOfSupplier;
       const Type_of_Shock_absorbers_provided_at_the_front_and_Rear = {
@@ -837,7 +837,7 @@ async function generateForm7(form7Data, footerData) {
         Type_of_Shock_absorbers_provided_at_the_front_and_Rear
       );
 
-      const Type_of_springs_provided_at_front_and_Rear = {
+        const Type_of_springs_provided_at_front_and_Rear = {
         supplier: supplierName,
         value:
           vehDesc?.Suspension?.properties
@@ -852,16 +852,16 @@ async function generateForm7(form7Data, footerData) {
       };
       Antiroll_bar_if_provided_list.push(Antiroll_bar_if_provided);
 
-      const Front_Type_Desc = {
+       const Front_Type_Desc = {
         supplier: supplierName,
         value:
           vehDesc?.Front_Suspension?.properties?.Front_Type_Description?.value,
       };
       Front_Type_Desc_List.push(Front_Type_Desc);
-      console.log(
-        "Type_of_Shock_absorbers_front_list:",
-        Type_of_Shock_absorbers_front_list
-      );
+      // console.log(
+      //   "Type_of_Shock_absorbers_front_list:",
+      //   Type_of_Shock_absorbers_front_list
+      // );
       const Rear_Type_Desc = {
         supplier: supplierName,
         value:
@@ -873,26 +873,25 @@ async function generateForm7(form7Data, footerData) {
         supplier: supplierName,
         value:
           vehDesc?.Front_Suspension?.properties
-            ?.Type_of_Shock_absorbers_provided_at_the_front_and_Rear?.value,
+            ?.Type_of_Shock_absorbers_provided_at_the_Front?.value,
       };
       Type_of_Shock_absorbers_front_list.push(Type_of_Shock_absorbers_front);
-      console.log(
-        "Type_of_Shock_absorbers_front_list:",
-        Type_of_Shock_absorbers_front_list
-      );
+      // console.log(
+      //   "Type_of_Shock_absorbers_front_list:",
+      //   Type_of_Shock_absorbers_front_list
+      // );
       const Type_of_Shock_absorbers_rear = {
         supplier: supplierName,
         value:
           vehDesc?.Rear_Suspension?.properties
-            ?.Type_of_Shock_absorbers_provided_at_the_front_and_Rear?.value,
+            ?.Type_of_Shock_absorbers_provided_at_the_Rear?.value,
       };
       Type_of_Shock_absorbers_rear_list.push(Type_of_Shock_absorbers_rear);
-
-      const Type_of_springs_front = {
+       const Type_of_springs_front = {
         supplier: supplierName,
         value:
           vehDesc?.Front_Suspension?.properties
-            ?.Type_of_springs_provided_at_front_and_Rear?.value,
+            ?.Type_of_springs_provided_at_Front?.value,
       };
       Type_of_springs_front_list.push(Type_of_springs_front);
 
@@ -900,7 +899,7 @@ async function generateForm7(form7Data, footerData) {
         supplier: supplierName,
         value:
           vehDesc?.Rear_Suspension?.properties
-            ?.Type_of_springs_provided_at_front_and_Rear?.value,
+            ?.Type_of_springs_provided_at_Rear?.value,
       };
       Type_of_springs_rear_list.push(Type_of_springs_rear);
 
@@ -1325,9 +1324,10 @@ async function generateForm7(form7Data, footerData) {
       );
     }
   });
-  const Working_voltage_Operating_Voltage_Rows = getWheelRimsTableData(
+  const Working_voltage_Operating_Voltage_Rows1 = getWheelRimsTableData(
     Working_voltage_Operating_Voltage_List
   );
+  let Working_voltage_Operating_Voltage_Rows  = normalizeWithUnit(Working_voltage_Operating_Voltage_Rows1, V);
   // Updated code: Mapping General arrangement of the vehicle data and pushing to table
   let Number_of_seating_positions_List = [];
   GeneralarrangementofthevehicleList.map((vehDesc) => {
