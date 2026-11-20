@@ -83,7 +83,10 @@ if (isTwoWheeler && isThreeWheeler) {
     let imageUrl;
 
     const fileName = dataOfFooterr.Upload_Seal.file_name;
-    imageUrl = `https://auto-canon.in/api/files/downloads/${fileName}`;  // Use the correct backend port
+
+    const API_URL = process.env.REACT_APP_BASE_URL.replace(/\/$/, "");
+
+     imageUrl = `${API_URL}/files/downloads/${fileName}`;  // Use the correct backend port
     // console.log("Image loaded successfully:", fileName);
 ////
 
