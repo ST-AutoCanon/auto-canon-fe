@@ -80,13 +80,13 @@ if (isTwoWheeler && isThreeWheeler) {
     vehicle_Type = 3;  // Either Three-Wheeler is present or both are absent, create table
 }
     const dataOfFooterr = footerData.footerData.SealSign.properties;
-    let imageUrl;
+    
 
     const fileName = dataOfFooterr.Upload_Seal.file_name;
 
     const API_URL = process.env.REACT_APP_BASE_URL.replace(/\/$/, "");
 
-     imageUrl = `${API_URL}/files/downloads/${fileName}`;  // Use the correct backend port
+     const imageUrl = `${API_URL}/files/downloads/${fileName}`;  // Use the correct backend port
     // console.log("Image loaded successfully:", fileName);
 ////
 

@@ -58,9 +58,10 @@ const mainData = function () {
 async function fetchAndProcessImage(footerData) {
   const dataOfFooterr = footerData.footerData.SealSign.properties;
   const fileName = dataOfFooterr.Upload_Seal.file_name;
+  
 const API_URL = process.env.REACT_APP_BASE_URL.replace(/\/$/, "");
 
-imageUrl = `${API_URL}/files/downloads/${fileName}`;
+const imageUrl = `${API_URL}/files/downloads/${fileName}`;
 // const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   //   const imageUrl = `http://localhost:3007/api/files/downloads/${fileName}`;
   try {

@@ -93,9 +93,10 @@ async function fetchAndProcessImage(footerData) {
   const dataOfFooterr = footerData.footerData.SealSign.properties;
   const fileName = dataOfFooterr.Upload_Seal.file_name;
   // const imageUrl = `https://.com/api/files/downloads/${fileName}`; 
+ 
 const API_URL = process.env.REACT_APP_BASE_URL.replace(/\/$/, "");
 
-imageUrl = `${API_URL}/files/downloads/${fileName}`; //use the correct backend url  
+const imageUrl = `${API_URL}/files/downloads/${fileName}`; //use the correct backend url  
   try {
     const response = await fetch(imageUrl);
     const blob = await response.blob();
