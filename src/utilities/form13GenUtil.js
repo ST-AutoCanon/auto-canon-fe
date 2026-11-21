@@ -178,9 +178,10 @@ function normalizeWithTwoUnits(value, unit1, unit2) {
 async function fetchAndProcessImage(footerData) {
     const dataOfFooterr = footerData.footerData.SealSign.properties;
     const fileName = dataOfFooterr.Upload_Seal.file_name;
+    
 const API_URL = process.env.REACT_APP_BASE_URL.replace(/\/$/, "");
 
-imageUrl = `${API_URL}/files/downloads/${fileName}`; //use the correct backend Url  
+const imageUrl = `${API_URL}/files/downloads/${fileName}`; //use the correct backend Url  
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
